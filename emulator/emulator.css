@@ -161,6 +161,8 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-backgr
   overflow: visible;
   z-index: 1;
 }
+.mc.page-active .stash-grid { margin-top: 12px; }
+.mc.page-active .inventory { top: 148px; }
 .selected-layout {
   display: none;
 }
@@ -202,7 +204,7 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-backgr
 .icon-unknown { color: var(--ui-error); }
 .icon-orb { color: var(--ui-item-orb); }
 .icon-coin { color: var(--ui-selected); }
-.page { position: absolute; left: 101px; top: -8px; width: 61px; height: 12px; color: var(--ui-text); font-size: 8px; line-height: 12px; text-align: left; }
+.page { position: absolute; left: 101px; top: 0; width: 61px; height: 12px; padding-left: 4px; overflow: hidden; background: var(--ui-panel-alt); color: var(--ui-text); font-size: 8px; line-height: 12px; text-align: left; white-space: nowrap; z-index: 2; }
 
 .inventory { position: absolute; left: 125px; top: 136px; width: 162px; margin: 0; z-index: 2; }
 .inventory-title { display: block; width: 162px; height: 22px; overflow: hidden; color: var(--ui-muted); font-size: 9px; line-height: 18px; white-space: nowrap; }

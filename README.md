@@ -47,4 +47,4 @@ window.forgeUIInspector.getCanonicalUrl()
 
 ## CTE2 UIスタイル
 
-Map Stash、Currency Stash、Master Stash、Profession Workshop、Advanced Salvageは共通の暗色パレット、18pxスロット、Minecraftフォント、ピクセル幅クリップを使います。規約は [プロジェクトローカルスキル](.codex/skills/cte2-ui-style/SKILL.md) と [トークン・レイアウト仕様](.codex/skills/cte2-ui-style/references/ui-style-tokens.md) にまとめています。ブラウザ側の `UI_THEME` とMinecraft側の `Cte2UiTheme` を同時に更新し、`npm run test:all` で契約を確認してください。
+Map Stash、Currency Stash、Master Stash、Profession Workshop、Advanced Salvageは共通の暗色パレット、18pxスロット、Minecraftフォント、ピクセル幅クリップを使います。表示名と互換性IDの対応は [CTE2拡張カタログ](docs/cte2-extension-catalog.md) を正とし、UI規約は [プロジェクトローカルスキル](.codex/skills/cte2-ui-style/SKILL.md) と [トークン・レイアウト仕様](.codex/skills/cte2-ui-style/references/ui-style-tokens.md) にまとめています。ブラウザ側の `UI_THEME` とMinecraft側の `Cte2UiTheme` を同時に更新し、`npm run test:all` で契約を確認してください。

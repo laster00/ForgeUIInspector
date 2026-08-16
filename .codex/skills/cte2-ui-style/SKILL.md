@@ -10,12 +10,13 @@ Keep the in-game Forge screens and the deterministic browser emulator visually c
 ## Workflow
 
 1. Read [ui-style-tokens.md](references/ui-style-tokens.md) before editing. Confirm the screen's logical size, slot coordinates, and text-width budget.
-2. For Minecraft code, use `cte2-ja-patch/addon/cte2-talent-description-search/src/main/java/jp/cte2/client/ui/Cte2UiTheme.java`. Reference its constants and drawing helpers instead of introducing literal palette values in a screen.
-3. For the emulator, use `ForgeUIInspector/emulator/emulator.css` variables and `UI_THEME` in `emulator.js`. Keep the Minecraft preview at 320x230 logical pixels and scale it for the requested viewport.
-4. Preserve vanilla Minecraft font rendering in Forge. The browser may use the deterministic fallback stack; do not add a remote font or CDN dependency.
-5. Keep labels single-line. Clip by measured pixel width before appending counts or status text. Do not allow Japanese text to overlap slots, buttons, or adjacent panels.
-6. Keep interaction states understandable with the same semantic colors: selected, success, error, and muted. Do not encode state with color alone when a label is available.
-7. Verify with the browser contract tests, Forge Java tests, and a build. When a visual change is significant, use `tools/minecraft-ui/capture.ps1` at GUI scale 2 and 3 for the last real-font/item-rendering check.
+2. Check [cte2-extension-catalog.md](../../../docs/cte2-extension-catalog.md) before changing a feature name. Preserve compatibility IDs, NBT keys, network channel names, and existing translation keys; change only user-facing labels unless a migration is explicitly designed.
+3. For Minecraft code, use `cte2-ja-patch/addon/cte2-talent-description-search/src/main/java/jp/cte2/client/ui/Cte2UiTheme.java`. Reference its constants and drawing helpers instead of introducing literal palette values in a screen.
+4. For the emulator, use `ForgeUIInspector/emulator/emulator.css` variables and `UI_THEME` in `emulator.js`. Keep the Minecraft preview at 320x230 logical pixels and scale it for the requested viewport.
+5. Preserve vanilla Minecraft font rendering in Forge. The browser may use the deterministic fallback stack; do not add a remote font or CDN dependency.
+6. Keep labels single-line. Clip by measured pixel width before appending counts or status text. Do not allow Japanese text to overlap slots, buttons, or adjacent panels.
+7. Keep interaction states understandable with the same semantic colors: selected, success, error, and muted. Do not encode state with color alone when a label is available.
+8. Verify with the browser contract tests, Forge Java tests, and a build. When a visual change is significant, use `tools/minecraft-ui/capture.ps1` at GUI scale 2 and 3 for the last real-font/item-rendering check.
 
 ## Boundaries
 

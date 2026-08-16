@@ -27,11 +27,11 @@ export const I18N = {
     "screen.forgeuiinspector.otherFixture": "その他のマップ",
     "screen.forgeuiinspector.all": "すべて",
     "screen.forgeuiinspector.other": "不明／その他",
-    "screen.forgeuiinspector.title": "マップスタッシュ プレビュー",
-    "screen.forgeuiinspector.currencyTitle": "通貨スタッシュ プレビュー",
+    "screen.forgeuiinspector.title": "マップ保管庫 プレビュー",
+    "screen.forgeuiinspector.currencyTitle": "通貨保管庫 プレビュー",
     "screen.forgeuiinspector.fixture": "フィクスチャ：{0}",
     "screen.forgeuiinspector.currencyFixture.normal": "通常の通貨",
-    "screen.forgeuiinspector.currencyFixture.empty": "空の通貨スタッシュ",
+    "screen.forgeuiinspector.currencyFixture.empty": "空の通貨保管庫",
     "screen.forgeuiinspector.currencyFixture.many": "多数の通貨",
     "screen.forgeuiinspector.currencyFixture.other": "その他の通貨",
     "screen.forgeuiinspector.gear_orbs": "装備改変オーブ", "screen.forgeuiinspector.map_orbs": "マップ／オーメン", "screen.forgeuiinspector.gem_orbs": "ジェム",
@@ -362,6 +362,7 @@ export function initEmulator(data) {
     const selectedLayout = layoutById(fixture, state.layout) ?? { id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 };
     const itemCount = itemsForLayout(fixture, state.layout).length;
     const pages = pageCount(itemCount, data.pageSize || PAGE_SIZE);
+    preview.classList.toggle("page-active", pages > 1);
 
     if (fixtureControl) {
       fixtureControl.replaceChildren();
