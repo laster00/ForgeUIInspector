@@ -1,0 +1,9 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+[[mods]]
+modId="forgeuiinspector"
+version="${version}"
+displayName="Forge UI Inspector"
+authors="CTE2 QA"
+description='''Development-only Map Stash UI preview.'''

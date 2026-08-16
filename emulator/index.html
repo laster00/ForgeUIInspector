@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Forge UI Inspector</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="emulator.css">
+</head>
+<body>
+  <main id="forge-ui-emulator" data-testid="forge-ui-emulator">
+    <section class="controls" aria-label="Emulator controls">
+      <h1>Forge UI Inspector</h1>
+      <label>Fixture <select id="fixture-control" data-testid="fixture-control"></select></label>
+      <label>Locale <select id="locale-control" data-testid="locale-control"><option value="ja">日本語</option><option value="en">English</option></select></label>
+      <label>Layout <select id="layout-control" data-testid="layout-control"></select></label>
+      <label>Page <input id="page-control" data-testid="page-control" type="number" min="0" step="1"></label>
+      <label>Scroll <input id="scroll-control" data-testid="scroll-control" type="number" min="0" step="1"></label>
+      <label>State <select id="state-control" data-testid="state-control"><option value="normal">normal</option><option value="loading">loading</option><option value="full">full</option><option value="stale">stale</option><option value="unsupported">unsupported</option></select></label>
+      <label>Width <input id="width-control" data-testid="width-control" type="number" min="320" step="1"></label>
+      <label>Height <input id="height-control" data-testid="height-control" type="number" min="230" step="1"></label>
+      <label>Scale <input id="scale-control" data-testid="scale-control" type="number" min="0.5" step="0.5"></label>
+      <button id="reset" type="button">Reset</button>
+      <button id="copy" type="button">Copy URL</button>
+      <output id="canonical" aria-live="polite"></output>
+    </section>
+
+    <section class="preview-wrap" aria-label="Minecraft preview">
+      <div id="map-stash-preview" data-testid="map-stash-preview" class="mc">
+        <header>
+          <strong id="title"></strong>
+          <span id="state"></span>
+        </header>
+        <div class="mc-body">
+          <aside id="layout-list" data-testid="layout-list" aria-label="Layout list"></aside>
+          <section class="stash" aria-label="Map stash">
+            <div id="selected-layout" class="selected-layout"></div>
+            <div id="stash-grid" data-testid="stash-grid" class="stash-grid"></div>
+            <div id="stash-page" data-testid="stash-page" class="page" hidden></div>
+          </section>
+        </div>
+        <section id="player-inventory" data-testid="player-inventory" class="inventory"></section>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="emulator.js"></script>
+</body>
+</html>

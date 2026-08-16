@@ -1,0 +1,1562 @@
+{
+  "version": 1,
+  "screen": "map_stash",
+  "pageSize": 54,
+  "fixtures": [
+    {
+      "id": "normal",
+      "titleKey": "screen.forgeuiinspector.normal",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 18
+        },
+        {
+          "id": "layout_01",
+          "labelKey": "screen.forgeuiinspector.layout.long",
+          "count": 4
+        },
+        {
+          "id": "layout_02",
+          "labelKey": "screen.forgeuiinspector.layout.02",
+          "count": 1
+        },
+        {
+          "id": "layout_03",
+          "labelKey": "screen.forgeuiinspector.layout.03",
+          "count": 1
+        },
+        {
+          "id": "layout_04",
+          "labelKey": "screen.forgeuiinspector.layout.04",
+          "count": 1
+        },
+        {
+          "id": "layout_05",
+          "labelKey": "screen.forgeuiinspector.layout.05",
+          "count": 1
+        },
+        {
+          "id": "layout_06",
+          "labelKey": "screen.forgeuiinspector.layout.06",
+          "count": 1
+        },
+        {
+          "id": "layout_07",
+          "labelKey": "screen.forgeuiinspector.layout.07",
+          "count": 1
+        },
+        {
+          "id": "layout_08",
+          "labelKey": "screen.forgeuiinspector.layout.08",
+          "count": 1
+        },
+        {
+          "id": "layout_09",
+          "labelKey": "screen.forgeuiinspector.layout.09",
+          "count": 1
+        },
+        {
+          "id": "layout_10",
+          "labelKey": "screen.forgeuiinspector.layout.10",
+          "count": 1
+        },
+        {
+          "id": "layout_11",
+          "labelKey": "screen.forgeuiinspector.layout.11",
+          "count": 1
+        },
+        {
+          "id": "layout_12",
+          "labelKey": "screen.forgeuiinspector.layout.12",
+          "count": 1
+        },
+        {
+          "id": "layout_13",
+          "labelKey": "screen.forgeuiinspector.layout.13",
+          "count": 1
+        },
+        {
+          "id": "layout_14",
+          "labelKey": "screen.forgeuiinspector.layout.14",
+          "count": 0
+        },
+        {
+          "id": "layout_15",
+          "labelKey": "screen.forgeuiinspector.layout.15",
+          "count": 0
+        },
+        {
+          "id": "layout_16",
+          "labelKey": "screen.forgeuiinspector.layout.16",
+          "count": 0
+        },
+        {
+          "id": "layout_17",
+          "labelKey": "screen.forgeuiinspector.layout.17",
+          "count": 0
+        },
+        {
+          "id": "layout_18",
+          "labelKey": "screen.forgeuiinspector.layout.18",
+          "count": 0
+        },
+        {
+          "id": "layout_19",
+          "labelKey": "screen.forgeuiinspector.layout.19",
+          "count": 0
+        },
+        {
+          "id": "layout_20",
+          "labelKey": "screen.forgeuiinspector.layout.20",
+          "count": 0
+        },
+        {
+          "id": "layout_21",
+          "labelKey": "screen.forgeuiinspector.layout.21",
+          "count": 0
+        },
+        {
+          "id": "layout_22",
+          "labelKey": "screen.forgeuiinspector.layout.22",
+          "count": 0
+        },
+        {
+          "id": "layout_23",
+          "labelKey": "screen.forgeuiinspector.layout.23",
+          "count": 0
+        },
+        {
+          "id": "layout_24",
+          "labelKey": "screen.forgeuiinspector.layout.24",
+          "count": 0
+        },
+        {
+          "id": "layout_25",
+          "labelKey": "screen.forgeuiinspector.layout.25",
+          "count": 0
+        },
+        {
+          "id": "layout_26",
+          "labelKey": "screen.forgeuiinspector.layout.26",
+          "count": 0
+        },
+        {
+          "id": "layout_27",
+          "labelKey": "screen.forgeuiinspector.layout.27",
+          "count": 0
+        },
+        {
+          "id": "layout_28",
+          "labelKey": "screen.forgeuiinspector.layout.28",
+          "count": 0
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 2
+        }
+      ],
+      "items": [
+        {
+          "slot": 0,
+          "page": 0,
+          "icon": "map",
+          "count": 1,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 1,
+          "page": 0,
+          "icon": "paper",
+          "count": 2,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 2,
+          "page": 0,
+          "icon": "map",
+          "count": 3,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 3,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 4,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 4,
+          "page": 0,
+          "icon": "map",
+          "count": 5,
+          "layout": "other"
+        },
+        {
+          "slot": 5,
+          "page": 0,
+          "icon": "paper",
+          "count": 6,
+          "layout": "other"
+        },
+        {
+          "slot": 6,
+          "page": 0,
+          "icon": "map",
+          "count": 7,
+          "layout": "layout_06"
+        },
+        {
+          "slot": 7,
+          "page": 0,
+          "icon": "paper",
+          "count": 8,
+          "layout": "layout_07"
+        },
+        {
+          "slot": 8,
+          "page": 0,
+          "icon": "map",
+          "count": 9,
+          "layout": "layout_08"
+        },
+        {
+          "slot": 9,
+          "page": 0,
+          "icon": "paper",
+          "count": 10,
+          "layout": "layout_09"
+        },
+        {
+          "slot": 10,
+          "page": 0,
+          "icon": "map",
+          "count": 11,
+          "layout": "layout_10"
+        },
+        {
+          "slot": 11,
+          "page": 0,
+          "icon": "paper",
+          "count": 12,
+          "layout": "layout_11"
+        },
+        {
+          "slot": 12,
+          "page": 0,
+          "icon": "map",
+          "count": 13,
+          "layout": "layout_12"
+        },
+        {
+          "slot": 13,
+          "page": 0,
+          "icon": "paper",
+          "count": 14,
+          "layout": "layout_13"
+        },
+        {
+          "slot": 14,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 15,
+          "layout": "layout_02"
+        },
+        {
+          "slot": 15,
+          "page": 0,
+          "icon": "paper",
+          "count": 16,
+          "layout": "layout_03"
+        },
+        {
+          "slot": 16,
+          "page": 0,
+          "icon": "map",
+          "count": 17,
+          "layout": "layout_04"
+        },
+        {
+          "slot": 17,
+          "page": 0,
+          "icon": "paper",
+          "count": 18,
+          "layout": "layout_05"
+        }
+      ]
+    },
+    {
+      "id": "empty",
+      "titleKey": "screen.forgeuiinspector.empty",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 0
+        },
+        {
+          "id": "layout_01",
+          "labelKey": "screen.forgeuiinspector.layout.01",
+          "count": 0
+        },
+        {
+          "id": "layout_02",
+          "labelKey": "screen.forgeuiinspector.layout.02",
+          "count": 0
+        },
+        {
+          "id": "layout_03",
+          "labelKey": "screen.forgeuiinspector.layout.03",
+          "count": 0
+        },
+        {
+          "id": "layout_04",
+          "labelKey": "screen.forgeuiinspector.layout.04",
+          "count": 0
+        },
+        {
+          "id": "layout_05",
+          "labelKey": "screen.forgeuiinspector.layout.05",
+          "count": 0
+        },
+        {
+          "id": "layout_06",
+          "labelKey": "screen.forgeuiinspector.layout.06",
+          "count": 0
+        },
+        {
+          "id": "layout_07",
+          "labelKey": "screen.forgeuiinspector.layout.07",
+          "count": 0
+        },
+        {
+          "id": "layout_08",
+          "labelKey": "screen.forgeuiinspector.layout.08",
+          "count": 0
+        },
+        {
+          "id": "layout_09",
+          "labelKey": "screen.forgeuiinspector.layout.09",
+          "count": 0
+        },
+        {
+          "id": "layout_10",
+          "labelKey": "screen.forgeuiinspector.layout.10",
+          "count": 0
+        },
+        {
+          "id": "layout_11",
+          "labelKey": "screen.forgeuiinspector.layout.11",
+          "count": 0
+        },
+        {
+          "id": "layout_12",
+          "labelKey": "screen.forgeuiinspector.layout.12",
+          "count": 0
+        },
+        {
+          "id": "layout_13",
+          "labelKey": "screen.forgeuiinspector.layout.13",
+          "count": 0
+        },
+        {
+          "id": "layout_14",
+          "labelKey": "screen.forgeuiinspector.layout.14",
+          "count": 0
+        },
+        {
+          "id": "layout_15",
+          "labelKey": "screen.forgeuiinspector.layout.15",
+          "count": 0
+        },
+        {
+          "id": "layout_16",
+          "labelKey": "screen.forgeuiinspector.layout.16",
+          "count": 0
+        },
+        {
+          "id": "layout_17",
+          "labelKey": "screen.forgeuiinspector.layout.17",
+          "count": 0
+        },
+        {
+          "id": "layout_18",
+          "labelKey": "screen.forgeuiinspector.layout.18",
+          "count": 0
+        },
+        {
+          "id": "layout_19",
+          "labelKey": "screen.forgeuiinspector.layout.19",
+          "count": 0
+        },
+        {
+          "id": "layout_20",
+          "labelKey": "screen.forgeuiinspector.layout.20",
+          "count": 0
+        },
+        {
+          "id": "layout_21",
+          "labelKey": "screen.forgeuiinspector.layout.21",
+          "count": 0
+        },
+        {
+          "id": "layout_22",
+          "labelKey": "screen.forgeuiinspector.layout.22",
+          "count": 0
+        },
+        {
+          "id": "layout_23",
+          "labelKey": "screen.forgeuiinspector.layout.23",
+          "count": 0
+        },
+        {
+          "id": "layout_24",
+          "labelKey": "screen.forgeuiinspector.layout.24",
+          "count": 0
+        },
+        {
+          "id": "layout_25",
+          "labelKey": "screen.forgeuiinspector.layout.25",
+          "count": 0
+        },
+        {
+          "id": "layout_26",
+          "labelKey": "screen.forgeuiinspector.layout.26",
+          "count": 0
+        },
+        {
+          "id": "layout_27",
+          "labelKey": "screen.forgeuiinspector.layout.27",
+          "count": 0
+        },
+        {
+          "id": "layout_28",
+          "labelKey": "screen.forgeuiinspector.layout.28",
+          "count": 0
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 0
+        }
+      ],
+      "items": []
+    },
+    {
+      "id": "many",
+      "titleKey": "screen.forgeuiinspector.many",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 108
+        },
+        {
+          "id": "layout_01",
+          "labelKey": "screen.forgeuiinspector.layout.01",
+          "count": 3
+        },
+        {
+          "id": "layout_02",
+          "labelKey": "screen.forgeuiinspector.layout.02",
+          "count": 3
+        },
+        {
+          "id": "layout_03",
+          "labelKey": "screen.forgeuiinspector.layout.03",
+          "count": 4
+        },
+        {
+          "id": "layout_04",
+          "labelKey": "screen.forgeuiinspector.layout.04",
+          "count": 4
+        },
+        {
+          "id": "layout_05",
+          "labelKey": "screen.forgeuiinspector.layout.05",
+          "count": 4
+        },
+        {
+          "id": "layout_06",
+          "labelKey": "screen.forgeuiinspector.layout.06",
+          "count": 4
+        },
+        {
+          "id": "layout_07",
+          "labelKey": "screen.forgeuiinspector.layout.07",
+          "count": 3
+        },
+        {
+          "id": "layout_08",
+          "labelKey": "screen.forgeuiinspector.layout.08",
+          "count": 4
+        },
+        {
+          "id": "layout_09",
+          "labelKey": "screen.forgeuiinspector.layout.09",
+          "count": 4
+        },
+        {
+          "id": "layout_10",
+          "labelKey": "screen.forgeuiinspector.layout.10",
+          "count": 4
+        },
+        {
+          "id": "layout_11",
+          "labelKey": "screen.forgeuiinspector.layout.11",
+          "count": 4
+        },
+        {
+          "id": "layout_12",
+          "labelKey": "screen.forgeuiinspector.layout.12",
+          "count": 4
+        },
+        {
+          "id": "layout_13",
+          "labelKey": "screen.forgeuiinspector.layout.13",
+          "count": 3
+        },
+        {
+          "id": "layout_14",
+          "labelKey": "screen.forgeuiinspector.layout.14",
+          "count": 4
+        },
+        {
+          "id": "layout_15",
+          "labelKey": "screen.forgeuiinspector.layout.15",
+          "count": 4
+        },
+        {
+          "id": "layout_16",
+          "labelKey": "screen.forgeuiinspector.layout.16",
+          "count": 4
+        },
+        {
+          "id": "layout_17",
+          "labelKey": "screen.forgeuiinspector.layout.17",
+          "count": 4
+        },
+        {
+          "id": "layout_18",
+          "labelKey": "screen.forgeuiinspector.layout.18",
+          "count": 3
+        },
+        {
+          "id": "layout_19",
+          "labelKey": "screen.forgeuiinspector.layout.19",
+          "count": 3
+        },
+        {
+          "id": "layout_20",
+          "labelKey": "screen.forgeuiinspector.layout.20",
+          "count": 4
+        },
+        {
+          "id": "layout_21",
+          "labelKey": "screen.forgeuiinspector.layout.21",
+          "count": 4
+        },
+        {
+          "id": "layout_22",
+          "labelKey": "screen.forgeuiinspector.layout.22",
+          "count": 4
+        },
+        {
+          "id": "layout_23",
+          "labelKey": "screen.forgeuiinspector.layout.23",
+          "count": 4
+        },
+        {
+          "id": "layout_24",
+          "labelKey": "screen.forgeuiinspector.layout.24",
+          "count": 3
+        },
+        {
+          "id": "layout_25",
+          "labelKey": "screen.forgeuiinspector.layout.25",
+          "count": 3
+        },
+        {
+          "id": "layout_26",
+          "labelKey": "screen.forgeuiinspector.layout.26",
+          "count": 3
+        },
+        {
+          "id": "layout_27",
+          "labelKey": "screen.forgeuiinspector.layout.27",
+          "count": 3
+        },
+        {
+          "id": "layout_28",
+          "labelKey": "screen.forgeuiinspector.layout.28",
+          "count": 3
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 7
+        }
+      ],
+      "items": [
+        {
+          "slot": 0,
+          "page": 0,
+          "icon": "map",
+          "count": 1,
+          "layout": "other"
+        },
+        {
+          "slot": 1,
+          "page": 0,
+          "icon": "paper",
+          "count": 2,
+          "layout": "layout_02"
+        },
+        {
+          "slot": 2,
+          "page": 0,
+          "icon": "map",
+          "count": 3,
+          "layout": "layout_03"
+        },
+        {
+          "slot": 3,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 4,
+          "layout": "layout_04"
+        },
+        {
+          "slot": 4,
+          "page": 0,
+          "icon": "map",
+          "count": 5,
+          "layout": "layout_05"
+        },
+        {
+          "slot": 5,
+          "page": 0,
+          "icon": "paper",
+          "count": 6,
+          "layout": "layout_06"
+        },
+        {
+          "slot": 6,
+          "page": 0,
+          "icon": "map",
+          "count": 7,
+          "layout": "layout_07"
+        },
+        {
+          "slot": 7,
+          "page": 0,
+          "icon": "paper",
+          "count": 8,
+          "layout": "layout_08"
+        },
+        {
+          "slot": 8,
+          "page": 0,
+          "icon": "map",
+          "count": 9,
+          "layout": "layout_09"
+        },
+        {
+          "slot": 9,
+          "page": 0,
+          "icon": "paper",
+          "count": 10,
+          "layout": "layout_10"
+        },
+        {
+          "slot": 10,
+          "page": 0,
+          "icon": "map",
+          "count": 11,
+          "layout": "layout_11"
+        },
+        {
+          "slot": 11,
+          "page": 0,
+          "icon": "paper",
+          "count": 12,
+          "layout": "layout_12"
+        },
+        {
+          "slot": 12,
+          "page": 0,
+          "icon": "map",
+          "count": 13,
+          "layout": "layout_13"
+        },
+        {
+          "slot": 13,
+          "page": 0,
+          "icon": "paper",
+          "count": 14,
+          "layout": "layout_14"
+        },
+        {
+          "slot": 14,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 15,
+          "layout": "layout_15"
+        },
+        {
+          "slot": 15,
+          "page": 0,
+          "icon": "paper",
+          "count": 16,
+          "layout": "layout_16"
+        },
+        {
+          "slot": 16,
+          "page": 0,
+          "icon": "map",
+          "count": 17,
+          "layout": "layout_17"
+        },
+        {
+          "slot": 17,
+          "page": 0,
+          "icon": "paper",
+          "count": 18,
+          "layout": "other"
+        },
+        {
+          "slot": 18,
+          "page": 0,
+          "icon": "map",
+          "count": 19,
+          "layout": "layout_19"
+        },
+        {
+          "slot": 19,
+          "page": 0,
+          "icon": "paper",
+          "count": 20,
+          "layout": "layout_20"
+        },
+        {
+          "slot": 20,
+          "page": 0,
+          "icon": "map",
+          "count": 21,
+          "layout": "layout_21"
+        },
+        {
+          "slot": 21,
+          "page": 0,
+          "icon": "paper",
+          "count": 22,
+          "layout": "layout_22"
+        },
+        {
+          "slot": 22,
+          "page": 0,
+          "icon": "map",
+          "count": 23,
+          "layout": "layout_23"
+        },
+        {
+          "slot": 23,
+          "page": 0,
+          "icon": "paper",
+          "count": 24,
+          "layout": "layout_24"
+        },
+        {
+          "slot": 24,
+          "page": 0,
+          "icon": "map",
+          "count": 25,
+          "layout": "layout_25"
+        },
+        {
+          "slot": 25,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 26,
+          "layout": "layout_26"
+        },
+        {
+          "slot": 26,
+          "page": 0,
+          "icon": "map",
+          "count": 27,
+          "layout": "layout_27"
+        },
+        {
+          "slot": 27,
+          "page": 0,
+          "icon": "paper",
+          "count": 28,
+          "layout": "layout_28"
+        },
+        {
+          "slot": 28,
+          "page": 0,
+          "icon": "map",
+          "count": 29,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 29,
+          "page": 0,
+          "icon": "paper",
+          "count": 30,
+          "layout": "layout_02"
+        },
+        {
+          "slot": 30,
+          "page": 0,
+          "icon": "map",
+          "count": 31,
+          "layout": "layout_03"
+        },
+        {
+          "slot": 31,
+          "page": 0,
+          "icon": "paper",
+          "count": 32,
+          "layout": "layout_04"
+        },
+        {
+          "slot": 32,
+          "page": 0,
+          "icon": "map",
+          "count": 33,
+          "layout": "layout_05"
+        },
+        {
+          "slot": 33,
+          "page": 0,
+          "icon": "paper",
+          "count": 34,
+          "layout": "layout_06"
+        },
+        {
+          "slot": 34,
+          "page": 0,
+          "icon": "map",
+          "count": 35,
+          "layout": "other"
+        },
+        {
+          "slot": 35,
+          "page": 0,
+          "icon": "paper",
+          "count": 36,
+          "layout": "layout_08"
+        },
+        {
+          "slot": 36,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 37,
+          "layout": "layout_09"
+        },
+        {
+          "slot": 37,
+          "page": 0,
+          "icon": "paper",
+          "count": 38,
+          "layout": "layout_10"
+        },
+        {
+          "slot": 38,
+          "page": 0,
+          "icon": "map",
+          "count": 39,
+          "layout": "layout_11"
+        },
+        {
+          "slot": 39,
+          "page": 0,
+          "icon": "paper",
+          "count": 40,
+          "layout": "layout_12"
+        },
+        {
+          "slot": 40,
+          "page": 0,
+          "icon": "map",
+          "count": 41,
+          "layout": "layout_13"
+        },
+        {
+          "slot": 41,
+          "page": 0,
+          "icon": "paper",
+          "count": 42,
+          "layout": "layout_14"
+        },
+        {
+          "slot": 42,
+          "page": 0,
+          "icon": "map",
+          "count": 43,
+          "layout": "layout_15"
+        },
+        {
+          "slot": 43,
+          "page": 0,
+          "icon": "paper",
+          "count": 44,
+          "layout": "layout_16"
+        },
+        {
+          "slot": 44,
+          "page": 0,
+          "icon": "map",
+          "count": 45,
+          "layout": "layout_17"
+        },
+        {
+          "slot": 45,
+          "page": 0,
+          "icon": "paper",
+          "count": 46,
+          "layout": "layout_18"
+        },
+        {
+          "slot": 46,
+          "page": 0,
+          "icon": "map",
+          "count": 47,
+          "layout": "layout_19"
+        },
+        {
+          "slot": 47,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 48,
+          "layout": "layout_20"
+        },
+        {
+          "slot": 48,
+          "page": 0,
+          "icon": "map",
+          "count": 49,
+          "layout": "layout_21"
+        },
+        {
+          "slot": 49,
+          "page": 0,
+          "icon": "paper",
+          "count": 50,
+          "layout": "layout_22"
+        },
+        {
+          "slot": 50,
+          "page": 0,
+          "icon": "map",
+          "count": 51,
+          "layout": "layout_23"
+        },
+        {
+          "slot": 51,
+          "page": 0,
+          "icon": "paper",
+          "count": 52,
+          "layout": "other"
+        },
+        {
+          "slot": 52,
+          "page": 0,
+          "icon": "map",
+          "count": 53,
+          "layout": "layout_25"
+        },
+        {
+          "slot": 53,
+          "page": 0,
+          "icon": "paper",
+          "count": 54,
+          "layout": "layout_26"
+        },
+        {
+          "slot": 0,
+          "page": 1,
+          "icon": "map",
+          "count": 55,
+          "layout": "layout_27"
+        },
+        {
+          "slot": 1,
+          "page": 1,
+          "icon": "paper",
+          "count": 56,
+          "layout": "layout_28"
+        },
+        {
+          "slot": 2,
+          "page": 1,
+          "icon": "map",
+          "count": 57,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 3,
+          "page": 1,
+          "icon": "paper",
+          "count": 58,
+          "layout": "layout_02"
+        },
+        {
+          "slot": 4,
+          "page": 1,
+          "icon": "unknown-icon",
+          "count": 59,
+          "layout": "layout_03"
+        },
+        {
+          "slot": 5,
+          "page": 1,
+          "icon": "paper",
+          "count": 60,
+          "layout": "layout_04"
+        },
+        {
+          "slot": 6,
+          "page": 1,
+          "icon": "map",
+          "count": 61,
+          "layout": "layout_05"
+        },
+        {
+          "slot": 7,
+          "page": 1,
+          "icon": "paper",
+          "count": 62,
+          "layout": "layout_06"
+        },
+        {
+          "slot": 8,
+          "page": 1,
+          "icon": "map",
+          "count": 63,
+          "layout": "layout_07"
+        },
+        {
+          "slot": 9,
+          "page": 1,
+          "icon": "paper",
+          "count": 64,
+          "layout": "layout_08"
+        },
+        {
+          "slot": 10,
+          "page": 1,
+          "icon": "map",
+          "count": 1,
+          "layout": "layout_09"
+        },
+        {
+          "slot": 11,
+          "page": 1,
+          "icon": "paper",
+          "count": 2,
+          "layout": "layout_10"
+        },
+        {
+          "slot": 12,
+          "page": 1,
+          "icon": "map",
+          "count": 3,
+          "layout": "layout_11"
+        },
+        {
+          "slot": 13,
+          "page": 1,
+          "icon": "paper",
+          "count": 4,
+          "layout": "layout_12"
+        },
+        {
+          "slot": 14,
+          "page": 1,
+          "icon": "map",
+          "count": 5,
+          "layout": "other"
+        },
+        {
+          "slot": 15,
+          "page": 1,
+          "icon": "unknown-icon",
+          "count": 6,
+          "layout": "layout_14"
+        },
+        {
+          "slot": 16,
+          "page": 1,
+          "icon": "map",
+          "count": 7,
+          "layout": "layout_15"
+        },
+        {
+          "slot": 17,
+          "page": 1,
+          "icon": "paper",
+          "count": 8,
+          "layout": "layout_16"
+        },
+        {
+          "slot": 18,
+          "page": 1,
+          "icon": "map",
+          "count": 9,
+          "layout": "layout_17"
+        },
+        {
+          "slot": 19,
+          "page": 1,
+          "icon": "paper",
+          "count": 10,
+          "layout": "layout_18"
+        },
+        {
+          "slot": 20,
+          "page": 1,
+          "icon": "map",
+          "count": 11,
+          "layout": "layout_19"
+        },
+        {
+          "slot": 21,
+          "page": 1,
+          "icon": "paper",
+          "count": 12,
+          "layout": "layout_20"
+        },
+        {
+          "slot": 22,
+          "page": 1,
+          "icon": "map",
+          "count": 13,
+          "layout": "layout_21"
+        },
+        {
+          "slot": 23,
+          "page": 1,
+          "icon": "paper",
+          "count": 14,
+          "layout": "layout_22"
+        },
+        {
+          "slot": 24,
+          "page": 1,
+          "icon": "map",
+          "count": 15,
+          "layout": "layout_23"
+        },
+        {
+          "slot": 25,
+          "page": 1,
+          "icon": "paper",
+          "count": 16,
+          "layout": "layout_24"
+        },
+        {
+          "slot": 26,
+          "page": 1,
+          "icon": "unknown-icon",
+          "count": 17,
+          "layout": "layout_25"
+        },
+        {
+          "slot": 27,
+          "page": 1,
+          "icon": "paper",
+          "count": 18,
+          "layout": "layout_26"
+        },
+        {
+          "slot": 28,
+          "page": 1,
+          "icon": "map",
+          "count": 19,
+          "layout": "layout_27"
+        },
+        {
+          "slot": 29,
+          "page": 1,
+          "icon": "paper",
+          "count": 20,
+          "layout": "layout_28"
+        },
+        {
+          "slot": 30,
+          "page": 1,
+          "icon": "map",
+          "count": 21,
+          "layout": "layout_01"
+        },
+        {
+          "slot": 31,
+          "page": 1,
+          "icon": "paper",
+          "count": 22,
+          "layout": "other"
+        },
+        {
+          "slot": 32,
+          "page": 1,
+          "icon": "map",
+          "count": 23,
+          "layout": "layout_03"
+        },
+        {
+          "slot": 33,
+          "page": 1,
+          "icon": "paper",
+          "count": 24,
+          "layout": "layout_04"
+        },
+        {
+          "slot": 34,
+          "page": 1,
+          "icon": "map",
+          "count": 25,
+          "layout": "layout_05"
+        },
+        {
+          "slot": 35,
+          "page": 1,
+          "icon": "paper",
+          "count": 26,
+          "layout": "layout_06"
+        },
+        {
+          "slot": 36,
+          "page": 1,
+          "icon": "map",
+          "count": 27,
+          "layout": "layout_07"
+        },
+        {
+          "slot": 37,
+          "page": 1,
+          "icon": "unknown-icon",
+          "count": 28,
+          "layout": "layout_08"
+        },
+        {
+          "slot": 38,
+          "page": 1,
+          "icon": "map",
+          "count": 29,
+          "layout": "layout_09"
+        },
+        {
+          "slot": 39,
+          "page": 1,
+          "icon": "paper",
+          "count": 30,
+          "layout": "layout_10"
+        },
+        {
+          "slot": 40,
+          "page": 1,
+          "icon": "map",
+          "count": 31,
+          "layout": "layout_11"
+        },
+        {
+          "slot": 41,
+          "page": 1,
+          "icon": "paper",
+          "count": 32,
+          "layout": "layout_12"
+        },
+        {
+          "slot": 42,
+          "page": 1,
+          "icon": "map",
+          "count": 33,
+          "layout": "layout_13"
+        },
+        {
+          "slot": 43,
+          "page": 1,
+          "icon": "paper",
+          "count": 34,
+          "layout": "layout_14"
+        },
+        {
+          "slot": 44,
+          "page": 1,
+          "icon": "map",
+          "count": 35,
+          "layout": "layout_15"
+        },
+        {
+          "slot": 45,
+          "page": 1,
+          "icon": "paper",
+          "count": 36,
+          "layout": "layout_16"
+        },
+        {
+          "slot": 46,
+          "page": 1,
+          "icon": "map",
+          "count": 37,
+          "layout": "layout_17"
+        },
+        {
+          "slot": 47,
+          "page": 1,
+          "icon": "paper",
+          "count": 38,
+          "layout": "layout_18"
+        },
+        {
+          "slot": 48,
+          "page": 1,
+          "icon": "unknown-icon",
+          "count": 39,
+          "layout": "other"
+        },
+        {
+          "slot": 49,
+          "page": 1,
+          "icon": "paper",
+          "count": 40,
+          "layout": "layout_20"
+        },
+        {
+          "slot": 50,
+          "page": 1,
+          "icon": "map",
+          "count": 41,
+          "layout": "layout_21"
+        },
+        {
+          "slot": 51,
+          "page": 1,
+          "icon": "paper",
+          "count": 42,
+          "layout": "layout_22"
+        },
+        {
+          "slot": 52,
+          "page": 1,
+          "icon": "map",
+          "count": 43,
+          "layout": "layout_23"
+        },
+        {
+          "slot": 53,
+          "page": 1,
+          "icon": "paper",
+          "count": 44,
+          "layout": "layout_24"
+        }
+      ]
+    },
+    {
+      "id": "other",
+      "titleKey": "screen.forgeuiinspector.otherFixture",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 6
+        },
+        {
+          "id": "layout_01",
+          "labelKey": "screen.forgeuiinspector.layout.01",
+          "count": 0
+        },
+        {
+          "id": "layout_02",
+          "labelKey": "screen.forgeuiinspector.layout.02",
+          "count": 0
+        },
+        {
+          "id": "layout_03",
+          "labelKey": "screen.forgeuiinspector.layout.03",
+          "count": 0
+        },
+        {
+          "id": "layout_04",
+          "labelKey": "screen.forgeuiinspector.layout.04",
+          "count": 0
+        },
+        {
+          "id": "layout_05",
+          "labelKey": "screen.forgeuiinspector.layout.05",
+          "count": 0
+        },
+        {
+          "id": "layout_06",
+          "labelKey": "screen.forgeuiinspector.layout.06",
+          "count": 0
+        },
+        {
+          "id": "layout_07",
+          "labelKey": "screen.forgeuiinspector.layout.07",
+          "count": 0
+        },
+        {
+          "id": "layout_08",
+          "labelKey": "screen.forgeuiinspector.layout.08",
+          "count": 0
+        },
+        {
+          "id": "layout_09",
+          "labelKey": "screen.forgeuiinspector.layout.09",
+          "count": 0
+        },
+        {
+          "id": "layout_10",
+          "labelKey": "screen.forgeuiinspector.layout.10",
+          "count": 0
+        },
+        {
+          "id": "layout_11",
+          "labelKey": "screen.forgeuiinspector.layout.11",
+          "count": 0
+        },
+        {
+          "id": "layout_12",
+          "labelKey": "screen.forgeuiinspector.layout.12",
+          "count": 0
+        },
+        {
+          "id": "layout_13",
+          "labelKey": "screen.forgeuiinspector.layout.13",
+          "count": 0
+        },
+        {
+          "id": "layout_14",
+          "labelKey": "screen.forgeuiinspector.layout.14",
+          "count": 0
+        },
+        {
+          "id": "layout_15",
+          "labelKey": "screen.forgeuiinspector.layout.15",
+          "count": 0
+        },
+        {
+          "id": "layout_16",
+          "labelKey": "screen.forgeuiinspector.layout.16",
+          "count": 0
+        },
+        {
+          "id": "layout_17",
+          "labelKey": "screen.forgeuiinspector.layout.17",
+          "count": 0
+        },
+        {
+          "id": "layout_18",
+          "labelKey": "screen.forgeuiinspector.layout.18",
+          "count": 0
+        },
+        {
+          "id": "layout_19",
+          "labelKey": "screen.forgeuiinspector.layout.19",
+          "count": 0
+        },
+        {
+          "id": "layout_20",
+          "labelKey": "screen.forgeuiinspector.layout.20",
+          "count": 0
+        },
+        {
+          "id": "layout_21",
+          "labelKey": "screen.forgeuiinspector.layout.21",
+          "count": 0
+        },
+        {
+          "id": "layout_22",
+          "labelKey": "screen.forgeuiinspector.layout.22",
+          "count": 0
+        },
+        {
+          "id": "layout_23",
+          "labelKey": "screen.forgeuiinspector.layout.23",
+          "count": 0
+        },
+        {
+          "id": "layout_24",
+          "labelKey": "screen.forgeuiinspector.layout.24",
+          "count": 0
+        },
+        {
+          "id": "layout_25",
+          "labelKey": "screen.forgeuiinspector.layout.25",
+          "count": 0
+        },
+        {
+          "id": "layout_26",
+          "labelKey": "screen.forgeuiinspector.layout.26",
+          "count": 0
+        },
+        {
+          "id": "layout_27",
+          "labelKey": "screen.forgeuiinspector.layout.27",
+          "count": 0
+        },
+        {
+          "id": "layout_28",
+          "labelKey": "screen.forgeuiinspector.layout.28",
+          "count": 0
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 6
+        }
+      ],
+      "items": [
+        {
+          "slot": 0,
+          "page": 0,
+          "icon": "map",
+          "count": 1,
+          "layout": "other"
+        },
+        {
+          "slot": 1,
+          "page": 0,
+          "icon": "paper",
+          "count": 2,
+          "layout": "other"
+        },
+        {
+          "slot": 2,
+          "page": 0,
+          "icon": "map",
+          "count": 3,
+          "layout": "other"
+        },
+        {
+          "slot": 3,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 4,
+          "layout": "other"
+        },
+        {
+          "slot": 4,
+          "page": 0,
+          "icon": "map",
+          "count": 5,
+          "layout": "other"
+        },
+        {
+          "slot": 5,
+          "page": 0,
+          "icon": "paper",
+          "count": 6,
+          "layout": "other"
+        }
+      ]
+    }
+  ]
+}
