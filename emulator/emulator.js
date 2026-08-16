@@ -1,6 +1,9 @@
 export const PAGE_SIZE = 54;
 export const FIXTURE_IDS = ["normal", "empty", "many", "other"];
 export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
+export const SCREEN_IDS = ["map_stash", "currency_stash"];
+export const CURRENCY_CATEGORY_IDS = ["all", "gear_orbs", "map_orbs", "gem_orbs", "seeds", "special_currency", "prophecy", "coins", "other"];
+export const MINECRAFT_FONT_STACK = '"Minecraft", "Unifont", "GenEiMonoGothic", "MS Gothic", "Courier New", monospace';
 
 const LAYOUT_IDS = Array.from({ length: 28 }, (_, index) => `layout_${String(index + 1).padStart(2, "0")}`);
 
@@ -12,6 +15,16 @@ export const I18N = {
     "screen.forgeuiinspector.otherFixture": "その他のマップ",
     "screen.forgeuiinspector.all": "すべて",
     "screen.forgeuiinspector.other": "不明／その他",
+    "screen.forgeuiinspector.title": "マップスタッシュ プレビュー",
+    "screen.forgeuiinspector.currencyTitle": "通貨スタッシュ プレビュー",
+    "screen.forgeuiinspector.fixture": "フィクスチャ：{0}",
+    "screen.forgeuiinspector.currencyFixture.normal": "通常の通貨",
+    "screen.forgeuiinspector.currencyFixture.empty": "空の通貨スタッシュ",
+    "screen.forgeuiinspector.currencyFixture.many": "多数の通貨",
+    "screen.forgeuiinspector.currencyFixture.other": "その他の通貨",
+    "screen.forgeuiinspector.gear_orbs": "装備改変オーブ", "screen.forgeuiinspector.map_orbs": "マップ／オーメン", "screen.forgeuiinspector.gem_orbs": "ジェム",
+    "screen.forgeuiinspector.seeds": "シード", "screen.forgeuiinspector.special_currency": "特殊通貨", "screen.forgeuiinspector.prophecy": "予言・好意", "screen.forgeuiinspector.coins": "硬貨",
+    "screen.forgeuiinspector.currencyItem.chaos": "カオスオーブ", "screen.forgeuiinspector.currencyItem.map": "マップオーブ", "screen.forgeuiinspector.currencyItem.coin": "古代の硬貨",
     "screen.forgeuiinspector.layout.long": "非常に長い日本語のレイアウト名を確認するための表示",
     "screen.forgeuiinspector.layout.01": "レイアウト 01",
     "screen.forgeuiinspector.layout.02": "レイアウト 02",
@@ -57,6 +70,16 @@ export const I18N = {
     "screen.forgeuiinspector.otherFixture": "Other maps",
     "screen.forgeuiinspector.all": "All",
     "screen.forgeuiinspector.other": "Unknown / Other",
+    "screen.forgeuiinspector.title": "Map Stash Preview",
+    "screen.forgeuiinspector.currencyTitle": "Currency Stash Preview",
+    "screen.forgeuiinspector.fixture": "Fixture: {0}",
+    "screen.forgeuiinspector.currencyFixture.normal": "Normal currency",
+    "screen.forgeuiinspector.currencyFixture.empty": "Empty currency stash",
+    "screen.forgeuiinspector.currencyFixture.many": "Many currencies",
+    "screen.forgeuiinspector.currencyFixture.other": "Other currencies",
+    "screen.forgeuiinspector.gear_orbs": "Gear Orbs", "screen.forgeuiinspector.map_orbs": "Maps / Omens", "screen.forgeuiinspector.gem_orbs": "Gems",
+    "screen.forgeuiinspector.seeds": "Seeds", "screen.forgeuiinspector.special_currency": "Special Currency", "screen.forgeuiinspector.prophecy": "Prophecy / Favour", "screen.forgeuiinspector.coins": "Coins",
+    "screen.forgeuiinspector.currencyItem.chaos": "Chaos Orb", "screen.forgeuiinspector.currencyItem.map": "Map Orb", "screen.forgeuiinspector.currencyItem.coin": "Ancient Coin",
     "screen.forgeuiinspector.layout.long": "A deliberately very long layout label for clipping",
     "screen.forgeuiinspector.layout.01": "Layout 01",
     "screen.forgeuiinspector.layout.02": "Layout 02",
@@ -127,6 +150,17 @@ export function createFallbackData() {
   };
 }
 
+export function createCurrencyFallbackData() {
+  const labels = CURRENCY_CATEGORY_IDS.map((id) => ({ id, labelKey: id === "all" || id === "other" ? `screen.forgeuiinspector.${id}` : `screen.forgeuiinspector.${id}`, count: 0 }));
+  const make = (count) => Array.from({ length: count }, (_, index) => ({ slot: index % PAGE_SIZE, page: Math.floor(index / PAGE_SIZE), id: `cte2:currency_${index + 1}`, label: `Currency ${index + 1}`, icon: index % 11 === 0 ? "unknown-icon" : index % 3 === 0 ? "coin" : "orb", count: (index % 40) + 1, category: CURRENCY_CATEGORY_IDS[1 + (index % 8)] }));
+  return { version: 1, screen: "currency_stash", titleKey: "screen.forgeuiinspector.currencyTitle", pageSize: PAGE_SIZE, fixtures: [
+    { id: "normal", titleKey: "screen.forgeuiinspector.currencyFixture.normal", layouts: labels, items: make(18) },
+    { id: "empty", titleKey: "screen.forgeuiinspector.currencyFixture.empty", layouts: labels, items: [] },
+    { id: "many", titleKey: "screen.forgeuiinspector.currencyFixture.many", layouts: labels, items: make(108) },
+    { id: "other", titleKey: "screen.forgeuiinspector.currencyFixture.other", layouts: labels, items: make(6).map((item) => ({ ...item, category: "other" })) },
+  ] };
+}
+
 export function t(key, locale = "ja", args = []) {
   const template = I18N[locale]?.[key] ?? I18N.ja[key] ?? key;
   return String(template).replace(/\{(\d+)\}/g, (_, index) => args[Number(index)] ?? "");
@@ -148,11 +182,21 @@ function layoutById(fixture, layoutId) {
 export function itemsForLayout(fixture, layoutId = "all") {
   const all = Array.isArray(fixture?.items) ? fixture.items : [];
   if (layoutId === "all") return all;
-  const explicit = all.filter((item) => item?.layout === layoutId);
+  const explicit = all.filter((item) => item?.layout === layoutId || item?.category === layoutId);
   if (explicit.length > 0 || all.some((item) => Object.prototype.hasOwnProperty.call(item, "layout"))) return explicit;
   // Older hand-written fixtures may only provide counts. Preserve those fixtures gracefully.
   const count = Math.max(0, Number(layoutById(fixture, layoutId)?.count) || 0);
   return all.slice(0, count);
+}
+
+export function itemsForCategory(fixture, category = "all") {
+  return itemsForLayout(fixture, category);
+}
+
+export function isCurrencyFixtureData(data) {
+  return data?.screen === "currency_stash" && data?.pageSize === PAGE_SIZE && Array.isArray(data?.fixtures)
+    && data.fixtures.every((fixture) => FIXTURE_IDS.includes(fixture.id) && Array.isArray(fixture.items)
+      && fixture.items.every((item) => CURRENCY_CATEGORY_IDS.includes(item.category) && Number.isInteger(item.slot) && item.slot >= 0 && item.slot < PAGE_SIZE));
 }
 
 export function pageCount(itemsOrCount, pageSize = PAGE_SIZE) {
@@ -165,6 +209,7 @@ export function layoutScrollMax(fixture, visibleRows = 6) {
 }
 
 export function normalize(input = {}, data = createFallbackData()) {
+  const screen = SCREEN_IDS.includes(input.screen) ? input.screen : (data.screen === "currency_stash" ? "currency_stash" : "map_stash");
   const fixtureId = FIXTURE_IDS.includes(input.fixture) ? input.fixture : "normal";
   const locale = ["ja", "en"].includes(input.locale) ? input.locale : "ja";
   const fixture = data.fixtures?.find((candidate) => candidate.id === fixtureId) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
@@ -174,6 +219,7 @@ export function normalize(input = {}, data = createFallbackData()) {
   const scaleNumber = Number(input.scale);
   return {
     fixture: fixtureId,
+    screen,
     locale,
     layout,
     page: clamp(finiteInteger(input.page, 0), 0, pageMax),
@@ -195,7 +241,7 @@ export function mergeState(current, partial = {}, data = createFallbackData()) {
 }
 
 export function canonical(state, base = "index.html") {
-  const keys = ["fixture", "locale", "layout", "page", "scroll", "width", "height", "scale", "state"];
+  const keys = ["screen", "fixture", "locale", "layout", "page", "scroll", "width", "height", "scale", "state"];
   const query = new URLSearchParams();
   keys.forEach((key) => query.set(key, state[key]));
   return `${base}?${query.toString()}`;
@@ -204,10 +250,12 @@ export function canonical(state, base = "index.html") {
 export function iconGlyph(icon) {
   if (icon === "map") return { className: "icon-map", glyph: "◆" };
   if (icon === "paper") return { className: "icon-paper", glyph: "▤" };
+  if (icon === "orb") return { className: "icon-orb", glyph: "✦" };
+  if (icon === "coin") return { className: "icon-coin", glyph: "●" };
   return { className: "icon-unknown", glyph: "?" };
 }
 
-export function measureTextPx(text, font = "10px Arial") {
+export function measureTextPx(text, font = `10px ${MINECRAFT_FONT_STACK}`) {
   if (typeof document !== "undefined") {
     const canvas = measureTextPx.canvas || (measureTextPx.canvas = document.createElement("canvas"));
     const context = canvas.getContext("2d");
@@ -260,6 +308,7 @@ function createElement(tag, className, text) {
 export function initEmulator(data) {
   if (typeof document === "undefined" || typeof window === "undefined") return null;
   const fixtureControl = document.getElementById("fixture-control");
+  const screenControl = document.getElementById("screen-control");
   const localeControl = document.getElementById("locale-control");
   const layoutControl = document.getElementById("layout-control");
   const pageControl = document.getElementById("page-control");
@@ -278,6 +327,14 @@ export function initEmulator(data) {
     render();
   };
   const setState = (partial = {}) => {
+    if (Object.prototype.hasOwnProperty.call(partial, "screen") && SCREEN_IDS.includes(partial.screen) && partial.screen !== state.screen) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("screen", partial.screen);
+      url.searchParams.set("layout", "all");
+      url.searchParams.set("page", "0");
+      window.location.href = url.toString();
+      return;
+    }
     state = mergeState(state, partial, data);
     sync();
   };
@@ -300,6 +357,7 @@ export function initEmulator(data) {
       fixtureControl.value = state.fixture;
     }
     if (localeControl) localeControl.value = state.locale;
+    if (screenControl) screenControl.value = state.screen;
     if (layoutControl) {
       layoutControl.replaceChildren();
       (fixture?.layouts ?? []).forEach((layout) => layoutControl.add(new Option(t(layout.labelKey, state.locale), layout.id)));
@@ -313,11 +371,12 @@ export function initEmulator(data) {
       if (control) control.value = state[key];
     });
     document.documentElement.lang = state.locale;
-    document.getElementById("title").textContent = t(fixture?.titleKey, state.locale);
+    document.getElementById("title").textContent = t(state.screen === "currency_stash" ? (data.titleKey || "screen.forgeuiinspector.currencyTitle") : "screen.forgeuiinspector.title", state.locale);
     const stateNode = document.getElementById("state");
-    stateNode.textContent = t(`screen.forgeuiinspector.state.${state.state}`, state.locale);
+    stateNode.textContent = t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)]);
     stateNode.className = `state-${state.state}`;
     document.getElementById("selected-layout").textContent = `${clipLabel(t(selectedLayout.labelKey, state.locale), 108)} (${itemCount})`;
+    document.getElementById("layout-list").setAttribute("aria-label", state.screen === "currency_stash" ? t("screen.forgeuiinspector.currencyTitle", state.locale) : "Layout list");
 
     list.replaceChildren();
     (fixture?.layouts ?? []).forEach((layout) => {
@@ -344,6 +403,11 @@ export function initEmulator(data) {
       if (item) {
         const icon = iconGlyph(item.icon);
         slot.append(createElement("span", icon.className, icon.glyph), createElement("span", "count", String(item.count)));
+        const itemLabel = item.labelKey ? t(item.labelKey, state.locale) : (item.label || item.id || "");
+        if (itemLabel) {
+          slot.title = itemLabel;
+          slot.setAttribute("aria-label", itemLabel);
+        }
       }
       grid.append(slot);
     }
@@ -364,10 +428,15 @@ export function initEmulator(data) {
     wrap.style.width = `${320 * displayScaleValue}px`;
     wrap.style.height = `${230 * displayScaleValue}px`;
     preview.dataset.state = state.state;
+    preview.dataset.screen = state.screen;
     document.getElementById("canonical").textContent = canonical(state);
   }
 
   fixtureControl?.addEventListener("change", (event) => setState({ fixture: event.target.value, layout: "all", page: 0 }));
+  screenControl?.addEventListener("change", (event) => {
+    const target = event.target.value === "currency_stash" ? "currency_stash" : "map_stash";
+    const url = new URL(window.location.href); url.searchParams.set("screen", target); url.searchParams.set("layout", "all"); url.searchParams.set("page", "0"); window.location.href = url.toString();
+  });
   localeControl?.addEventListener("change", (event) => setState({ locale: event.target.value }));
   layoutControl?.addEventListener("change", (event) => setState({ layout: event.target.value }));
   pageControl?.addEventListener("change", (event) => setState({ page: event.target.value }));
@@ -401,12 +470,13 @@ export function initEmulator(data) {
 
 async function loadData() {
   if (typeof window === "undefined") return;
+  const requestedScreen = new URLSearchParams(window.location.search).get("screen") === "currency_stash" ? "currency_stash" : "map_stash";
   try {
-    const response = await fetch("fixtures/map-stash.json");
+    const response = await fetch(`fixtures/${requestedScreen === "currency_stash" ? "currency-stash" : "map-stash"}.json`);
     if (!response.ok) throw new Error(`fixture request failed: ${response.status}`);
     initEmulator(await response.json());
   } catch {
-    initEmulator(createFallbackData());
+    initEmulator(requestedScreen === "currency_stash" ? createCurrencyFallbackData() : createFallbackData());
   }
 }
 

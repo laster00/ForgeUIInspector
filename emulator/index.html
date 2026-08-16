@@ -12,6 +12,7 @@
     <section class="controls" aria-label="Emulator controls">
       <h1>Forge UI Inspector</h1>
       <label>Fixture <select id="fixture-control" data-testid="fixture-control"></select></label>
+      <label>Screen <select id="screen-control" data-testid="screen-control"><option value="map_stash">Map Stash</option><option value="currency_stash">Currency Stash</option></select></label>
       <label>Locale <select id="locale-control" data-testid="locale-control"><option value="ja">日本語</option><option value="en">English</option></select></label>
       <label>Layout <select id="layout-control" data-testid="layout-control"></select></label>
       <label>Page <input id="page-control" data-testid="page-control" type="number" min="0" step="1"></label>
@@ -33,7 +34,7 @@
         </header>
         <div class="mc-body">
           <aside id="layout-list" data-testid="layout-list" aria-label="Layout list"></aside>
-          <section class="stash" aria-label="Map stash">
+          <section class="stash" aria-label="Stash preview">
             <div id="selected-layout" class="selected-layout"></div>
             <div id="stash-grid" data-testid="stash-grid" class="stash-grid"></div>
             <div id="stash-page" data-testid="stash-page" class="page" hidden></div>

@@ -8,13 +8,16 @@ version = '0.1.0'
 group = 'jp.cte2.forgeuiinspector'
 base { archivesName = 'forgeuiinspector' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+def forgeUiRunDirectory = findProperty('forgeUiRunDir') ?: 'run'
+def forgeUiPreview = findProperty('forgeUiPreview')
 minecraft {
     mappings channel: 'official', version: '1.20.1'
     copyIdeResources = true
     runs {
         client {
-            workingDirectory project.file('run')
+            workingDirectory project.file(forgeUiRunDirectory)
             property 'forge.logging.console.level', 'debug'
+            if (forgeUiPreview) property 'forgeuiinspector.preview', forgeUiPreview
             mods { forgeuiinspector { source sourceSets.main } }
         }
     }
