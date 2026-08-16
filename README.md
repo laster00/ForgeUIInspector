@@ -44,3 +44,7 @@ window.forgeUIInspector.getCanonicalUrl()
 ```
 
 外部依存はなく、file://でFixtureを取得できない場合も内蔵フォールバックで4種類の状態を表示します。ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系フォントスタックで近似します。文字幅と最終的な可読性は、Minecraftの実フォントを使うF7/F8 Forgeプレビューで確認してください。NBT、通信、権限、実際の収納処理は再現しません。
+
+## CTE2 UIスタイル
+
+Map Stash、Currency Stash、Master Stash、Profession Workshop、Advanced Salvageは共通の暗色パレット、18pxスロット、Minecraftフォント、ピクセル幅クリップを使います。規約は [プロジェクトローカルスキル](.codex/skills/cte2-ui-style/SKILL.md) と [トークン・レイアウト仕様](.codex/skills/cte2-ui-style/references/ui-style-tokens.md) にまとめています。ブラウザ側の `UI_THEME` とMinecraft側の `Cte2UiTheme` を同時に更新し、`npm run test:all` で契約を確認してください。

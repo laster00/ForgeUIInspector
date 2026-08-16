@@ -1,14 +1,31 @@
 :root {
   --minecraft-font: "Minecraft", "Unifont", "GenEiMonoGothic", "MS Gothic", "Courier New", monospace;
+  --ui-background: #20242b;
+  --ui-backdrop: #20242b;
+  --ui-panel: #151e28;
+  --ui-panel-alt: #1d2936;
+  --ui-border: #38536a;
+  --ui-slot-outer: #8b8b8b;
+  --ui-slot-inner: #373737;
+  --ui-text: #e7edf3;
+  --ui-muted: #aac3d8;
+  --ui-selected: #f0b45b;
+  --ui-success: #78d39a;
+  --ui-error: #e27a7a;
+  --ui-info: #9fc4e1;
+  --ui-item-orb: #b88cff;
+  --ui-hover: rgba(76, 111, 141, .4);
+  --ui-row: rgba(56, 79, 98, .27);
+  --ui-control: #263a4a;
   font-family: var(--minecraft-font);
-  color: #e7edf3;
-  background: #20242b;
+  color: var(--ui-text);
+  background: var(--ui-background);
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
-body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
+body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-background); }
 
 .controls {
   display: flex;
@@ -19,21 +36,21 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   margin: 0 auto;
 }
 .controls h1 { width: 100%; margin: 0 0 4px; font-size: 18px; }
-.controls label { color: #aac3d8; font-size: 12px; white-space: nowrap; }
+.controls label { color: var(--ui-muted); font-size: 12px; white-space: nowrap; }
 .controls input, .controls select, .controls button {
   height: 28px;
   padding: 3px 6px;
-  border: 1px solid #38536a;
+  border: 1px solid var(--ui-border);
   border-radius: 2px;
-  background: #151e28;
-  color: #e7edf3;
+  background: var(--ui-panel);
+  color: var(--ui-text);
 }
 .controls button { cursor: pointer; }
 .controls output {
   min-width: 0;
   flex: 1 1 240px;
   overflow: hidden;
-  color: #78d39a;
+  color: var(--ui-success);
   font-size: 11px;
   white-space: nowrap;
   text-overflow: clip;
@@ -57,7 +74,7 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   transform: scale(var(--preview-scale, 2));
   transform-origin: top left;
   border: 0;
-  background: #202124;
+  background: var(--ui-backdrop);
   font-family: var(--minecraft-font);
   font-synthesis: none;
   font-kerning: none;
@@ -75,8 +92,9 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   width: 318px;
   height: 19px;
   padding: 3px 7px 0;
-  background: #383b40;
-  color: #ffffff;
+  background: var(--ui-panel);
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text);
   font-size: 9px;
   line-height: 12px;
   z-index: 3;
@@ -90,8 +108,8 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   height: 15px;
   padding-left: 4px;
   overflow: hidden;
-  background: #4b5260;
-  color: #ffffff;
+  background: var(--ui-panel-alt);
+  color: var(--ui-text);
   font-size: 8px;
   white-space: nowrap;
   text-overflow: clip;
@@ -110,9 +128,9 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   height: 190px;
   overflow-y: auto;
   scrollbar-width: thin;
-  border: 0;
   padding: 3px 2px 0;
-  background: #151619;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-panel);
   overscroll-behavior: contain;
   z-index: 1;
 }
@@ -123,38 +141,28 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   gap: 4px;
   width: 100%;
   height: 17px;
-  color: #e7edf3;
+  color: var(--ui-text);
   font-size: 9px;
   line-height: 17px;
   cursor: pointer;
   white-space: nowrap;
 }
-.layout-row:focus-visible { outline: 1px solid #f0b45b; outline-offset: -1px; }
-.layout-row.selected { background: #4b5260; color: #e7edf3; }
+.layout-row:focus-visible { outline: 1px solid var(--ui-selected); outline-offset: -1px; }
+.layout-row.selected { border-left: 2px solid var(--ui-selected); background: var(--ui-hover); color: var(--ui-text); }
 .layout-label { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: clip; }
-.layout-count { flex: 0 0 auto; color: #aac3d8; font-style: normal; }
+.layout-count { flex: 0 0 auto; color: var(--ui-muted); font-style: normal; }
 
 .stash {
   position: absolute;
   left: 125px;
-  top: 32px;
+  top: 24px;
   width: 162px;
   min-width: 0;
   overflow: visible;
   z-index: 1;
 }
 .selected-layout {
-  position: absolute;
-  left: 0;
-  top: -11px;
-  width: 96px;
-  height: 12px;
-  overflow: hidden;
-  color: #d9d9d9;
-  font-size: 10px;
-  line-height: 12px;
-  white-space: nowrap;
-  text-overflow: clip;
+  display: none;
 }
 .mc[data-screen="currency_stash"] .selected-layout { display: none; }
 .stash-grid {
@@ -168,8 +176,8 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   width: 18px;
   height: 18px;
   border: 0;
-  background: #8b8b8b;
-  color: #e7edf3;
+  background: var(--ui-slot-outer);
+  color: var(--ui-text);
   font-size: 10px;
   line-height: 14px;
   text-align: center;
@@ -184,20 +192,20 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: #20242b; }
   position: absolute;
   inset: 1px;
   content: "";
-  background: #373737;
+  background: var(--ui-slot-inner);
   z-index: 0;
 }
 .slot > * { position: relative; z-index: 1; }
-.slot .count { position: absolute; right: 1px; bottom: -1px; color: #fff; font-size: 9px; line-height: 10px; }
-.icon-map { color: #78d39a; }
-.icon-paper { color: #e7edf3; }
-.icon-unknown { color: #e27a7a; }
-.icon-orb { color: #b88cff; }
-.icon-coin { color: #f0c45b; }
-.page { position: absolute; left: 101px; top: -8px; width: 61px; height: 12px; color: #ffffff; font-size: 8px; line-height: 12px; text-align: left; }
+.slot .count { position: absolute; right: 1px; bottom: -1px; color: var(--ui-text); font-size: 9px; line-height: 10px; }
+.icon-map { color: var(--ui-success); }
+.icon-paper { color: var(--ui-text); }
+.icon-unknown { color: var(--ui-error); }
+.icon-orb { color: var(--ui-item-orb); }
+.icon-coin { color: var(--ui-selected); }
+.page { position: absolute; left: 101px; top: -8px; width: 61px; height: 12px; color: var(--ui-text); font-size: 8px; line-height: 12px; text-align: left; }
 
-.inventory { position: absolute; left: 125px; top: 123px; width: 162px; margin: 0; z-index: 2; }
-.inventory-title { display: block; width: 162px; height: 22px; overflow: hidden; color: #bdbdbd; font-size: 9px; line-height: 18px; white-space: nowrap; }
+.inventory { position: absolute; left: 125px; top: 136px; width: 162px; margin: 0; z-index: 2; }
+.inventory-title { display: block; width: 162px; height: 22px; overflow: hidden; color: var(--ui-muted); font-size: 9px; line-height: 18px; white-space: nowrap; }
 .inv-row { display: grid; grid-template-columns: repeat(9, 18px); gap: 0; height: 18px; margin-top: 0; }
 
 @media (max-width: 640px) {

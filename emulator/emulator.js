@@ -4,6 +4,18 @@ export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
 export const SCREEN_IDS = ["map_stash", "currency_stash"];
 export const CURRENCY_CATEGORY_IDS = ["all", "gear_orbs", "map_orbs", "gem_orbs", "seeds", "special_currency", "prophecy", "coins", "other"];
 export const MINECRAFT_FONT_STACK = '"Minecraft", "Unifont", "GenEiMonoGothic", "MS Gothic", "Courier New", monospace';
+export const UI_THEME = Object.freeze({
+  background: "#20242B",
+  panel: "#151E28",
+  border: "#38536A",
+  slotOuter: "#8B8B8B",
+  slotInner: "#373737",
+  text: "#E7EDF3",
+  muted: "#AAC3D8",
+  selected: "#F0B45B",
+  success: "#78D39A",
+  error: "#E27A7A",
+});
 
 const LAYOUT_IDS = Array.from({ length: 28 }, (_, index) => `layout_${String(index + 1).padStart(2, "0")}`);
 
@@ -373,7 +385,11 @@ export function initEmulator(data) {
     document.documentElement.lang = state.locale;
     document.getElementById("title").textContent = t(state.screen === "currency_stash" ? (data.titleKey || "screen.forgeuiinspector.currencyTitle") : "screen.forgeuiinspector.title", state.locale);
     const stateNode = document.getElementById("state");
-    stateNode.textContent = t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)]);
+    const selectedSummary = `${clipLabel(t(selectedLayout.labelKey, state.locale), 54)} (${itemCount})`;
+    const visualState = t(`screen.forgeuiinspector.state.${state.state}`, state.locale);
+    stateNode.textContent = `${selectedSummary} · ${visualState}`;
+    stateNode.title = t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)]);
+    stateNode.setAttribute("aria-label", stateNode.title);
     stateNode.className = `state-${state.state}`;
     document.getElementById("selected-layout").textContent = `${clipLabel(t(selectedLayout.labelKey, state.locale), 108)} (${itemCount})`;
     document.getElementById("layout-list").setAttribute("aria-label", state.screen === "currency_stash" ? t("screen.forgeuiinspector.currencyTitle", state.locale) : "Layout list");
