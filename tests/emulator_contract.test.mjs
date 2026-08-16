@@ -7,11 +7,14 @@ import {
   FIXTURE_IDS,
   I18N,
   MINECRAFT_FONT_STACK,
+  SCREEN_META,
   SCREEN_IDS,
   STATE_IDS,
   canonical,
   clipLabel,
   createCurrencyFallbackData,
+  createExtendedFallbackData,
+  createFallbackForScreen,
   createFallbackData,
   displayScale,
   iconGlyph,
@@ -64,6 +67,32 @@ test("currency fixture has the required schema, categories, and slots", () => {
   for (const candidate of currencyData.fixtures) {
     assert.deepEqual(candidate.layouts.map((layout) => layout.id), CURRENCY_CATEGORY_IDS);
     assert.ok(candidate.items.every((item) => Number.isInteger(item.slot) && item.slot >= 0 && item.slot < 54));
+  }
+});
+
+test("all five screen fixtures are available and keep deterministic four-state data", () => {
+  assert.deepEqual(SCREEN_IDS, ["map_stash", "currency_stash", "master_stash", "profession_workshop", "advanced_salvage"]);
+  for (const screen of SCREEN_IDS.slice(2)) {
+    const file = SCREEN_META[screen].fixtureFile;
+    const screenData = JSON.parse(fs.readFileSync(new URL(`../emulator/fixtures/${file}.json`, import.meta.url), "utf8"));
+    assert.equal(screenData.screen, screen);
+    assert.equal(screenData.pageSize, 54);
+    assert.deepEqual(screenData.fixtures.map((candidate) => candidate.id), FIXTURE_IDS);
+    assert.ok(screenData.fixtures.every((candidate) => Number.isInteger(candidate.itemCount) && candidate.itemCount >= 0));
+    assert.ok(screenData.fixtures.find((candidate) => candidate.id === "many").itemCount >= 55);
+  }
+});
+
+test("extended fixtures clamp pages and use their actual logical dimensions", () => {
+  for (const screen of SCREEN_IDS.slice(2)) {
+    const dataForScreen = createExtendedFallbackData(screen);
+    const state = normalize({ screen, fixture: "many", page: 99, width: 1, height: 1 }, dataForScreen);
+    assert.equal(state.screen, screen);
+    assert.equal(state.page, 1);
+    assert.equal(state.width, SCREEN_META[screen].width);
+    assert.equal(state.height, SCREEN_META[screen].height);
+    assert.equal(createFallbackForScreen(screen).screen, screen);
+    assert.equal(pageCount(itemsForLayout(dataForScreen.fixtures[2], "all")), 2);
   }
 });
 

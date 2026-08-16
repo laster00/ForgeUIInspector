@@ -16,10 +16,13 @@ test("Minecraft UI harness is isolated, deterministic, and captures a real windo
   assert.match(captureScript, /PreviewKey/);
 });
 
-test("harness documentation covers both GUI scales and both preview keys", () => {
+test("harness documentation covers both GUI scales and all preview keys", () => {
   assert.match(harnessReadme, /GuiScale 2/);
   assert.match(harnessReadme, /GuiScale 3/);
   assert.match(harnessReadme, /PreviewKey F8/);
+  assert.match(harnessReadme, /Master StashはF9/);
+  assert.match(harnessReadme, /Profession WorkshopはF10/);
+  assert.match(harnessReadme, /Advanced SalvageはF11/);
   assert.match(harnessReadme, /run-ui/);
 });
 
@@ -27,4 +30,12 @@ test("preview keys are usable from the title screen without a world", () => {
   assert.doesNotMatch(clientSource, /if \(mc\.level != null\)/);
   assert.match(clientSource, /new MapStashPreviewScreen\(mc\.screen\)/);
   assert.match(clientSource, /new CurrencyStashPreviewScreen\(mc\.screen\)/);
+  assert.match(clientSource, /new MasterStashPreviewScreen\(mc\.screen\)/);
+  assert.match(clientSource, /new ProfessionWorkshopPreviewScreen\(mc\.screen\)/);
+  assert.match(clientSource, /new AdvancedSalvagePreviewScreen\(mc\.screen\)/);
+});
+
+test("capture harness maps every development key to a server-free preview", () => {
+  for (const key of ["F7", "F8", "F9", "F10", "F11"]) assert.match(captureScript, new RegExp(`'${key}'`));
+  assert.match(captureScript, /advanced_salvage/);
 });

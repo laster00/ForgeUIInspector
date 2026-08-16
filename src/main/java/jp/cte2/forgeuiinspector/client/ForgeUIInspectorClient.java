@@ -15,14 +15,23 @@ import org.lwjgl.glfw.GLFW;
 public final class ForgeUIInspectorClient {
     private static KeyMapping openKey;
     private static KeyMapping currencyKey;
+    private static KeyMapping masterKey;
+    private static KeyMapping professionKey;
+    private static KeyMapping salvageKey;
     private static boolean autoPreviewOpened;
     private ForgeUIInspectorClient() { }
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         openKey = new KeyMapping("key.forgeuiinspector.open", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, "key.categories.misc");
         currencyKey = new KeyMapping("key.forgeuiinspector.currency", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F7, "key.categories.misc");
+        masterKey = new KeyMapping("key.forgeuiinspector.master", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F9, "key.categories.misc");
+        professionKey = new KeyMapping("key.forgeuiinspector.profession", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F10, "key.categories.misc");
+        salvageKey = new KeyMapping("key.forgeuiinspector.salvage", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F11, "key.categories.misc");
         event.register(openKey);
         event.register(currencyKey);
+        event.register(masterKey);
+        event.register(professionKey);
+        event.register(salvageKey);
     }
     @Mod.EventBusSubscriber(modid = "forgeuiinspector", value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static final class ClientEvents {
@@ -45,6 +54,21 @@ public final class ForgeUIInspectorClient {
                     mc.setScreen(new CurrencyStashPreviewScreen(mc.screen));
                     return;
                 }
+                if ("master".equals(requested)) {
+                    autoPreviewOpened = true;
+                    mc.setScreen(new MasterStashPreviewScreen(mc.screen));
+                    return;
+                }
+                if ("profession".equals(requested)) {
+                    autoPreviewOpened = true;
+                    mc.setScreen(new ProfessionWorkshopPreviewScreen(mc.screen));
+                    return;
+                }
+                if ("advanced_salvage".equals(requested) || "salvage".equals(requested)) {
+                    autoPreviewOpened = true;
+                    mc.setScreen(new AdvancedSalvagePreviewScreen(mc.screen));
+                    return;
+                }
             }
 
             if (openKey != null && openKey.consumeClick()) {
@@ -52,6 +76,15 @@ public final class ForgeUIInspectorClient {
             }
             if (currencyKey != null && currencyKey.consumeClick()) {
                 mc.setScreen(new CurrencyStashPreviewScreen(mc.screen));
+            }
+            if (masterKey != null && masterKey.consumeClick()) {
+                mc.setScreen(new MasterStashPreviewScreen(mc.screen));
+            }
+            if (professionKey != null && professionKey.consumeClick()) {
+                mc.setScreen(new ProfessionWorkshopPreviewScreen(mc.screen));
+            }
+            if (salvageKey != null && salvageKey.consumeClick()) {
+                mc.setScreen(new AdvancedSalvagePreviewScreen(mc.screen));
             }
         }
     }

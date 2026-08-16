@@ -12,7 +12,7 @@
     <section class="controls" aria-label="Emulator controls">
       <h1>Forge UI Inspector</h1>
       <label>Fixture <select id="fixture-control" data-testid="fixture-control"></select></label>
-      <label>Screen <select id="screen-control" data-testid="screen-control"><option value="map_stash">Map Stash</option><option value="currency_stash">Currency Stash</option></select></label>
+      <label>Screen <select id="screen-control" data-testid="screen-control"><option value="map_stash">Map Stash</option><option value="currency_stash">Currency Stash</option><option value="master_stash">Master Stash</option><option value="profession_workshop">Profession Workshop</option><option value="advanced_salvage">Advanced Salvage</option></select></label>
       <label>Locale <select id="locale-control" data-testid="locale-control"><option value="ja">日本語</option><option value="en">English</option></select></label>
       <label>Layout <select id="layout-control" data-testid="layout-control"></select></label>
       <label>Page <input id="page-control" data-testid="page-control" type="number" min="0" step="1"></label>
@@ -42,6 +42,9 @@
         </div>
         <section id="player-inventory" data-testid="player-inventory" class="inventory"></section>
       </div>
+      <div id="master-stash-preview" data-testid="master-stash-preview" class="mc extended-preview" hidden></div>
+      <div id="profession-workshop-preview" data-testid="profession-workshop-preview" class="mc extended-preview" hidden></div>
+      <div id="advanced-salvage-preview" data-testid="advanced-salvage-preview" class="mc extended-preview" hidden></div>
     </section>
   </main>
   <script type="module" src="emulator.js"></script>

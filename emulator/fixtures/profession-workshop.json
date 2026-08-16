@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "screen": "profession_workshop",
+  "pageSize": 54,
+  "fixtures": [
+    { "id": "normal", "titleKey": "screen.forgeuiinspector.normal", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.profession.tab.crafting", "count": 5 }], "itemCount": 5, "items": [] },
+    { "id": "empty", "titleKey": "screen.forgeuiinspector.empty", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.profession.tab.crafting", "count": 0 }], "itemCount": 0, "items": [] },
+    { "id": "many", "titleKey": "screen.forgeuiinspector.many", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.profession.tab.crafting", "count": 108 }], "itemCount": 108, "items": [] },
+    { "id": "other", "titleKey": "screen.forgeuiinspector.otherFixture", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.profession.tab.smelting", "count": 1 }], "itemCount": 1, "items": [] }
+  ]
+}

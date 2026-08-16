@@ -1,7 +1,14 @@
 export const PAGE_SIZE = 54;
 export const FIXTURE_IDS = ["normal", "empty", "many", "other"];
 export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
-export const SCREEN_IDS = ["map_stash", "currency_stash"];
+export const SCREEN_IDS = ["map_stash", "currency_stash", "master_stash", "profession_workshop", "advanced_salvage"];
+export const SCREEN_META = Object.freeze({
+  map_stash: { width: 320, height: 230, titleKey: "screen.forgeuiinspector.title", fixtureFile: "map-stash" },
+  currency_stash: { width: 320, height: 230, titleKey: "screen.forgeuiinspector.currencyTitle", fixtureFile: "currency-stash" },
+  master_stash: { width: 650, height: 350, titleKey: "screen.forgeuiinspector.master.title", fixtureFile: "master-stash" },
+  profession_workshop: { width: 620, height: 340, titleKey: "screen.forgeuiinspector.profession.title", fixtureFile: "profession-workshop" },
+  advanced_salvage: { width: 960, height: 540, titleKey: "screen.forgeuiinspector.salvage.title", fixtureFile: "advanced-salvage" },
+});
 export const CURRENCY_CATEGORY_IDS = ["all", "gear_orbs", "map_orbs", "gem_orbs", "seeds", "special_currency", "prophecy", "coins", "other"];
 export const MINECRAFT_FONT_STACK = '"Minecraft", "Unifont", "GenEiMonoGothic", "MS Gothic", "Courier New", monospace';
 export const UI_THEME = Object.freeze({
@@ -74,6 +81,13 @@ export const I18N = {
     "screen.forgeuiinspector.state.full": "満杯",
     "screen.forgeuiinspector.state.stale": "古い状態",
     "screen.forgeuiinspector.state.unsupported": "未対応",
+    "screen.forgeuiinspector.master.title": "マスタースタッシュ プレビュー",
+    "screen.forgeuiinspector.profession.title": "職業ワークショップ プレビュー",
+    "screen.forgeuiinspector.salvage.title": "高度サルベージ プレビュー",
+    "screen.forgeuiinspector.master.search": "スタッシュを検索", "screen.forgeuiinspector.master.tab.all": "すべて", "screen.forgeuiinspector.master.tab.maps": "マップ", "screen.forgeuiinspector.master.tab.special": "特殊",
+    "screen.forgeuiinspector.master.detail": "選択アイテム", "screen.forgeuiinspector.master.selected": "マップ報酬の詳細とアフィックス", "screen.forgeuiinspector.master.status": "保管領域接続済み（フィクスチャ）", "screen.forgeuiinspector.master.page": "ページ 1 / 2", "screen.forgeuiinspector.master.readonly": "読み取り専用プレビュー", "screen.forgeuiinspector.master.action": "選択アイテムを移動",
+    "screen.forgeuiinspector.profession.tab.crafting": "クラフト", "screen.forgeuiinspector.profession.tab.gathering": "採集", "screen.forgeuiinspector.profession.tab.smelting": "精錬", "screen.forgeuiinspector.profession.search": "レシピを検索", "screen.forgeuiinspector.profession.filter": "絞り込み", "screen.forgeuiinspector.profession.recipe": "レシピ {0}", "screen.forgeuiinspector.profession.detail": "レシピ詳細", "screen.forgeuiinspector.profession.output": "完成品", "screen.forgeuiinspector.profession.materials": "素材", "screen.forgeuiinspector.profession.craft": "クラフト（プレビュー）", "screen.forgeuiinspector.profession.readonly": "読み取り専用フィクスチャプレビュー", "screen.forgeuiinspector.profession.status": "準備完了・サーバーデータ未接続",
+    "screen.forgeuiinspector.salvage.workflow": "ワークフロー：プレビュー", "screen.forgeuiinspector.salvage.fixture": "ローカルフィクスチャ", "screen.forgeuiinspector.salvage.catalog": "プリセット一覧", "screen.forgeuiinspector.salvage.preset": "プリセット {0}", "screen.forgeuiinspector.salvage.keep": "KEEP", "screen.forgeuiinspector.salvage.salvage": "SALVAGE", "screen.forgeuiinspector.salvage.selected": "選択中プリセット", "screen.forgeuiinspector.salvage.selectedName": "マップ安全優先ルール", "screen.forgeuiinspector.salvage.ruleSummary": "保護4件・ルール7件", "screen.forgeuiinspector.salvage.held": "手持ちアイテムプレビュー", "screen.forgeuiinspector.salvage.history": "履歴・診断", "screen.forgeuiinspector.salvage.historyEntry": "診断エントリ {0}", "screen.forgeuiinspector.salvage.readonly": "読み取り専用・ネットワーク／保管領域なし", "screen.forgeuiinspector.salvage.status": "決定的で安全に確認できるフィクスチャ",
   },
   en: {
     "screen.forgeuiinspector.normal": "Normal state",
@@ -129,6 +143,13 @@ export const I18N = {
     "screen.forgeuiinspector.state.full": "Full",
     "screen.forgeuiinspector.state.stale": "Stale",
     "screen.forgeuiinspector.state.unsupported": "Unsupported",
+    "screen.forgeuiinspector.master.title": "Master Stash Preview",
+    "screen.forgeuiinspector.profession.title": "Profession Workshop Preview",
+    "screen.forgeuiinspector.salvage.title": "Advanced Salvage Preview",
+    "screen.forgeuiinspector.master.search": "Search stash", "screen.forgeuiinspector.master.tab.all": "All Items", "screen.forgeuiinspector.master.tab.maps": "Maps", "screen.forgeuiinspector.master.tab.special": "Special",
+    "screen.forgeuiinspector.master.detail": "Selected item", "screen.forgeuiinspector.master.selected": "Map reward details and affixes", "screen.forgeuiinspector.master.status": "Storage connected (fixture)", "screen.forgeuiinspector.master.page": "Page 1 / 2", "screen.forgeuiinspector.master.readonly": "Read-only preview", "screen.forgeuiinspector.master.action": "Move selected item",
+    "screen.forgeuiinspector.profession.tab.crafting": "Crafting", "screen.forgeuiinspector.profession.tab.gathering": "Gathering", "screen.forgeuiinspector.profession.tab.smelting": "Smelting", "screen.forgeuiinspector.profession.search": "Search recipes", "screen.forgeuiinspector.profession.filter": "Filters", "screen.forgeuiinspector.profession.recipe": "Recipe {0}", "screen.forgeuiinspector.profession.detail": "Recipe details", "screen.forgeuiinspector.profession.output": "Output", "screen.forgeuiinspector.profession.materials": "Materials", "screen.forgeuiinspector.profession.craft": "Craft (preview)", "screen.forgeuiinspector.profession.readonly": "Read-only fixture preview", "screen.forgeuiinspector.profession.status": "Ready · server data not connected",
+    "screen.forgeuiinspector.salvage.workflow": "Workflow: Preview", "screen.forgeuiinspector.salvage.fixture": "Local fixture", "screen.forgeuiinspector.salvage.catalog": "Preset catalog", "screen.forgeuiinspector.salvage.preset": "Preset {0}", "screen.forgeuiinspector.salvage.keep": "KEEP", "screen.forgeuiinspector.salvage.salvage": "SALVAGE", "screen.forgeuiinspector.salvage.selected": "Selected preset", "screen.forgeuiinspector.salvage.selectedName": "Map-safe salvage rules", "screen.forgeuiinspector.salvage.ruleSummary": "4 protections · 7 rules", "screen.forgeuiinspector.salvage.held": "Held item preview", "screen.forgeuiinspector.salvage.history": "History / diagnostics", "screen.forgeuiinspector.salvage.historyEntry": "Diagnostic entry {0}", "screen.forgeuiinspector.salvage.readonly": "Read-only preview · no network or storage access", "screen.forgeuiinspector.salvage.status": "Fixture is deterministic and safe to inspect",
   },
 };
 
@@ -173,6 +194,33 @@ export function createCurrencyFallbackData() {
   ] };
 }
 
+export function createExtendedFallbackData(screen = "master_stash") {
+  const meta = SCREEN_META[screen] ?? SCREEN_META.master_stash;
+  const labels = screen === "profession_workshop"
+    ? [{ id: "all", labelKey: "screen.forgeuiinspector.profession.tab.crafting", count: 0 }]
+    : [{ id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 }];
+  const makeFixture = (id, count) => ({
+    id,
+    titleKey: `screen.forgeuiinspector.${id}`,
+    layouts: labels.map((layout) => ({ ...layout, count })),
+    itemCount: count,
+    items: [],
+  });
+  return {
+    version: 1,
+    screen,
+    pageSize: PAGE_SIZE,
+    titleKey: meta.titleKey,
+    fixtures: [makeFixture("normal", 18), makeFixture("empty", 0), makeFixture("many", 108), makeFixture("other", 6)],
+  };
+}
+
+export function createFallbackForScreen(screen = "map_stash") {
+  if (screen === "currency_stash") return createCurrencyFallbackData();
+  if (SCREEN_META[screen] && !["map_stash", "currency_stash"].includes(screen)) return createExtendedFallbackData(screen);
+  return createFallbackData();
+}
+
 export function t(key, locale = "ja", args = []) {
   const template = I18N[locale]?.[key] ?? I18N.ja[key] ?? key;
   return String(template).replace(/\{(\d+)\}/g, (_, index) => args[Number(index)] ?? "");
@@ -192,7 +240,17 @@ function layoutById(fixture, layoutId) {
 }
 
 export function itemsForLayout(fixture, layoutId = "all") {
-  const all = Array.isArray(fixture?.items) ? fixture.items : [];
+  let all = Array.isArray(fixture?.items) ? fixture.items : [];
+  if (all.length === 0 && Number(fixture?.itemCount) > 0) {
+    all = Array.from({ length: Math.max(0, Number(fixture.itemCount)) }, (_, index) => ({
+      slot: index % PAGE_SIZE,
+      page: Math.floor(index / PAGE_SIZE),
+      icon: index % 3 === 0 ? "orb" : index % 3 === 1 ? "map" : "paper",
+      count: (index % 32) + 1,
+      layout: layoutId === "other" ? "other" : "all",
+      label: `Fixture item ${index + 1}`,
+    }));
+  }
   if (layoutId === "all") return all;
   const explicit = all.filter((item) => item?.layout === layoutId || item?.category === layoutId);
   if (explicit.length > 0 || all.some((item) => Object.prototype.hasOwnProperty.call(item, "layout"))) return explicit;
@@ -221,7 +279,8 @@ export function layoutScrollMax(fixture, visibleRows = 6) {
 }
 
 export function normalize(input = {}, data = createFallbackData()) {
-  const screen = SCREEN_IDS.includes(input.screen) ? input.screen : (data.screen === "currency_stash" ? "currency_stash" : "map_stash");
+  const screen = SCREEN_IDS.includes(input.screen) ? input.screen : (SCREEN_IDS.includes(data.screen) ? data.screen : "map_stash");
+  const meta = SCREEN_META[screen] ?? SCREEN_META.map_stash;
   const fixtureId = FIXTURE_IDS.includes(input.fixture) ? input.fixture : "normal";
   const locale = ["ja", "en"].includes(input.locale) ? input.locale : "ja";
   const fixture = data.fixtures?.find((candidate) => candidate.id === fixtureId) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
@@ -236,8 +295,8 @@ export function normalize(input = {}, data = createFallbackData()) {
     layout,
     page: clamp(finiteInteger(input.page, 0), 0, pageMax),
     scroll: clamp(finiteInteger(input.scroll, 0), 0, layoutScrollMax(fixture)),
-    width: Math.max(320, finiteInteger(input.width, 960)),
-    height: Math.max(230, finiteInteger(input.height, 540)),
+    width: Math.max(meta.width, finiteInteger(input.width, 960)),
+    height: Math.max(meta.height, finiteInteger(input.height, 540)),
     scale: Math.max(0.5, Number.isFinite(scaleNumber) ? scaleNumber : 2),
     state: STATE_IDS.includes(input.state) ? input.state : "normal",
   };
@@ -292,12 +351,13 @@ export function clipLabel(label, maxPx = 100, measure = measureTextPx) {
 }
 
 export function displayScale(state, viewportWidth = Number.POSITIVE_INFINITY, viewportHeight = Number.POSITIVE_INFINITY) {
+  const meta = SCREEN_META[state.screen] ?? SCREEN_META.map_stash;
   return Math.max(0.25, Math.min(
     Number(state.scale) || 2,
-    Number(state.width) / 320,
-    Number(state.height) / 230,
-    Number(viewportWidth) / 320,
-    Number(viewportHeight) / 230,
+    Number(state.width) / meta.width,
+    Number(state.height) / meta.height,
+    Number(viewportWidth) / meta.width,
+    Number(viewportHeight) / meta.height,
   ));
 }
 
@@ -315,6 +375,83 @@ function createElement(tag, className, text) {
   if (className) element.className = className;
   if (text !== undefined) element.textContent = text;
   return element;
+}
+
+function screenItemIcon(item, index = 0) {
+  const icon = iconGlyph(item?.icon || (index % 2 ? "paper" : "map"));
+  const node = createElement("span", icon.className, icon.glyph);
+  if (item?.count !== undefined) node.append(createElement("span", "count", String(item.count)));
+  return node;
+}
+
+function renderExtendedPreview(container, state, fixture, data) {
+  const meta = SCREEN_META[state.screen] ?? SCREEN_META.master_stash;
+  container.hidden = false;
+  container.className = `mc extended-preview mc-${state.screen}`;
+  container.style.width = `${meta.width}px`;
+  container.style.height = `${meta.height}px`;
+  container.replaceChildren();
+  const header = createElement("header");
+  header.append(createElement("strong", "extended-title", t(meta.titleKey, state.locale)), createElement("span", "extended-fixture", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
+  container.append(header);
+  const body = createElement("div", "extended-body");
+  const items = itemsForLayout(fixture, state.layout);
+  const pageItems = items.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
+  const pageLabel = pageCount(items) > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pageCount(items)]) : "";
+  if (state.screen === "master_stash") {
+    body.append(createElement("div", "extended-search", t("screen.forgeuiinspector.master.search", state.locale)));
+    const tabs = createElement("div", "extended-tabs");
+    ["all", "maps", "special"].forEach((id) => tabs.append(createElement("span", `extended-tab${id === "all" ? " selected" : ""}`, t(`screen.forgeuiinspector.master.tab.${id}`, state.locale))));
+    body.append(tabs);
+    const pages = createElement("div", "master-pages", "");
+    [0, 1].forEach((page) => {
+      const panel = createElement("section", "extended-panel master-page-panel");
+      panel.dataset.testid = `master-stash-page-${page}`;
+      const grid = createElement("div", "large-grid");
+      for (let i = 0; i < 81; i += 1) { const slot = createElement("div", "slot"); const item = page === 0 ? items[i] : items[i + 81]; if (item) slot.append(screenItemIcon(item, i)); grid.append(slot); }
+      panel.append(grid, createElement("small", "panel-caption", page === 0 ? "1" : "2"));
+      pages.append(panel);
+    });
+    body.append(pages);
+    const detail = createElement("section", "extended-panel master-detail");
+    detail.dataset.testid = "master-stash-detail";
+    ["detail", "selected", "status", "page", "readonly"].forEach((key) => {
+      const value = key === "page" ? (pageLabel || t("screen.forgeuiinspector.master.page", state.locale)) : t(`screen.forgeuiinspector.master.${key}`, state.locale);
+      detail.append(createElement("p", key === "status" ? "success" : "", value));
+    });
+    body.append(detail);
+    const inventory = createElement("section", "extended-inventory");
+    inventory.dataset.testid = "master-stash-inventory";
+    inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", state.locale)));
+    const inv = createElement("div", "large-grid inventory-grid"); for (let i = 0; i < 36; i += 1) inv.append(createElement("div", "slot")); inventory.append(inv);
+    body.append(inventory);
+  } else if (state.screen === "profession_workshop") {
+    const tabs = createElement("div", "extended-tabs profession-tabs");
+    ["crafting", "gathering", "smelting"].forEach((id, index) => tabs.append(createElement("span", `extended-tab${index === 0 ? " selected" : ""}`, t(`screen.forgeuiinspector.profession.tab.${id}`, state.locale))));
+    body.append(tabs, createElement("div", "extended-search profession-search", t("screen.forgeuiinspector.profession.search", state.locale)), createElement("div", "extended-filter", t("screen.forgeuiinspector.profession.filter", state.locale)));
+    const list = createElement("section", "extended-panel recipe-list"); list.dataset.testid = "profession-workshop-list";
+    const recipeCount = fixture?.itemCount === 0 ? 0 : state.fixture === "many" ? 9 : state.fixture === "other" ? 1 : 5;
+    for (let i = 0; i < 9; i += 1) { const row = createElement("div", `recipe-row${i === 0 ? " selected" : ""}`); if (i < recipeCount) { row.append(screenItemIcon({ icon: i % 2 ? "orb" : "paper", count: 1 }, i), createElement("span", "recipe-label", clipLabel(t("screen.forgeuiinspector.profession.recipe", state.locale, [i + 1]), 160)), createElement("em", "recipe-count", String(12 + i))); } list.append(row); }
+    body.append(list);
+    const detail = createElement("section", "extended-panel recipe-detail"); detail.dataset.testid = "profession-workshop-detail";
+    ["detail", "output", "materials", "craft", "readonly", "status"].forEach((key) => detail.append(createElement("p", key === "status" ? "success" : "", t(`screen.forgeuiinspector.profession.${key}`, state.locale))));
+    body.append(detail);
+  } else {
+    body.append(createElement("div", "salvage-workflow", t("screen.forgeuiinspector.salvage.workflow", state.locale)));
+    const catalog = createElement("section", "extended-panel salvage-catalog"); catalog.dataset.testid = "advanced-salvage-catalog"; catalog.append(createElement("h3", "", t("screen.forgeuiinspector.salvage.catalog", state.locale)));
+    const presetCount = state.fixture === "empty" ? 0 : state.fixture === "many" ? 11 : state.fixture === "other" ? 2 : 4;
+    for (let i = 0; i < 11; i += 1) { const row = createElement("div", `preset-row${i === 0 ? " selected" : ""}`); if (i < presetCount) row.textContent = `${t("screen.forgeuiinspector.salvage.preset", state.locale, [i + 1])} · ${i % 2 ? t("screen.forgeuiinspector.salvage.salvage", state.locale) : t("screen.forgeuiinspector.salvage.keep", state.locale)}`; catalog.append(row); }
+    const detail = createElement("section", "extended-panel salvage-detail"); detail.dataset.testid = "advanced-salvage-detail";
+    ["selected", "selectedName", "ruleSummary", "held", "history"].forEach((key) => detail.append(createElement("p", "", t(`screen.forgeuiinspector.salvage.${key}`, state.locale))));
+    const grid = createElement("div", "large-grid salvage-items"); pageItems.slice(0, 18).forEach((item, index) => { const slot = createElement("div", "slot"); slot.append(screenItemIcon(item, index)); grid.append(slot); }); detail.append(grid); for (let i = 0; i < 4; i += 1) detail.append(createElement("small", "history-row", t("screen.forgeuiinspector.salvage.historyEntry", state.locale, [i + 1])));
+    body.append(catalog, detail);
+    body.append(createElement("div", "salvage-footer", `${t("screen.forgeuiinspector.salvage.readonly", state.locale)} · ${t("screen.forgeuiinspector.salvage.status", state.locale)}`));
+  }
+  container.append(body);
+  container.dataset.state = state.state;
+  container.dataset.screen = state.screen;
+  container.dataset.fixture = state.fixture;
+  return pageLabel;
 }
 
 export function initEmulator(data) {
@@ -370,7 +507,11 @@ export function initEmulator(data) {
       fixtureControl.value = state.fixture;
     }
     if (localeControl) localeControl.value = state.locale;
-    if (screenControl) screenControl.value = state.screen;
+    if (screenControl) {
+      screenControl.replaceChildren();
+      SCREEN_IDS.forEach((screenId) => screenControl.add(new Option(t(SCREEN_META[screenId].titleKey, state.locale), screenId)));
+      screenControl.value = state.screen;
+    }
     if (layoutControl) {
       layoutControl.replaceChildren();
       (fixture?.layouts ?? []).forEach((layout) => layoutControl.add(new Option(t(layout.labelKey, state.locale), layout.id)));
@@ -383,6 +524,23 @@ export function initEmulator(data) {
       const control = document.getElementById(`${key}-control`);
       if (control) control.value = state[key];
     });
+    const expanded = !["map_stash", "currency_stash"].includes(state.screen);
+    const extendedContainers = ["master-stash-preview", "profession-workshop-preview", "advanced-salvage-preview"].map((id) => document.getElementById(id)).filter(Boolean);
+    extendedContainers.forEach((container) => { container.hidden = true; });
+    if (expanded) {
+      preview.hidden = true;
+      const expandedContainer = document.getElementById(`${state.screen.replaceAll("_", "-")}-preview`);
+      renderExtendedPreview(expandedContainer, state, fixture, data);
+      const meta = SCREEN_META[state.screen] ?? SCREEN_META.master_stash;
+      const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32));
+      const wrap = document.querySelector(".preview-wrap");
+      wrap.style.setProperty("--preview-scale", String(displayScaleValue));
+      wrap.style.width = `${meta.width * displayScaleValue}px`;
+      wrap.style.height = `${meta.height * displayScaleValue}px`;
+      document.getElementById("canonical").textContent = canonical(state);
+      return;
+    }
+    preview.hidden = false;
     document.documentElement.lang = state.locale;
     document.getElementById("title").textContent = t(state.screen === "currency_stash" ? (data.titleKey || "screen.forgeuiinspector.currencyTitle") : "screen.forgeuiinspector.title", state.locale);
     const stateNode = document.getElementById("state");
@@ -442,8 +600,9 @@ export function initEmulator(data) {
     const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32));
     const wrap = document.querySelector(".preview-wrap");
     wrap.style.setProperty("--preview-scale", String(displayScaleValue));
-    wrap.style.width = `${320 * displayScaleValue}px`;
-    wrap.style.height = `${230 * displayScaleValue}px`;
+    const compactMeta = SCREEN_META[state.screen] ?? SCREEN_META.map_stash;
+    wrap.style.width = `${compactMeta.width * displayScaleValue}px`;
+    wrap.style.height = `${compactMeta.height * displayScaleValue}px`;
     preview.dataset.state = state.state;
     preview.dataset.screen = state.screen;
     document.getElementById("canonical").textContent = canonical(state);
@@ -451,7 +610,7 @@ export function initEmulator(data) {
 
   fixtureControl?.addEventListener("change", (event) => setState({ fixture: event.target.value, layout: "all", page: 0 }));
   screenControl?.addEventListener("change", (event) => {
-    const target = event.target.value === "currency_stash" ? "currency_stash" : "map_stash";
+    const target = SCREEN_IDS.includes(event.target.value) ? event.target.value : "map_stash";
     const url = new URL(window.location.href); url.searchParams.set("screen", target); url.searchParams.set("layout", "all"); url.searchParams.set("page", "0"); window.location.href = url.toString();
   });
   localeControl?.addEventListener("change", (event) => setState({ locale: event.target.value }));
@@ -487,13 +646,14 @@ export function initEmulator(data) {
 
 async function loadData() {
   if (typeof window === "undefined") return;
-  const requestedScreen = new URLSearchParams(window.location.search).get("screen") === "currency_stash" ? "currency_stash" : "map_stash";
+  const requestedScreen = SCREEN_IDS.includes(new URLSearchParams(window.location.search).get("screen")) ? new URLSearchParams(window.location.search).get("screen") : "map_stash";
+  const fixtureFile = SCREEN_META[requestedScreen]?.fixtureFile ?? "map-stash";
   try {
-    const response = await fetch(`fixtures/${requestedScreen === "currency_stash" ? "currency-stash" : "map-stash"}.json`);
+    const response = await fetch(`fixtures/${fixtureFile}.json`);
     if (!response.ok) throw new Error(`fixture request failed: ${response.status}`);
     initEmulator(await response.json());
   } catch {
-    initEmulator(requestedScreen === "currency_stash" ? createCurrencyFallbackData() : createFallbackData());
+    initEmulator(createFallbackForScreen(requestedScreen));
   }
 }
 

@@ -2,7 +2,7 @@
 param(
     [ValidateSet(2, 3)]
     [int]$GuiScale = 2,
-    [ValidateSet('F7', 'F8')]
+    [ValidateSet('F7', 'F8', 'F9', 'F10', 'F11')]
     [string]$PreviewKey = 'F7',
     [int]$Width = 0,
     [int]$Height = 0,
@@ -183,7 +183,13 @@ try {
     # Both the repository and the isolated run directory have no spaces. Keeping
     # the wrapper path unquoted avoids cmd.exe treating the nested --args quotes
     # as the end of the /c command.
-    $previewId = if ($PreviewKey -eq 'F7') { 'currency' } else { 'map' }
+    $previewId = switch ($PreviewKey) {
+        'F7' { 'currency' }
+        'F8' { 'map' }
+        'F9' { 'master' }
+        'F10' { 'profession' }
+        'F11' { 'advanced_salvage' }
+    }
     $gradleCommand = "$wrapper -PforgeUiRunDir=run-ui -PforgeUiPreview=$previewId runClient --args=`"$minecraftArgs`""
     $gradleProcess = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/d', '/c', $gradleCommand) -WorkingDirectory $repoRoot -PassThru -WindowStyle Normal -RedirectStandardOutput $gradleLog -RedirectStandardError $gradleErrorLog
 
