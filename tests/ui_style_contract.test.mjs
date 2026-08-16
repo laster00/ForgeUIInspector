@@ -12,6 +12,8 @@ const modsToml = fs.readFileSync(new URL("../../cte2-ja-patch/addon/cte2-talent-
 const advancedEn = fs.readFileSync(new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/src/main/resources/assets/cte2_advanced_salvage/lang/en_us.json", import.meta.url), "utf8");
 const advancedJa = fs.readFileSync(new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/src/main/resources/assets/cte2_advanced_salvage/lang/ja_jp.json", import.meta.url), "utf8");
 const mapJa = fs.readFileSync(new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/src/main/resources/assets/cte2_map_stash/lang/ja_jp.json", import.meta.url), "utf8");
+const masterEn = fs.readFileSync(new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/src/main/resources/assets/cte2_master_stash/lang/en_us.json", import.meta.url), "utf8");
+const masterJa = fs.readFileSync(new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/src/main/resources/assets/cte2_master_stash/lang/ja_jp.json", import.meta.url), "utf8");
 
 test("browser and Java theme expose the same core palette", () => {
   const cssTokens = {
@@ -73,6 +75,8 @@ test("extension catalog names keep compatibility IDs while normalizing labels", 
   assert.match(advancedEn, /"screen\.cte2_advanced_salvage\.title":"Advanced Salvage"/);
   assert.match(advancedJa, /"screen\.cte2_advanced_salvage\.title":"高度サルベージ"/);
   assert.match(mapJa, /"cte2_map_stash\.layout\.other":"不明／その他"/);
+  assert.match(masterEn, /"container\.cte2_master_stash\.master_stash": "Master Stash"/);
+  assert.match(masterJa, /"container\.cte2_master_stash\.master_stash": "マスタースタッシュ"/);
 });
 
 test("all five Forge screens consume the shared theme", () => {
