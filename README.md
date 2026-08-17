@@ -1,43 +1,79 @@
 # Forge UI Inspector
 
-Forge 1.20.1 / Java 17 向けの開発専用クライアント MOD です。実ゲームの `GuiGraphics`、Minecraft のフォント、バニラ ItemStack 描画を使って、登録したプロジェクトの画面レイアウトを確認できます。CTE2の5画面は同梱される既定プロジェクトです。
+Forge UI Inspectorは、Minecraftを起動せずにForge/Minecraft UIのレイアウトを確認するための開発ツールです。ブラウザエミュレータを日常の調整に使い、最後にForgeの実プレビューでMinecraftフォント・`GuiGraphics`・ItemStack描画を確認します。
 
-## 操作
+CTE2の画面は同梱プロジェクトの一例です。Fixtureと画面定義をプロジェクト単位で追加できるため、別のMinecraft MODやMODPACKのUIにも利用できます。
 
-- **F8**: Map Stashプレビューを開く
-- **F7**: Currency Stashプレビューを開く（固定のバニラItemStackによるUIプロトタイプ）
-- **F9**: Master Stashプレビューを開く
-- **F10**: Profession Workshopプレビューを開く
-- **F11**: Advanced Salvageプレビューを開く
-- 右上の Project / Fixture ボタンをクリック: プロジェクトとフィクスチャを切り替える
-- 左側リストをクリック: レイアウトを選択し、中央見出しと件数を確認する
-- **左右矢印**: フィクスチャを切り替える
-- 左側でホイール: レイアウト一覧をスクロール
-- 中央でホイール: 54個を超えるフィクスチャのページ切り替え
-- **Esc**: 元の画面へ戻る
+## まずブラウザで確認する
 
-## 開発
+依存パッケージを追加せず、次のどちらかで起動できます。
 
-Java 17 を `JAVA_HOME` に設定後、`./gradlew test` と `./gradlew build` を実行してください。ForgeGradle が Forge 1.20.1-47.4.22 を取得します。
+1. `emulator/index.html`をブラウザで直接開く（`file://`）。
+2. リポジトリのルートで次を実行し、`http://127.0.0.1:8765/`を開く。
 
-この実装は **プレビュー専用で、実際の MapStash 連携・保存・ネットワーク処理はまだありません**。MapStash本体とは独立した固定フィクスチャを使う、実機の実描画確認に使う開発MODです。サーバー側のゲームプレイ動作や CTE2 クラスには依存しません。
+```text
+python -m http.server 8765 --directory emulator
+```
 
-タイトル画面でもF7〜F11を受け付けるため、ワールドを作成せずに実フォントと `GuiGraphics` の確認ができます。固定設定で画像を取りたい場合は `tools/minecraft-ui/capture.ps1` を使ってください。GUIスケール2（960×540）と3（1280×720）の起動、起動プロパティによるプレビュー表示、ウィンドウキャプチャ、終了までを自動化し、通常の `run` とは分離した `run-ui` を使います。詳しくは [tools/minecraft-ui/README.md](tools/minecraft-ui/README.md) を参照してください。
+HTTPサーバーではプロジェクト一覧と各プロジェクトのFixtureを読み込みます。`file://`ではFetch制限により既定のCTE2 Fixtureへフォールバックします。カスタムプロジェクトを確認するときはHTTPサーバーを使ってください。
 
-## ブラウザUIエミュレータ
+## プロジェクトとFixture
 
-Minecraftを起動せず、登録したプロジェクトのレイアウト・長い文字・空状態・ページングを確認できます。CTE2の拡張画面はサーバーやMine and Slashの保存領域へ接続しない読み取り専用Fixtureです。
+プロジェクト一覧、画面定義、Fixtureを分離して管理します。
 
-次のどちらかで開けます。
+```text
+emulator/
+  projects/
+    index.json
+    <project-id>/
+      project.json
+      fixtures/<screen-id>.json
+  fixtures/                    # 既定CTE2の互換パス
+```
 
-1. `emulator/index.html` をブラウザで直接開く（`file://`）。
-2. `python -m http.server 8765 --directory emulator` を実行し、`http://127.0.0.1:8765/` を開く。
+- `emulator/projects/index.json`: プロジェクトの登録と表示順
+- `project.json`: 画面ID、表示名キー、renderer、論理サイズ、Fixture相対パス
+- `<screen-id>.json`: `normal`、`empty`、`many`、`other`の決定的な表示データ
 
-URL例: `index.html?project=cte2&screen=advanced_salvage&fixture=many&locale=ja&layout=all&page=1&scroll=0&width=960&height=540&scale=2&state=normal`
+同梱のCTE2定義は [emulator/projects/cte2/project.json](emulator/projects/cte2/project.json) です。スキーマの詳細は [Fixture system仕様](docs/forge-ui-fixture-system.md) と [Fixture schemaリファレンス](.codex/skills/forge-ui-fixture-generator/references/fixture-schema.md) を参照してください。
 
-再現可能なURLパラメータは `project`（省略時は `cte2`）、`screen`（プロジェクトごとの画面ID）、`fixture`（`normal|empty|many|other`）、`locale`（`ja|en`）、`layout`、`page`、`scroll`、`width`、`height`、`scale`、`state`（`normal|loading|full|stale|unsupported`）です。不正値や範囲外の値は安全な既定値へ正規化されます。既存の `?screen=map_stash` URLはそのまま動きます。
+### 新しいプロジェクトを作る
 
-開発者コンソールでは次のAPIを使えます。
+同梱の `$forge-ui-fixture-generator` Skill、または次の標準ライブラリのみの生成スクリプトを使います。
+
+```text
+python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py init --project-id demo --project-label-key project.demo.name --screen-id inventory --screen-label-key screen.demo.inventory --renderer generic --width 360 --height 240 --output emulator/projects/demo
+python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py validate emulator/projects/demo
+```
+
+生成後、`emulator/projects/index.json`へ登録してください。Fixtureの上書きが必要な場合だけ`--force`を指定します。生成値には乱数・現在時刻・ネットワーク・バイナリ資産を使用しません。
+
+### renderer
+
+`compact-stash`、`master-stash`、`profession-workshop`、`advanced-salvage`は既定CTE2プレビューを使用します。未知のrendererは、タイトル・Fixture名・54スロット・読み取り専用状態を表示する汎用rendererへ安全にフォールバックします。
+
+## 再現可能なURLとAPI
+
+URLに状態をすべて含められます。
+
+```text
+index.html?project=cte2&screen=advanced_salvage&fixture=many&locale=ja&layout=all&page=1&scroll=0&width=960&height=540&scale=2&state=normal
+```
+
+主なパラメータ:
+
+- `project`: プロジェクトID（省略時は`cte2`）
+- `screen`: プロジェクト内の画面ID
+- `fixture`: `normal` / `empty` / `many` / `other`
+- `locale`: `ja` / `en`
+- `layout`: 選択中のレイアウトまたはカテゴリ
+- `page`、`scroll`: ページ番号と左一覧スクロール位置
+- `width`、`height`、`scale`: 論理画面サイズとGUIスケール
+- `state`: `normal` / `loading` / `full` / `stale` / `unsupported`
+
+不正値や範囲外の値は安全な既定値へ正規化されます。既存の`?screen=map_stash`形式はCTE2プロジェクトとしてそのまま利用できます。
+
+ブラウザの開発者コンソールでは次のAPIを使えます。
 
 ```js
 window.forgeUIInspector.getState()
@@ -46,12 +82,41 @@ window.forgeUIInspector.reset()
 window.forgeUIInspector.getCanonicalUrl()
 ```
 
-外部依存はなく、file://でFixtureを取得できない場合も内蔵フォールバックで4種類の状態を表示します。ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系フォントスタックで近似します。文字幅と最終的な可読性は、Minecraftの実フォントを使うF7〜F11 Forgeプレビューで確認してください。NBT、通信、権限、実際の収納処理は再現しません。
+非CTE2プロジェクトの`getState()`には`project`が含まれます。画面やプロジェクトを切り替えると、対応するmanifestとFixtureを再読込します。
 
-### プロジェクト単位のFixture
+## Forge実プレビュー
 
-プロジェクト一覧は `emulator/projects/index.json`、画面定義は `emulator/projects/<project-id>/project.json`、Fixtureは各プロジェクトの `fixtures/` に置きます。新しいプロジェクトは同梱Skill `$forge-ui-fixture-generator` と `scripts/generate_fixture.py` で生成・検証できます。詳しいスキーマと登録手順は [Fixture system仕様](docs/forge-ui-fixture-system.md) を参照してください。未知のrendererは安全な汎用プレビューへフォールバックします。
+Forge 1.20.1 / Java 17向けの開発専用クライアントMODです。タイトル画面でも次のキーを受け付けるため、ワールドを作成せず実フォントと実描画を確認できます。
+
+- **F7**: Currency Stash
+- **F8**: Map Stash
+- **F9**: Master Stash
+- **F10**: Profession Workshop
+- **F11**: Advanced Salvage
+- **Esc**: プレビューを閉じる
+
+右上のFixture切り替え、左右キー、レイアウト選択、ホイールによる一覧スクロールとページ切り替えに対応しています。固定キャプチャは [tools/minecraft-ui/README.md](tools/minecraft-ui/README.md) の`run-ui` / `capture.ps1`を使います。GUIスケール2（960×540）と3（1280×720）を確認できます。
+
+ForgeプレビューはUI確認専用です。Map StashやMine and Slashの保存領域、NBT、通信、権限、実際の収納処理には接続しません。
+
+## 開発とテスト
+
+Java 17を`JAVA_HOME`に設定して実行します。
+
+```text
+./gradlew test
+./gradlew build
+```
+
+ブラウザとFixtureの契約テスト:
+
+```text
+npm run test:all
+python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py validate emulator/projects/cte2
+```
+
+ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系のフォントスタックで近似します。文字幅と最終的な可読性はForge実プレビューで確認してください。
 
 ## CTE2 UIスタイル
 
-Map Stash、Currency Stash、Master Stash、Profession Workshop、Advanced Salvageは共通の暗色パレット、18pxスロット、Minecraftフォント、ピクセル幅クリップを使います。表示名と互換性IDの対応は [CTE2拡張カタログ](docs/cte2-extension-catalog.md) を正とし、UI規約は [プロジェクトローカルスキル](.codex/skills/cte2-ui-style/SKILL.md) と [トークン・レイアウト仕様](.codex/skills/cte2-ui-style/references/ui-style-tokens.md) にまとめています。ブラウザ側の `UI_THEME` とMinecraft側の `Cte2UiTheme` を同時に更新し、`npm run test:all` で契約を確認してください。
+CTE2の各画面は暗色パレット、18pxスロット、Minecraftフォント、ピクセル幅クリップを共有します。画面名と互換性IDは [CTE2拡張カタログ](docs/cte2-extension-catalog.md)、UI規約は [プロジェクトローカルスキル](.codex/skills/cte2-ui-style/SKILL.md) と [トークン・レイアウト仕様](.codex/skills/cte2-ui-style/references/ui-style-tokens.md) を正とします。
