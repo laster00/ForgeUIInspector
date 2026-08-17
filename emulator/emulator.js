@@ -22,6 +22,7 @@ export const FIXTURE_IDS = ["normal", "empty", "many", "other"];
 export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
 export const SCREEN_IDS = Object.freeze(screenIdsFor(DEFAULT_CTE2_PROJECT));
 export const SCREEN_META = Object.freeze(Object.fromEntries(SCREEN_IDS.map((screenId) => [screenId, screenMetaFor(DEFAULT_CTE2_PROJECT, screenId)])));
+export const MASTER_VARIANT_IDS = Object.freeze(["current", "classic", "dual", "rail", "overview", "clean_dual", "rail_dual", "single_focus"]);
 export const CURRENCY_CATEGORY_IDS = ["all", "gear_orbs", "map_orbs", "gem_orbs", "seeds", "special_currency", "prophecy", "coins", "other"];
 export const MINECRAFT_FONT_STACK = '"Minecraft", "Unifont", "GenEiMonoGothic", "MS Gothic", "Courier New", monospace';
 export const UI_THEME = Object.freeze({
@@ -104,6 +105,10 @@ export const I18N = {
     "screen.forgeuiinspector.salvage.title": "高度サルベージ プレビュー",
     "screen.forgeuiinspector.master.search": "スタッシュを検索", "screen.forgeuiinspector.master.tab.all": "すべて", "screen.forgeuiinspector.master.tab.maps": "マップ", "screen.forgeuiinspector.master.tab.special": "特殊",
     "screen.forgeuiinspector.master.detail": "選択アイテム", "screen.forgeuiinspector.master.selected": "マップ報酬の詳細とアフィックス", "screen.forgeuiinspector.master.status": "保管領域接続済み（フィクスチャ）", "screen.forgeuiinspector.master.page": "ページ 1 / 2", "screen.forgeuiinspector.master.readonly": "読み取り専用プレビュー", "screen.forgeuiinspector.master.action": "選択アイテムを移動",
+    "screen.forgeuiinspector.master.variant.current": "現行UI", "screen.forgeuiinspector.master.variant.classic": "標準チェスト型", "screen.forgeuiinspector.master.variant.dual": "2ページ同時型", "screen.forgeuiinspector.master.variant.rail": "カテゴリナビ型", "screen.forgeuiinspector.master.variant.overview": "概要カード型", "screen.forgeuiinspector.master.variant.clean_dual": "2ページ＋下部情報", "screen.forgeuiinspector.master.variant.rail_dual": "レール＋2ページ", "screen.forgeuiinspector.master.variant.single_focus": "単ページ集中型",
+    "screen.forgeuiinspector.master.category.gear": "ギア", "screen.forgeuiinspector.master.category.maps": "マップ", "screen.forgeuiinspector.master.category.currency": "通貨", "screen.forgeuiinspector.master.category.gems": "ジェム", "screen.forgeuiinspector.master.category.profession": "職業",
+    "screen.forgeuiinspector.master.deposit": "収納", "screen.forgeuiinspector.master.organize": "整理", "screen.forgeuiinspector.master.sort": "並べ替え", "screen.forgeuiinspector.master.previous": "前", "screen.forgeuiinspector.master.next": "次", "screen.forgeuiinspector.master.refresh": "更新",
+    "screen.forgeuiinspector.master.summary.categories": "5カテゴリ", "screen.forgeuiinspector.master.summary.items": "保管済み {0} 件", "screen.forgeuiinspector.master.summary.select": "カテゴリを選択", "screen.forgeuiinspector.master.summary.currency": "通貨は合計表示", "screen.forgeuiinspector.master.summary.readonly": "読み取り専用フィクスチャ",
     "screen.forgeuiinspector.profession.tab.crafting": "クラフト", "screen.forgeuiinspector.profession.tab.gathering": "採集", "screen.forgeuiinspector.profession.tab.smelting": "精錬", "screen.forgeuiinspector.profession.search": "レシピを検索", "screen.forgeuiinspector.profession.filter": "絞り込み", "screen.forgeuiinspector.profession.recipe": "レシピ {0}", "screen.forgeuiinspector.profession.detail": "レシピ詳細", "screen.forgeuiinspector.profession.output": "完成品", "screen.forgeuiinspector.profession.materials": "素材", "screen.forgeuiinspector.profession.craft": "クラフト（プレビュー）", "screen.forgeuiinspector.profession.readonly": "読み取り専用フィクスチャプレビュー", "screen.forgeuiinspector.profession.status": "準備完了・サーバーデータ未接続",
     "screen.forgeuiinspector.salvage.workflow": "ワークフロー：プレビュー", "screen.forgeuiinspector.salvage.fixture": "ローカルフィクスチャ", "screen.forgeuiinspector.salvage.catalog": "プリセット一覧", "screen.forgeuiinspector.salvage.preset": "プリセット {0}", "screen.forgeuiinspector.salvage.keep": "KEEP", "screen.forgeuiinspector.salvage.salvage": "SALVAGE", "screen.forgeuiinspector.salvage.selected": "選択中プリセット", "screen.forgeuiinspector.salvage.selectedName": "マップ安全優先ルール", "screen.forgeuiinspector.salvage.ruleSummary": "保護4件・ルール7件", "screen.forgeuiinspector.salvage.held": "手持ちアイテムプレビュー", "screen.forgeuiinspector.salvage.history": "履歴・診断", "screen.forgeuiinspector.salvage.historyEntry": "診断エントリ {0}", "screen.forgeuiinspector.salvage.readonly": "読み取り専用・ネットワーク／保管領域なし", "screen.forgeuiinspector.salvage.status": "決定的で安全に確認できるフィクスチャ",
   },
@@ -171,6 +176,10 @@ export const I18N = {
     "screen.forgeuiinspector.salvage.title": "Advanced Salvage Preview",
     "screen.forgeuiinspector.master.search": "Search stash", "screen.forgeuiinspector.master.tab.all": "All Items", "screen.forgeuiinspector.master.tab.maps": "Maps", "screen.forgeuiinspector.master.tab.special": "Special",
     "screen.forgeuiinspector.master.detail": "Selected item", "screen.forgeuiinspector.master.selected": "Map reward details and affixes", "screen.forgeuiinspector.master.status": "Storage connected (fixture)", "screen.forgeuiinspector.master.page": "Page 1 / 2", "screen.forgeuiinspector.master.readonly": "Read-only preview", "screen.forgeuiinspector.master.action": "Move selected item",
+    "screen.forgeuiinspector.master.variant.current": "Current UI", "screen.forgeuiinspector.master.variant.classic": "Classic chest", "screen.forgeuiinspector.master.variant.dual": "Dual page", "screen.forgeuiinspector.master.variant.rail": "Category rail", "screen.forgeuiinspector.master.variant.overview": "Overview cards", "screen.forgeuiinspector.master.variant.clean_dual": "Dual + footer", "screen.forgeuiinspector.master.variant.rail_dual": "Rail + dual page", "screen.forgeuiinspector.master.variant.single_focus": "Single page focus",
+    "screen.forgeuiinspector.master.category.gear": "Gear", "screen.forgeuiinspector.master.category.maps": "Maps", "screen.forgeuiinspector.master.category.currency": "Currency", "screen.forgeuiinspector.master.category.gems": "Gems", "screen.forgeuiinspector.master.category.profession": "Profession",
+    "screen.forgeuiinspector.master.deposit": "Deposit", "screen.forgeuiinspector.master.organize": "Organize", "screen.forgeuiinspector.master.sort": "Sort", "screen.forgeuiinspector.master.previous": "Prev", "screen.forgeuiinspector.master.next": "Next", "screen.forgeuiinspector.master.refresh": "Refresh",
+    "screen.forgeuiinspector.master.summary.categories": "5 categories", "screen.forgeuiinspector.master.summary.items": "{0} stored", "screen.forgeuiinspector.master.summary.select": "Select a category", "screen.forgeuiinspector.master.summary.currency": "Currency is aggregated", "screen.forgeuiinspector.master.summary.readonly": "Read-only fixture",
     "screen.forgeuiinspector.profession.tab.crafting": "Crafting", "screen.forgeuiinspector.profession.tab.gathering": "Gathering", "screen.forgeuiinspector.profession.tab.smelting": "Smelting", "screen.forgeuiinspector.profession.search": "Search recipes", "screen.forgeuiinspector.profession.filter": "Filters", "screen.forgeuiinspector.profession.recipe": "Recipe {0}", "screen.forgeuiinspector.profession.detail": "Recipe details", "screen.forgeuiinspector.profession.output": "Output", "screen.forgeuiinspector.profession.materials": "Materials", "screen.forgeuiinspector.profession.craft": "Craft (preview)", "screen.forgeuiinspector.profession.readonly": "Read-only fixture preview", "screen.forgeuiinspector.profession.status": "Ready · server data not connected",
     "screen.forgeuiinspector.salvage.workflow": "Workflow: Preview", "screen.forgeuiinspector.salvage.fixture": "Local fixture", "screen.forgeuiinspector.salvage.catalog": "Preset catalog", "screen.forgeuiinspector.salvage.preset": "Preset {0}", "screen.forgeuiinspector.salvage.keep": "KEEP", "screen.forgeuiinspector.salvage.salvage": "SALVAGE", "screen.forgeuiinspector.salvage.selected": "Selected preset", "screen.forgeuiinspector.salvage.selectedName": "Map-safe salvage rules", "screen.forgeuiinspector.salvage.ruleSummary": "4 protections · 7 rules", "screen.forgeuiinspector.salvage.held": "Held item preview", "screen.forgeuiinspector.salvage.history": "History / diagnostics", "screen.forgeuiinspector.salvage.historyEntry": "Diagnostic entry {0}", "screen.forgeuiinspector.salvage.readonly": "Read-only preview · no network or storage access", "screen.forgeuiinspector.salvage.status": "Fixture is deterministic and safe to inspect",
   },
@@ -359,6 +368,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
     scale: Math.max(0.5, Number.isFinite(scaleNumber) ? scaleNumber : 2),
     state: STATE_IDS.includes(input.state) ? input.state : "normal",
   };
+  if (screen === "master_stash") next.variant = MASTER_VARIANT_IDS.includes(input.variant) ? input.variant : "rail_dual";
   if (project?.id && project.id !== DEFAULT_PROJECT_ID) next.project = project.id;
   return next;
 }
@@ -377,6 +387,7 @@ export function canonical(state, base = "index.html") {
   const query = new URLSearchParams();
   if (state.project && state.project !== DEFAULT_PROJECT_ID) query.set("project", state.project);
   keys.forEach((key) => query.set(key, state[key]));
+  if (state.screen === "master_stash") query.set("variant", state.variant ?? "rail_dual");
   return `${base}?${query.toString()}`;
 }
 
@@ -446,6 +457,174 @@ function screenItemIcon(item, index = 0) {
   return node;
 }
 
+const MASTER_CATEGORIES = Object.freeze([
+  { id: "gear", key: "screen.forgeuiinspector.master.category.gear" },
+  { id: "maps", key: "screen.forgeuiinspector.master.category.maps" },
+  { id: "currency", key: "screen.forgeuiinspector.master.category.currency" },
+  { id: "gems", key: "screen.forgeuiinspector.master.category.gems" },
+  { id: "profession", key: "screen.forgeuiinspector.master.category.profession" },
+]);
+
+function masterCategoryCount(total, index) {
+  if (!total) return 0;
+  const shares = [0.42, 0.2, 0.18, 0.1, 0.1];
+  if (index === shares.length - 1) return Math.max(0, total - shares.slice(0, -1).reduce((sum, share) => sum + Math.floor(total * share), 0));
+  return Math.floor(total * shares[index]);
+}
+
+function masterCategoryTabs(locale, total, selected = 0, className = "master-variant-tabs") {
+  const tabs = createElement("div", className);
+  MASTER_CATEGORIES.forEach((category, index) => {
+    const tab = createElement("div", `master-category-tab${index === selected ? " selected" : ""}`);
+    tab.dataset.testid = `master-category-${category.id}`;
+    tab.append(createElement("span", "master-category-label", t(category.key, locale)), createElement("em", "master-category-count", String(masterCategoryCount(total, index))));
+    tabs.append(tab);
+  });
+  return tabs;
+}
+
+function masterCategoryRail(locale, total, selected = 0) {
+  const rail = createElement("nav", "master-category-rail");
+  rail.dataset.testid = "master-category-rail";
+  MASTER_CATEGORIES.forEach((category, index) => {
+    const row = createElement("div", `master-category-rail-row${index === selected ? " selected" : ""}`);
+    row.dataset.testid = `master-rail-${category.id}`;
+    row.append(createElement("span", "master-category-label", t(category.key, locale)), createElement("em", "master-category-count", String(masterCategoryCount(total, index))));
+    rail.append(row);
+  });
+  return rail;
+}
+
+function masterGrid(items, offset, testPrefix) {
+  const grid = createElement("div", "large-grid master-variant-grid");
+  for (let index = 0; index < 81; index += 1) {
+    const slot = createElement("div", "slot");
+    slot.dataset.testid = `${testPrefix}-slot-${index}`;
+    const item = items[offset + index];
+    if (item) slot.append(screenItemIcon(item, offset + index));
+    grid.append(slot);
+  }
+  return grid;
+}
+
+function masterPagePanel(items, offset, testPrefix, caption) {
+  const panel = createElement("section", "extended-panel master-variant-page-panel");
+  panel.dataset.testid = `${testPrefix}-panel`;
+  panel.append(masterGrid(items, offset, testPrefix), createElement("small", "panel-caption", caption));
+  return panel;
+}
+
+function masterInventory(locale) {
+  const inventory = createElement("section", "extended-inventory master-variant-inventory");
+  inventory.dataset.testid = "master-variant-inventory";
+  inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", locale)));
+  const grid = createElement("div", "large-grid inventory-grid master-inventory-grid");
+  for (let index = 0; index < 36; index += 1) grid.append(createElement("div", "slot"));
+  inventory.append(grid);
+  return inventory;
+}
+
+function masterActions(locale) {
+  const actions = createElement("div", "master-action-strip");
+  ["deposit", "organize", "sort", "previous", "next", "refresh"].forEach((key) => actions.append(createElement("span", "master-action", t(`screen.forgeuiinspector.master.${key}`, locale))));
+  return actions;
+}
+
+function masterFooter(locale, total, pageText) {
+  const footer = createElement("footer", "master-detail-less-footer");
+  const line = createElement("div", "master-footer-line");
+  line.append(createElement("span", "success", t("screen.forgeuiinspector.master.summary.items", locale, [total])), createElement("span", "", pageText || t("screen.forgeuiinspector.master.readonly", locale)));
+  footer.append(line, masterActions(locale));
+  return footer;
+}
+
+function masterInfoFooter(locale, total, pageText) {
+  const footer = createElement("footer", "master-detail-less-footer");
+  const line = createElement("div", "master-footer-line");
+  line.append(createElement("span", "success", t("screen.forgeuiinspector.master.summary.items", locale, [total])), createElement("span", "", pageText || t("screen.forgeuiinspector.master.readonly", locale)));
+  footer.append(line);
+  return footer;
+}
+
+function masterPageText(locale, items, page) {
+  const pages = pageCount(items, 81);
+  return pages > 1 ? t("screen.forgeuiinspector.page", locale, [clamp(page + 1, 1, pages), pages]) : "";
+}
+
+function renderMasterVariant(body, state, fixture) {
+  const variant = state.variant ?? "rail_dual";
+  const root = createElement("div", `master-variant-root master-variant-${variant}`);
+  root.dataset.testid = `master-variant-${variant}`;
+  const items = itemsForLayout(fixture, "all");
+  const total = items.length;
+  const locale = state.locale;
+  const pageText = masterPageText(locale, items, state.page);
+
+  if (variant === "classic") {
+    root.append(masterCategoryTabs(locale, total));
+    const panel = masterPagePanel(items, state.page * 81, "master-classic", pageText);
+    panel.classList.add("master-classic-grid-panel");
+    root.append(panel);
+    const status = createElement("section", "extended-panel master-variant-status master-classic-status");
+    status.append(createElement("strong", "", t("screen.forgeuiinspector.master.status", locale)), createElement("p", "", t("screen.forgeuiinspector.master.summary.items", locale, [total])), createElement("p", "", pageText || t("screen.forgeuiinspector.master.readonly", locale)));
+    root.append(status, masterInventory(locale), masterActions(locale));
+  } else if (variant === "dual") {
+    root.append(masterCategoryTabs(locale, total));
+    const leftPanel = masterPagePanel(items, 0, "master-dual-left", "1");
+    const rightPanel = masterPagePanel(items, 81, "master-dual-right", "2");
+    leftPanel.classList.add("master-dual-left-panel");
+    rightPanel.classList.add("master-dual-right-panel");
+    root.append(leftPanel, rightPanel);
+    const status = createElement("section", "master-variant-status master-dual-status");
+    status.append(createElement("strong", "", t("screen.forgeuiinspector.master.status", locale)), createElement("span", "", t("screen.forgeuiinspector.master.summary.items", locale, [total])), createElement("span", "", pageText || t("screen.forgeuiinspector.master.readonly", locale)));
+    root.append(status, masterInventory(locale), masterActions(locale));
+  } else if (variant === "rail") {
+    root.append(masterCategoryRail(locale, total));
+    const panel = masterPagePanel(items, state.page * 81, "master-rail-grid", pageText);
+    panel.classList.add("master-rail-grid-panel");
+    root.append(panel);
+    const status = createElement("section", "extended-panel master-variant-status master-rail-status");
+    status.append(createElement("strong", "", t("screen.forgeuiinspector.master.summary.select", locale)), createElement("p", "", t("screen.forgeuiinspector.master.status", locale)), createElement("p", "", pageText || t("screen.forgeuiinspector.master.readonly", locale)));
+    root.append(status, masterInventory(locale), masterActions(locale));
+  } else if (variant === "clean_dual") {
+    root.append(masterCategoryTabs(locale, total));
+    const leftPanel = masterPagePanel(items, 0, "master-clean-dual-left", "1");
+    const rightPanel = masterPagePanel(items, 81, "master-clean-dual-right", "2");
+    leftPanel.classList.add("master-clean-dual-left-panel");
+    rightPanel.classList.add("master-clean-dual-right-panel");
+    root.append(leftPanel, rightPanel, masterInventory(locale), masterFooter(locale, total, pageText));
+  } else if (variant === "rail_dual") {
+    root.append(masterCategoryRail(locale, total));
+    const leftPanel = masterPagePanel(items, 0, "master-rail-dual-left", "1");
+    const rightPanel = masterPagePanel(items, 81, "master-rail-dual-right", "2");
+    leftPanel.classList.add("master-rail-dual-left-panel");
+    rightPanel.classList.add("master-rail-dual-right-panel");
+    root.append(leftPanel, rightPanel, masterInventory(locale), masterInfoFooter(locale, total, pageText));
+  } else if (variant === "single_focus") {
+    root.append(masterCategoryTabs(locale, total));
+    const panel = masterPagePanel(items, state.page * 81, "master-single-focus", pageText);
+    panel.classList.add("master-single-focus-panel");
+    root.append(panel, masterInventory(locale), masterFooter(locale, total, pageText));
+  } else if (variant === "overview") {
+    const heading = createElement("div", "master-overview-heading");
+    heading.append(createElement("strong", "", t("screen.forgeuiinspector.master.summary.categories", locale)), createElement("span", "", t("screen.forgeuiinspector.master.summary.items", locale, [total])));
+    root.append(heading);
+    const cards = createElement("div", "master-overview-cards");
+    MASTER_CATEGORIES.forEach((category, index) => {
+      const card = createElement("section", `master-overview-card${index === 0 ? " selected" : ""}`);
+      card.dataset.testid = `master-overview-${category.id}`;
+      card.append(createElement("strong", "", t(category.key, locale)), createElement("span", "", `${masterCategoryCount(total, index)}`));
+      if (category.id === "currency") card.append(createElement("small", "", t("screen.forgeuiinspector.master.summary.currency", locale)));
+      cards.append(card);
+    });
+    root.append(cards, masterInventory(locale));
+    const status = createElement("section", "master-overview-status");
+    status.append(createElement("p", "", t("screen.forgeuiinspector.master.summary.select", locale)), createElement("p", "", t("screen.forgeuiinspector.master.summary.readonly", locale)), masterActions(locale));
+    root.append(status);
+  }
+  body.append(root);
+}
+
 function renderExtendedPreview(container, state, fixture, data, project = DEFAULT_CTE2_PROJECT) {
   if (!container) return "";
   const meta = screenMetaFor(project, state.screen);
@@ -462,6 +641,9 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
   const pageItems = items.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
   const pageLabel = pageCount(items) > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pageCount(items)]) : "";
   if (meta.renderer === "master-stash") {
+    if (state.variant && state.variant !== "current") {
+      renderMasterVariant(body, state, fixture);
+    } else {
     body.append(createElement("div", "extended-search", t("screen.forgeuiinspector.master.search", state.locale)));
     const tabs = createElement("div", "extended-tabs");
     ["all", "maps", "special"].forEach((id) => tabs.append(createElement("span", `extended-tab${id === "all" ? " selected" : ""}`, t(`screen.forgeuiinspector.master.tab.${id}`, state.locale))));
@@ -488,6 +670,7 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", state.locale)));
     const inv = createElement("div", "large-grid inventory-grid"); for (let i = 0; i < 36; i += 1) inv.append(createElement("div", "slot")); inventory.append(inv);
     body.append(inventory);
+    }
   } else if (meta.renderer === "profession-workshop") {
     const tabs = createElement("div", "extended-tabs profession-tabs");
     ["crafting", "gathering", "smelting"].forEach((id, index) => tabs.append(createElement("span", `extended-tab${index === 0 ? " selected" : ""}`, t(`screen.forgeuiinspector.profession.tab.${id}`, state.locale))));
@@ -538,6 +721,8 @@ export function initEmulator(data, options = {}) {
   const fixtureControl = document.getElementById("fixture-control");
   const projectControl = document.getElementById("project-control");
   const screenControl = document.getElementById("screen-control");
+  const masterVariantControl = document.getElementById("master-variant-control");
+  const masterVariantControlWrap = document.getElementById("master-variant-control-wrap");
   const localeControl = document.getElementById("locale-control");
   const layoutControl = document.getElementById("layout-control");
   const pageControl = document.getElementById("page-control");
@@ -611,6 +796,12 @@ export function initEmulator(data, options = {}) {
         screenControl.add(new Option(t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale), screenId));
       });
       screenControl.value = state.screen;
+    }
+    if (masterVariantControl) {
+      masterVariantControl.replaceChildren();
+      MASTER_VARIANT_IDS.forEach((variant) => masterVariantControl.add(new Option(t(`screen.forgeuiinspector.master.variant.${variant}`, state.locale), variant)));
+      masterVariantControl.value = state.variant ?? "rail_dual";
+      masterVariantControlWrap?.toggleAttribute("hidden", state.screen !== "master_stash");
     }
     if (layoutControl) {
       layoutControl.replaceChildren();
@@ -728,6 +919,7 @@ export function initEmulator(data, options = {}) {
   pageControl?.addEventListener("change", (event) => setState({ page: event.target.value }));
   scrollControl?.addEventListener("change", (event) => setState({ scroll: event.target.value }));
   stateControl?.addEventListener("change", (event) => setState({ state: event.target.value }));
+  masterVariantControl?.addEventListener("change", (event) => setState({ variant: event.target.value }));
   ["width", "height", "scale"].forEach((key) => document.getElementById(`${key}-control`)?.addEventListener("change", (event) => setState({ [key]: event.target.value })));
   document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); sync(); });
   document.getElementById("copy")?.addEventListener("click", () => navigator.clipboard?.writeText(canonical(state)));

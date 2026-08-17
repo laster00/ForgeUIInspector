@@ -5,6 +5,7 @@ import fs from "node:fs";
 const captureScript = fs.readFileSync(new URL("../tools/minecraft-ui/capture.ps1", import.meta.url), "utf8");
 const harnessReadme = fs.readFileSync(new URL("../tools/minecraft-ui/README.md", import.meta.url), "utf8");
 const clientSource = fs.readFileSync(new URL("../src/main/java/jp/cte2/forgeuiinspector/client/ForgeUIInspectorClient.java", import.meta.url), "utf8");
+const masterPreviewSource = fs.readFileSync(new URL("../src/main/java/jp/cte2/forgeuiinspector/client/MasterStashPreviewScreen.java", import.meta.url), "utf8");
 
 test("Minecraft UI harness is isolated, deterministic, and captures a real window", () => {
   assert.match(captureScript, /run-ui/);
@@ -38,4 +39,9 @@ test("preview keys are usable from the title screen without a world", () => {
 test("capture harness maps every development key to a server-free preview", () => {
   for (const key of ["F7", "F8", "F9", "F10", "F11"]) assert.match(captureScript, new RegExp(`'${key}'`));
   assert.match(captureScript, /advanced_salvage/);
+});
+
+test("Master Stash preview starts on Gear and has no all-items rail", () => {
+  assert.match(masterPreviewSource, /master\.category\.gear/);
+  assert.doesNotMatch(masterPreviewSource, /screen\.forgeuiinspector\.all/);
 });

@@ -6,4 +6,4 @@ modId="forgeuiinspector"
 version="${version}"
 displayName="Forge UI Inspector"
 authors="CTE2 QA"
-description='''Development-only Map Stash UI preview.'''
+description='''Development-only Forge UI preview.'''

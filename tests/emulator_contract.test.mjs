@@ -7,6 +7,7 @@ import {
   FIXTURE_IDS,
   I18N,
   MINECRAFT_FONT_STACK,
+  MASTER_VARIANT_IDS,
   SCREEN_META,
   SCREEN_IDS,
   STATE_IDS,
@@ -145,6 +146,19 @@ test("canonical URL contains every reproducibility parameter in a stable order",
   const url = canonical(normalize({ fixture: "many", locale: "en", layout: "all", page: 1, scroll: 2, width: 640, height: 360, scale: 2, state: "full" }, data));
   assert.equal(url, "index.html?screen=map_stash&fixture=many&locale=en&layout=all&page=1&scroll=2&width=640&height=360&scale=2&state=full");
   assert.ok(SCREEN_IDS.includes(normalize({ screen: "currency_stash" }, currencyData).screen));
+});
+
+test("master stash UI variants normalize and remain URL-reproducible", () => {
+  assert.deepEqual(MASTER_VARIANT_IDS, ["current", "classic", "dual", "rail", "overview", "clean_dual", "rail_dual", "single_focus"]);
+  const masterData = createExtendedFallbackData("master_stash");
+  assert.equal(normalize({ screen: "master_stash" }, masterData).variant, "rail_dual");
+  const rail = normalize({ screen: "master_stash", fixture: "many", variant: "rail" }, masterData);
+  assert.equal(rail.variant, "rail");
+  assert.equal(normalize({ screen: "master_stash", variant: "unknown" }, masterData).variant, "rail_dual");
+  assert.match(canonical(rail), /variant=rail$/);
+  for (const locale of ["ja", "en"]) {
+    for (const variant of MASTER_VARIANT_IDS) assert.notEqual(t(`screen.forgeuiinspector.master.variant.${variant}`, locale), `screen.forgeuiinspector.master.variant.${variant}`);
+  }
 });
 
 test("translations cover labels, page text, inventory, and all state values", () => {

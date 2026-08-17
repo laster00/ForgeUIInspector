@@ -117,6 +117,8 @@ python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py vali
 
 ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系のフォントスタックで近似します。文字幅と最終的な可読性はForge実プレビューで確認してください。
 
+ForgeUIInspector単体でテストできます。CTE2の実装リポジトリが同じワークスペースにある場合だけ、追加のUIスタイル統合契約が有効になります。エミュレータ本体やForgeプレビューは`cte2-ja-patch`を実行時依存にしません。
+
 ## CTE2 UIスタイル
 
 CTE2の各画面は暗色パレット、18pxスロット、Minecraftフォント、ピクセル幅クリップを共有します。画面名と互換性IDは [CTE2拡張カタログ](docs/cte2-extension-catalog.md)、UI規約は [プロジェクトローカルスキル](.codex/skills/cte2-ui-style/SKILL.md) と [トークン・レイアウト仕様](.codex/skills/cte2-ui-style/references/ui-style-tokens.md) を正とします。

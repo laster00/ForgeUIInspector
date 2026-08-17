@@ -156,6 +156,71 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-backgr
 .extended-inventory h3 { margin: 0 0 5px; color: var(--ui-muted); font-size: 10px; font-weight: normal; }
 .inventory-grid { width: 162px; }
 .master-stash-preview .extended-body { min-width: 650px; }
+.master-variant-root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.master-variant-tabs { position: absolute; left: 8px; top: 5px; display: flex; gap: 3px; height: 22px; }
+.master-category-tab { position: relative; width: 72px; height: 22px; padding: 5px 15px 4px 7px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel-alt); color: var(--ui-muted); white-space: nowrap; }
+.master-category-tab.selected { color: var(--ui-selected); background: var(--ui-border); }
+.master-category-label { display: block; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+.master-category-count { position: absolute; right: 4px; top: 5px; color: var(--ui-muted); font-style: normal; }
+.master-category-tab.selected .master-category-count { color: var(--ui-text); }
+.master-variant-page-panel { width: 176px; height: 176px; padding: 6px; }
+.master-variant-page-panel .master-variant-grid { width: 162px; height: 162px; }
+.master-variant-page-panel .panel-caption { right: 5px; bottom: 3px; }
+.master-variant-status { padding: 8px; color: var(--ui-muted); }
+.master-variant-status strong { display: block; margin-bottom: 8px; color: var(--ui-text); font-weight: normal; }
+.master-variant-status p, .master-variant-status span { display: block; margin: 0 0 7px; overflow: hidden; white-space: nowrap; text-overflow: clip; }
+.master-variant-status p:first-of-type, .master-variant-status span:first-of-type { color: var(--ui-success); }
+.master-category-rail { position: absolute; left: 8px; top: 5px; width: 92px; height: 176px; padding: 3px; border: 1px solid var(--ui-border); background: var(--ui-panel); }
+.master-category-rail-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; height: 33px; padding: 0 6px; overflow: hidden; border-left: 2px solid transparent; color: var(--ui-muted); white-space: nowrap; }
+.master-category-rail-row.selected { border-left-color: var(--ui-selected); background: var(--ui-hover); color: var(--ui-text); }
+.master-category-rail-row .master-category-label { min-width: 0; }
+.master-category-rail-row .master-category-count { position: static; flex: 0 0 auto; }
+.master-action-strip { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 3px; overflow: hidden; }
+.master-action { display: block; height: 21px; padding: 5px 7px 4px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-control); color: var(--ui-text); white-space: nowrap; }
+.master-classic-grid-panel { left: 8px; top: 35px; }
+.master-classic-status { left: 192px; top: 35px; width: 166px; height: 176px; }
+.master-variant-root .master-variant-inventory { left: 8px; top: 224px; width: 176px; }
+.master-variant-root .master-variant-inventory h3 { height: 16px; margin: 0 0 4px; }
+.master-variant-root .master-inventory-grid { width: 162px; }
+.master-variant-root > .master-action-strip { position: absolute; left: 192px; top: 224px; width: 166px; height: 87px; }
+.master-dual-left-panel { left: 8px; top: 35px; }
+.master-dual-right-panel { left: 192px; top: 35px; }
+.master-dual-status { position: absolute; left: 376px; top: 35px; width: 258px; height: 176px; border: 1px solid var(--ui-border); background: var(--ui-panel); }
+.master-rail-grid-panel { left: 108px; top: 5px; }
+.master-rail-status { left: 292px; top: 5px; width: 342px; height: 176px; }
+.master-variant-rail .master-variant-inventory { top: 205px; left: 108px; }
+.master-variant-rail > .master-action-strip { left: 292px; top: 205px; width: 342px; height: 87px; }
+.master-overview-heading { position: absolute; left: 8px; right: 16px; top: 5px; display: flex; justify-content: space-between; height: 22px; padding: 5px 7px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel-alt); color: var(--ui-muted); white-space: nowrap; }
+.master-overview-heading strong { color: var(--ui-selected); font-weight: normal; }
+.master-overview-cards { position: absolute; left: 8px; right: 16px; top: 33px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; height: 86px; }
+.master-overview-card { position: relative; min-width: 0; height: 86px; padding: 8px 7px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-muted); }
+.master-overview-card.selected { border-color: var(--ui-selected); background: var(--ui-hover); color: var(--ui-text); }
+.master-overview-card strong { display: block; overflow: hidden; white-space: nowrap; text-overflow: clip; font-weight: normal; }
+.master-overview-card > span { display: block; margin-top: 11px; color: var(--ui-selected); font-size: 15px; }
+.master-overview-card small { position: absolute; left: 7px; right: 7px; bottom: 7px; overflow: hidden; color: var(--ui-muted); font-size: 8px; white-space: nowrap; }
+.master-variant-overview .master-variant-inventory { top: 132px; left: 8px; }
+.master-overview-status { position: absolute; left: 192px; top: 132px; width: 442px; height: 118px; padding: 9px; border: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-muted); }
+.master-overview-status p { margin: 0 0 8px; overflow: hidden; white-space: nowrap; }
+.master-overview-status p:first-child { color: var(--ui-selected); }
+.master-overview-status .master-action-strip { position: absolute; left: 8px; right: 8px; bottom: 8px; height: 45px; }
+.master-clean-dual-left-panel { left: 8px; top: 35px; }
+.master-clean-dual-right-panel { left: 192px; top: 35px; }
+.master-variant-clean_dual .master-variant-inventory { left: 8px; top: 224px; }
+.master-variant-clean_dual .master-detail-less-footer { left: 192px; top: 224px; right: 16px; }
+.master-rail-dual-left-panel { left: calc(50% - 134px); top: 20px; }
+.master-rail-dual-right-panel { left: calc(50% + 50px); top: 20px; }
+.master-variant-rail_dual .master-category-rail { left: calc(50% - 234px); top: 20px; }
+.master-variant-rail_dual .master-variant-inventory { left: calc(50% - 134px); top: 211px; }
+.master-variant-rail_dual .master-detail-less-footer { left: calc(50% - 234px); top: 211px; right: auto; width: 468px; text-align: center; }
+.master-variant-rail_dual .master-footer-line { justify-content: center; }
+.master-single-focus-panel { left: 238px; top: 35px; }
+.master-variant-single_focus .master-variant-inventory { left: 8px; top: 224px; }
+.master-variant-single_focus .master-detail-less-footer { left: 192px; top: 224px; right: 16px; }
+.master-detail-less-footer { position: absolute; height: 87px; padding: 7px 0 0; overflow: hidden; color: var(--ui-muted); }
+.master-footer-line { display: flex; gap: 12px; height: 24px; overflow: hidden; white-space: nowrap; }
+.master-footer-line span { overflow: hidden; text-overflow: clip; }
+.master-footer-line .success { color: var(--ui-success); }
+.master-detail-less-footer .master-action-strip { height: 53px; }
 .mc-profession_workshop .extended-body { min-width: 620px; }
 .profession-tabs { top: 6px; }
 .profession-search { top: 32px; }
