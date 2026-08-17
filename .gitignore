@@ -1,6 +1,11 @@
 .gradle/
 build/
 run/
+run-ui/
+tools/minecraft-ui/captures/
+output/playwright/
+.playwright-cli/
+game-*.png
 .idea/
 .classpath
 .project

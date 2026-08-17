@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTE2 UI Style"
+  short_description: "Unify CTE2 Minecraft UI styling"
+  default_prompt: "Use $cte2-ui-style to apply the shared CTE2 Minecraft UI tokens and verify the emulator."

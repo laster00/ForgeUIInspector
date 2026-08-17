@@ -1,0 +1,14 @@
+{
+  "schema": "forge-ui-inspector.fixture",
+  "version": 1,
+  "project": "cte2",
+  "screen": "master_stash",
+  "renderer": "master-stash",
+  "pageSize": 54,
+  "fixtures": [
+    { "id": "normal", "titleKey": "screen.forgeuiinspector.normal", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.all", "count": 18 }], "itemCount": 18, "items": [] },
+    { "id": "empty", "titleKey": "screen.forgeuiinspector.empty", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.all", "count": 0 }], "itemCount": 0, "items": [] },
+    { "id": "many", "titleKey": "screen.forgeuiinspector.many", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.all", "count": 108 }], "itemCount": 108, "items": [] },
+    { "id": "other", "titleKey": "screen.forgeuiinspector.otherFixture", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.all", "count": 6 }], "itemCount": 6, "items": [] }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Forge UI Fixture Generator"
+  short_description: "Generate deterministic project-scoped UI fixtures"
+  default_prompt: "Use $forge-ui-fixture-generator to create and validate a project-scoped ForgeUIInspector fixture."

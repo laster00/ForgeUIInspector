@@ -1,1 +1,1 @@
-{"private":true,"type":"module","scripts":{"test:emulator":"node --test tests/emulator_contract.test.mjs"}}
+{"private":true,"type":"module","scripts":{"test:emulator":"node --test tests/emulator_contract.test.mjs tests/fixture_system_contract.test.mjs","test:all":"node --test tests/emulator_contract.test.mjs tests/fixture_system_contract.test.mjs tests/minecraft_ui_harness_contract.test.mjs tests/ui_style_contract.test.mjs"}}

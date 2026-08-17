@@ -1,0 +1,12 @@
+{
+  "schema": "forge-ui-inspector.project-index",
+  "version": 1,
+  "defaultProject": "cte2",
+  "projects": [
+    {
+      "id": "cte2",
+      "labelKey": "project.cte2.name",
+      "manifest": "cte2/project.json"
+    }
+  ]
+}
