@@ -1,0 +1,44 @@
+{
+  "schema": "forge-ui-inspector.project",
+  "version": 1,
+  "id": "cte2",
+  "labelKey": "project.cte2.name",
+  "defaultScreen": "map_stash",
+  "screens": [
+    {
+      "id": "map_stash",
+      "labelKey": "screen.forgeuiinspector.title",
+      "renderer": "compact-stash",
+      "logicalSize": { "width": 320, "height": 230 },
+      "fixturePath": "../../fixtures/map-stash.json"
+    },
+    {
+      "id": "currency_stash",
+      "labelKey": "screen.forgeuiinspector.currencyTitle",
+      "renderer": "compact-stash",
+      "logicalSize": { "width": 320, "height": 230 },
+      "fixturePath": "../../fixtures/currency-stash.json"
+    },
+    {
+      "id": "master_stash",
+      "labelKey": "screen.forgeuiinspector.master.title",
+      "renderer": "master-stash",
+      "logicalSize": { "width": 650, "height": 350 },
+      "fixturePath": "../../fixtures/master-stash.json"
+    },
+    {
+      "id": "profession_workshop",
+      "labelKey": "screen.forgeuiinspector.profession.title",
+      "renderer": "profession-workshop",
+      "logicalSize": { "width": 620, "height": 340 },
+      "fixturePath": "../../fixtures/profession-workshop.json"
+    },
+    {
+      "id": "advanced_salvage",
+      "labelKey": "screen.forgeuiinspector.salvage.title",
+      "renderer": "advanced-salvage",
+      "logicalSize": { "width": 960, "height": 540 },
+      "fixturePath": "../../fixtures/advanced-salvage.json"
+    }
+  ]
+}

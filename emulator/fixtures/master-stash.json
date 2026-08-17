@@ -1,6 +1,9 @@
 {
+  "schema": "forge-ui-inspector.fixture",
   "version": 1,
+  "project": "cte2",
   "screen": "master_stash",
+  "renderer": "master-stash",
   "pageSize": 54,
   "fixtures": [
     { "id": "normal", "titleKey": "screen.forgeuiinspector.normal", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.all", "count": 18 }], "itemCount": 18, "items": [] },

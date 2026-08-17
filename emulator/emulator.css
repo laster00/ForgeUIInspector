@@ -178,6 +178,11 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-backgr
 .salvage-items { margin: 8px 0 12px; }
 .history-row { display: block; height: 24px; margin-top: 4px; padding: 6px 8px; background: var(--ui-panel-alt); color: var(--ui-muted); }
 .salvage-footer { position: absolute; left: 10px; right: 10px; bottom: 7px; height: 29px; padding: 8px 10px; overflow: hidden; background: var(--ui-panel); color: var(--ui-selected); white-space: nowrap; }
+.generic-fixture-summary { position: absolute; left: 8px; top: 8px; width: calc(100% - 16px); min-height: 44px; padding: 8px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-muted); }
+.generic-fixture-summary strong { display: block; color: var(--ui-selected); font-weight: normal; }
+.generic-fixture-summary p { margin: 5px 0 0; white-space: nowrap; overflow: hidden; }
+.generic-grid { position: absolute; left: 8px; top: 62px; }
+.generic-note { position: absolute; left: 8px; right: 8px; bottom: 8px; margin: 0; padding: 6px 8px; overflow: hidden; background: var(--ui-panel-alt); color: var(--ui-muted); white-space: nowrap; }
 .mc-master_stash, .mc-profession_workshop { font-size: 10px; }
 .mc-advanced_salvage { font-size: 10px; }
 

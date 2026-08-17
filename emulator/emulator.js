@@ -1,14 +1,27 @@
-export const PAGE_SIZE = 54;
+import {
+  DEFAULT_CTE2_PROJECT,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_PROJECT_INDEX,
+  FIXTURE_SCHEMA,
+  PAGE_SIZE as PROJECT_PAGE_SIZE,
+  PROJECT_INDEX_SCHEMA,
+  PROJECT_SCHEMA,
+  createFixtureRegistry,
+  createProjectIndex,
+  rendererFor,
+  screenIdsFor,
+  screenMetaFor,
+  validateFixtureDocument,
+  validateProjectManifest,
+} from "./fixture-system.js";
+
+export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, validateProjectManifest };
+
+export const PAGE_SIZE = PROJECT_PAGE_SIZE;
 export const FIXTURE_IDS = ["normal", "empty", "many", "other"];
 export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
-export const SCREEN_IDS = ["map_stash", "currency_stash", "master_stash", "profession_workshop", "advanced_salvage"];
-export const SCREEN_META = Object.freeze({
-  map_stash: { width: 320, height: 230, titleKey: "screen.forgeuiinspector.title", fixtureFile: "map-stash" },
-  currency_stash: { width: 320, height: 230, titleKey: "screen.forgeuiinspector.currencyTitle", fixtureFile: "currency-stash" },
-  master_stash: { width: 650, height: 350, titleKey: "screen.forgeuiinspector.master.title", fixtureFile: "master-stash" },
-  profession_workshop: { width: 620, height: 340, titleKey: "screen.forgeuiinspector.profession.title", fixtureFile: "profession-workshop" },
-  advanced_salvage: { width: 960, height: 540, titleKey: "screen.forgeuiinspector.salvage.title", fixtureFile: "advanced-salvage" },
-});
+export const SCREEN_IDS = Object.freeze(screenIdsFor(DEFAULT_CTE2_PROJECT));
+export const SCREEN_META = Object.freeze(Object.fromEntries(SCREEN_IDS.map((screenId) => [screenId, screenMetaFor(DEFAULT_CTE2_PROJECT, screenId)])));
 export const CURRENCY_CATEGORY_IDS = ["all", "gear_orbs", "map_orbs", "gem_orbs", "seeds", "special_currency", "prophecy", "coins", "other"];
 export const MINECRAFT_FONT_STACK = '"Minecraft", "Unifont", "GenEiMonoGothic", "MS Gothic", "Courier New", monospace';
 export const UI_THEME = Object.freeze({
@@ -28,6 +41,11 @@ const LAYOUT_IDS = Array.from({ length: 28 }, (_, index) => `layout_${String(ind
 
 export const I18N = {
   ja: {
+    "project.cte2.name": "Craft to Exile 2",
+    "project.generic.name": "UIプロジェクト",
+    "screen.forgeuiinspector.genericTitle": "UIプレビュー",
+    "screen.forgeuiinspector.genericFixture": "Fixture：{0}",
+    "screen.forgeuiinspector.genericReadonly": "読み取り専用・汎用レンダラー",
     "screen.forgeuiinspector.normal": "通常状態",
     "screen.forgeuiinspector.empty": "空の保管庫",
     "screen.forgeuiinspector.many": "多数のマップ",
@@ -90,6 +108,11 @@ export const I18N = {
     "screen.forgeuiinspector.salvage.workflow": "ワークフロー：プレビュー", "screen.forgeuiinspector.salvage.fixture": "ローカルフィクスチャ", "screen.forgeuiinspector.salvage.catalog": "プリセット一覧", "screen.forgeuiinspector.salvage.preset": "プリセット {0}", "screen.forgeuiinspector.salvage.keep": "KEEP", "screen.forgeuiinspector.salvage.salvage": "SALVAGE", "screen.forgeuiinspector.salvage.selected": "選択中プリセット", "screen.forgeuiinspector.salvage.selectedName": "マップ安全優先ルール", "screen.forgeuiinspector.salvage.ruleSummary": "保護4件・ルール7件", "screen.forgeuiinspector.salvage.held": "手持ちアイテムプレビュー", "screen.forgeuiinspector.salvage.history": "履歴・診断", "screen.forgeuiinspector.salvage.historyEntry": "診断エントリ {0}", "screen.forgeuiinspector.salvage.readonly": "読み取り専用・ネットワーク／保管領域なし", "screen.forgeuiinspector.salvage.status": "決定的で安全に確認できるフィクスチャ",
   },
   en: {
+    "project.cte2.name": "Craft to Exile 2",
+    "project.generic.name": "UI Project",
+    "screen.forgeuiinspector.genericTitle": "UI Preview",
+    "screen.forgeuiinspector.genericFixture": "Fixture: {0}",
+    "screen.forgeuiinspector.genericReadonly": "Read-only · generic renderer",
     "screen.forgeuiinspector.normal": "Normal state",
     "screen.forgeuiinspector.empty": "Empty stash",
     "screen.forgeuiinspector.many": "Many maps",
@@ -171,8 +194,11 @@ export function createFallbackData() {
   const manyItems = makeItems(108, (index) => index % 17 === 0 ? "other" : `layout_${String(index % 28 + 1).padStart(2, "0")}`);
   const otherItems = makeItems(6, () => "other");
   return {
+    schema: FIXTURE_SCHEMA,
     version: 1,
+    project: DEFAULT_PROJECT_ID,
     screen: "map_stash",
+    renderer: "compact-stash",
     pageSize: PAGE_SIZE,
     fixtures: [
       { id: "normal", titleKey: "screen.forgeuiinspector.normal", layouts: layouts(), items: normalItems },
@@ -186,7 +212,7 @@ export function createFallbackData() {
 export function createCurrencyFallbackData() {
   const labels = CURRENCY_CATEGORY_IDS.map((id) => ({ id, labelKey: id === "all" || id === "other" ? `screen.forgeuiinspector.${id}` : `screen.forgeuiinspector.${id}`, count: 0 }));
   const make = (count) => Array.from({ length: count }, (_, index) => ({ slot: index % PAGE_SIZE, page: Math.floor(index / PAGE_SIZE), id: `cte2:currency_${index + 1}`, label: `Currency ${index + 1}`, icon: index % 11 === 0 ? "unknown-icon" : index % 3 === 0 ? "coin" : "orb", count: (index % 40) + 1, category: CURRENCY_CATEGORY_IDS[1 + (index % 8)] }));
-  return { version: 1, screen: "currency_stash", titleKey: "screen.forgeuiinspector.currencyTitle", pageSize: PAGE_SIZE, fixtures: [
+  return { schema: FIXTURE_SCHEMA, version: 1, project: DEFAULT_PROJECT_ID, screen: "currency_stash", renderer: "compact-stash", titleKey: "screen.forgeuiinspector.currencyTitle", pageSize: PAGE_SIZE, fixtures: [
     { id: "normal", titleKey: "screen.forgeuiinspector.currencyFixture.normal", layouts: labels, items: make(18) },
     { id: "empty", titleKey: "screen.forgeuiinspector.currencyFixture.empty", layouts: labels, items: [] },
     { id: "many", titleKey: "screen.forgeuiinspector.currencyFixture.many", layouts: labels, items: make(108) },
@@ -207,11 +233,43 @@ export function createExtendedFallbackData(screen = "master_stash") {
     items: [],
   });
   return {
+    schema: FIXTURE_SCHEMA,
     version: 1,
+    project: DEFAULT_PROJECT_ID,
     screen,
+    renderer: meta.renderer,
     pageSize: PAGE_SIZE,
     titleKey: meta.titleKey,
     fixtures: [makeFixture("normal", 18), makeFixture("empty", 0), makeFixture("many", 108), makeFixture("other", 6)],
+  };
+}
+
+export function createGenericFallbackData(project = DEFAULT_CTE2_PROJECT, screen = project?.defaultScreen ?? "screen") {
+  const meta = screenMetaFor(project, screen);
+  const projectId = project?.id || "project";
+  const layout = { id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 };
+  const fixture = (id, count) => ({
+    id,
+    titleKey: `screen.forgeuiinspector.${id}`,
+    layouts: [{ ...layout, count }],
+    itemCount: count,
+    items: Array.from({ length: count }, (_, index) => ({
+      slot: index % PAGE_SIZE,
+      page: Math.floor(index / PAGE_SIZE),
+      icon: index % 3 === 0 ? "paper" : index % 3 === 1 ? "orb" : "unknown-icon",
+      count: (index % 32) + 1,
+      label: `Fixture item ${index + 1}`,
+    })),
+  });
+  return {
+    schema: FIXTURE_SCHEMA,
+    version: 1,
+    project: projectId,
+    screen,
+    renderer: meta.renderer,
+    titleKey: meta.labelKey || "screen.forgeuiinspector.genericTitle",
+    pageSize: PAGE_SIZE,
+    fixtures: [fixture("normal", 18), fixture("empty", 0), fixture("many", 108), fixture("other", 6)],
   };
 }
 
@@ -278,9 +336,10 @@ export function layoutScrollMax(fixture, visibleRows = 6) {
   return Math.max(0, (fixture?.layouts?.length || 0) - visibleRows);
 }
 
-export function normalize(input = {}, data = createFallbackData()) {
-  const screen = SCREEN_IDS.includes(input.screen) ? input.screen : (SCREEN_IDS.includes(data.screen) ? data.screen : "map_stash");
-  const meta = SCREEN_META[screen] ?? SCREEN_META.map_stash;
+export function normalize(input = {}, data = createFallbackData(), project = DEFAULT_CTE2_PROJECT) {
+  const projectScreens = screenIdsFor(project);
+  const screen = projectScreens.includes(input.screen) ? input.screen : (projectScreens.includes(data.screen) ? data.screen : (project.defaultScreen ?? projectScreens[0] ?? "map_stash"));
+  const meta = screenMetaFor(project, screen);
   const fixtureId = FIXTURE_IDS.includes(input.fixture) ? input.fixture : "normal";
   const locale = ["ja", "en"].includes(input.locale) ? input.locale : "ja";
   const fixture = data.fixtures?.find((candidate) => candidate.id === fixtureId) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
@@ -288,7 +347,7 @@ export function normalize(input = {}, data = createFallbackData()) {
   const items = itemsForLayout(fixture, layout);
   const pageMax = pageCount(items, data.pageSize || PAGE_SIZE) - 1;
   const scaleNumber = Number(input.scale);
-  return {
+  const next = {
     fixture: fixtureId,
     screen,
     locale,
@@ -300,20 +359,23 @@ export function normalize(input = {}, data = createFallbackData()) {
     scale: Math.max(0.5, Number.isFinite(scaleNumber) ? scaleNumber : 2),
     state: STATE_IDS.includes(input.state) ? input.state : "normal",
   };
+  if (project?.id && project.id !== DEFAULT_PROJECT_ID) next.project = project.id;
+  return next;
 }
 
-export function mergeState(current, partial = {}, data = createFallbackData()) {
+export function mergeState(current, partial = {}, data = createFallbackData(), project = DEFAULT_CTE2_PROJECT) {
   const layoutChanged = Object.prototype.hasOwnProperty.call(partial, "layout") && partial.layout !== current.layout;
   const fixtureChanged = Object.prototype.hasOwnProperty.call(partial, "fixture") && partial.fixture !== current.fixture;
   const next = { ...current, ...partial };
   if (fixtureChanged && !Object.prototype.hasOwnProperty.call(partial, "layout")) next.layout = "all";
   if (layoutChanged) next.page = 0;
-  return normalize(next, data);
+  return normalize(next, data, project);
 }
 
 export function canonical(state, base = "index.html") {
   const keys = ["screen", "fixture", "locale", "layout", "page", "scroll", "width", "height", "scale", "state"];
   const query = new URLSearchParams();
+  if (state.project && state.project !== DEFAULT_PROJECT_ID) query.set("project", state.project);
   keys.forEach((key) => query.set(key, state[key]));
   return `${base}?${query.toString()}`;
 }
@@ -350,8 +412,8 @@ export function clipLabel(label, maxPx = 100, measure = measureTextPx) {
   return `${clipped}${ellipsis}`;
 }
 
-export function displayScale(state, viewportWidth = Number.POSITIVE_INFINITY, viewportHeight = Number.POSITIVE_INFINITY) {
-  const meta = SCREEN_META[state.screen] ?? SCREEN_META.map_stash;
+export function displayScale(state, viewportWidth = Number.POSITIVE_INFINITY, viewportHeight = Number.POSITIVE_INFINITY, project = DEFAULT_CTE2_PROJECT) {
+  const meta = screenMetaFor(project, state.screen);
   return Math.max(0.25, Math.min(
     Number(state.scale) || 2,
     Number(state.width) / meta.width,
@@ -384,21 +446,22 @@ function screenItemIcon(item, index = 0) {
   return node;
 }
 
-function renderExtendedPreview(container, state, fixture, data) {
-  const meta = SCREEN_META[state.screen] ?? SCREEN_META.master_stash;
+function renderExtendedPreview(container, state, fixture, data, project = DEFAULT_CTE2_PROJECT) {
+  if (!container) return "";
+  const meta = screenMetaFor(project, state.screen);
   container.hidden = false;
   container.className = `mc extended-preview mc-${state.screen}`;
   container.style.width = `${meta.width}px`;
   container.style.height = `${meta.height}px`;
   container.replaceChildren();
   const header = createElement("header");
-  header.append(createElement("strong", "extended-title", t(meta.titleKey, state.locale)), createElement("span", "extended-fixture", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
+  header.append(createElement("strong", "extended-title", t(meta.titleKey || meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale)), createElement("span", "extended-fixture", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
   container.append(header);
   const body = createElement("div", "extended-body");
   const items = itemsForLayout(fixture, state.layout);
   const pageItems = items.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
   const pageLabel = pageCount(items) > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pageCount(items)]) : "";
-  if (state.screen === "master_stash") {
+  if (meta.renderer === "master-stash") {
     body.append(createElement("div", "extended-search", t("screen.forgeuiinspector.master.search", state.locale)));
     const tabs = createElement("div", "extended-tabs");
     ["all", "maps", "special"].forEach((id) => tabs.append(createElement("span", `extended-tab${id === "all" ? " selected" : ""}`, t(`screen.forgeuiinspector.master.tab.${id}`, state.locale))));
@@ -425,7 +488,7 @@ function renderExtendedPreview(container, state, fixture, data) {
     inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", state.locale)));
     const inv = createElement("div", "large-grid inventory-grid"); for (let i = 0; i < 36; i += 1) inv.append(createElement("div", "slot")); inventory.append(inv);
     body.append(inventory);
-  } else if (state.screen === "profession_workshop") {
+  } else if (meta.renderer === "profession-workshop") {
     const tabs = createElement("div", "extended-tabs profession-tabs");
     ["crafting", "gathering", "smelting"].forEach((id, index) => tabs.append(createElement("span", `extended-tab${index === 0 ? " selected" : ""}`, t(`screen.forgeuiinspector.profession.tab.${id}`, state.locale))));
     body.append(tabs, createElement("div", "extended-search profession-search", t("screen.forgeuiinspector.profession.search", state.locale)), createElement("div", "extended-filter", t("screen.forgeuiinspector.profession.filter", state.locale)));
@@ -436,7 +499,7 @@ function renderExtendedPreview(container, state, fixture, data) {
     const detail = createElement("section", "extended-panel recipe-detail"); detail.dataset.testid = "profession-workshop-detail";
     ["detail", "output", "materials", "craft", "readonly", "status"].forEach((key) => detail.append(createElement("p", key === "status" ? "success" : "", t(`screen.forgeuiinspector.profession.${key}`, state.locale))));
     body.append(detail);
-  } else {
+  } else if (meta.renderer === "advanced-salvage") {
     body.append(createElement("div", "salvage-workflow", t("screen.forgeuiinspector.salvage.workflow", state.locale)));
     const catalog = createElement("section", "extended-panel salvage-catalog"); catalog.dataset.testid = "advanced-salvage-catalog"; catalog.append(createElement("h3", "", t("screen.forgeuiinspector.salvage.catalog", state.locale)));
     const presetCount = state.fixture === "empty" ? 0 : state.fixture === "many" ? 11 : state.fixture === "other" ? 2 : 4;
@@ -446,17 +509,34 @@ function renderExtendedPreview(container, state, fixture, data) {
     const grid = createElement("div", "large-grid salvage-items"); pageItems.slice(0, 18).forEach((item, index) => { const slot = createElement("div", "slot"); slot.append(screenItemIcon(item, index)); grid.append(slot); }); detail.append(grid); for (let i = 0; i < 4; i += 1) detail.append(createElement("small", "history-row", t("screen.forgeuiinspector.salvage.historyEntry", state.locale, [i + 1])));
     body.append(catalog, detail);
     body.append(createElement("div", "salvage-footer", `${t("screen.forgeuiinspector.salvage.readonly", state.locale)} · ${t("screen.forgeuiinspector.salvage.status", state.locale)}`));
+  } else {
+    const genericList = createElement("div", "generic-fixture-summary");
+    genericList.append(createElement("strong", "", t("screen.forgeuiinspector.genericReadonly", state.locale)));
+    genericList.append(createElement("p", "", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
+    const genericGrid = createElement("div", "large-grid generic-grid");
+    for (let index = 0; index < PAGE_SIZE; index += 1) {
+      const slot = createElement("div", "slot");
+      slot.dataset.testid = `generic-slot-${index}`;
+      const item = pageItems[index];
+      if (item) slot.append(screenItemIcon(item, index));
+      genericGrid.append(slot);
+    }
+    body.append(genericList, genericGrid, createElement("p", "generic-note", t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale)));
   }
   container.append(body);
   container.dataset.state = state.state;
   container.dataset.screen = state.screen;
   container.dataset.fixture = state.fixture;
+  container.dataset.renderer = meta.renderer;
   return pageLabel;
 }
 
-export function initEmulator(data) {
+export function initEmulator(data, options = {}) {
   if (typeof document === "undefined" || typeof window === "undefined") return null;
+  const project = options.project ?? DEFAULT_CTE2_PROJECT;
+  const projectIndex = options.projectIndex ?? DEFAULT_PROJECT_INDEX;
   const fixtureControl = document.getElementById("fixture-control");
+  const projectControl = document.getElementById("project-control");
   const screenControl = document.getElementById("screen-control");
   const localeControl = document.getElementById("locale-control");
   const layoutControl = document.getElementById("layout-control");
@@ -464,19 +544,29 @@ export function initEmulator(data) {
   const scrollControl = document.getElementById("scroll-control");
   const stateControl = document.getElementById("state-control");
   const readUrl = () => Object.fromEntries(new URLSearchParams(window.location.search));
-  let state = normalize(readUrl(), data);
+  let state = normalize({ ...readUrl(), project: options.projectId ?? readUrl().project }, data, project);
   let syncingList = false;
 
   FIXTURE_IDS.forEach((id) => fixtureControl?.add(new Option(id, id)));
 
   const fixtureForState = () => data.fixtures?.find((fixture) => fixture.id === state.fixture) ?? data.fixtures?.[0];
   const sync = () => {
-    state = normalize(state, data);
+    state = normalize(state, data, project);
     safeReplaceUrl(canonical(state));
     render();
   };
   const setState = (partial = {}) => {
-    if (Object.prototype.hasOwnProperty.call(partial, "screen") && SCREEN_IDS.includes(partial.screen) && partial.screen !== state.screen) {
+    if (Object.prototype.hasOwnProperty.call(partial, "project") && partial.project && partial.project !== project.id
+      && (projectIndex.projects ?? []).some((entry) => entry.id === partial.project)) {
+      const url = new URL(window.location.href);
+      if (partial.project === DEFAULT_PROJECT_ID) url.searchParams.delete("project"); else url.searchParams.set("project", partial.project);
+      url.searchParams.delete("screen");
+      url.searchParams.set("layout", "all");
+      url.searchParams.set("page", "0");
+      window.location.href = url.toString();
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(partial, "screen") && screenIdsFor(project).includes(partial.screen) && partial.screen !== state.screen) {
       const url = new URL(window.location.href);
       url.searchParams.set("screen", partial.screen);
       url.searchParams.set("layout", "all");
@@ -484,12 +574,12 @@ export function initEmulator(data) {
       window.location.href = url.toString();
       return;
     }
-    state = mergeState(state, partial, data);
+    state = mergeState(state, partial, data, project);
     sync();
   };
 
   function render() {
-    state = normalize(state, data);
+    state = normalize(state, data, project);
     const fixture = fixtureForState();
     const preview = document.getElementById("map-stash-preview");
     const list = document.getElementById("layout-list");
@@ -507,9 +597,19 @@ export function initEmulator(data) {
       fixtureControl.value = state.fixture;
     }
     if (localeControl) localeControl.value = state.locale;
+    if (projectControl) {
+      projectControl.replaceChildren();
+      (projectIndex.projects ?? [{ id: project.id, labelKey: project.labelKey }]).forEach((entry) => {
+        projectControl.add(new Option(t(entry.labelKey || "project.generic.name", state.locale), entry.id));
+      });
+      projectControl.value = project.id;
+    }
     if (screenControl) {
       screenControl.replaceChildren();
-      SCREEN_IDS.forEach((screenId) => screenControl.add(new Option(t(SCREEN_META[screenId].titleKey, state.locale), screenId)));
+      screenIdsFor(project).forEach((screenId) => {
+        const meta = screenMetaFor(project, screenId);
+        screenControl.add(new Option(t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale), screenId));
+      });
       screenControl.value = state.screen;
     }
     if (layoutControl) {
@@ -524,15 +624,16 @@ export function initEmulator(data) {
       const control = document.getElementById(`${key}-control`);
       if (control) control.value = state[key];
     });
-    const expanded = !["map_stash", "currency_stash"].includes(state.screen);
-    const extendedContainers = ["master-stash-preview", "profession-workshop-preview", "advanced-salvage-preview"].map((id) => document.getElementById(id)).filter(Boolean);
+    const meta = screenMetaFor(project, state.screen);
+    const expanded = meta.renderer !== "compact-stash";
+    const extendedContainers = ["master-stash-preview", "profession-workshop-preview", "advanced-salvage-preview", "extended-preview"].map((id) => document.getElementById(id)).filter(Boolean);
     extendedContainers.forEach((container) => { container.hidden = true; });
     if (expanded) {
       preview.hidden = true;
-      const expandedContainer = document.getElementById(`${state.screen.replaceAll("_", "-")}-preview`);
-      renderExtendedPreview(expandedContainer, state, fixture, data);
-      const meta = SCREEN_META[state.screen] ?? SCREEN_META.master_stash;
-      const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32));
+      const knownContainer = document.getElementById(`${state.screen.replaceAll("_", "-")}-preview`);
+      const expandedContainer = knownContainer ?? document.getElementById("extended-preview");
+      renderExtendedPreview(expandedContainer, state, fixture, data, project);
+      const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32), project);
       const wrap = document.querySelector(".preview-wrap");
       wrap.style.setProperty("--preview-scale", String(displayScaleValue));
       wrap.style.width = `${meta.width * displayScaleValue}px`;
@@ -542,7 +643,7 @@ export function initEmulator(data) {
     }
     preview.hidden = false;
     document.documentElement.lang = state.locale;
-    document.getElementById("title").textContent = t(state.screen === "currency_stash" ? (data.titleKey || "screen.forgeuiinspector.currencyTitle") : "screen.forgeuiinspector.title", state.locale);
+    document.getElementById("title").textContent = t(data.titleKey || meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale);
     const stateNode = document.getElementById("state");
     const selectedSummary = `${clipLabel(t(selectedLayout.labelKey, state.locale), 54)} (${itemCount})`;
     const visualState = t(`screen.forgeuiinspector.state.${state.state}`, state.locale);
@@ -551,7 +652,7 @@ export function initEmulator(data) {
     stateNode.setAttribute("aria-label", stateNode.title);
     stateNode.className = `state-${state.state}`;
     document.getElementById("selected-layout").textContent = `${clipLabel(t(selectedLayout.labelKey, state.locale), 108)} (${itemCount})`;
-    document.getElementById("layout-list").setAttribute("aria-label", state.screen === "currency_stash" ? t("screen.forgeuiinspector.currencyTitle", state.locale) : "Layout list");
+    document.getElementById("layout-list").setAttribute("aria-label", t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale));
 
     list.replaceChildren();
     (fixture?.layouts ?? []).forEach((layout) => {
@@ -597,10 +698,10 @@ export function initEmulator(data) {
     for (let index = 0; index < 9; index += 1) hotbarRow.append(createElement("div", "slot"));
     inventory.append(mainRow, hotbarRow);
 
-    const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32));
+    const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32), project);
     const wrap = document.querySelector(".preview-wrap");
     wrap.style.setProperty("--preview-scale", String(displayScaleValue));
-    const compactMeta = SCREEN_META[state.screen] ?? SCREEN_META.map_stash;
+    const compactMeta = meta;
     wrap.style.width = `${compactMeta.width * displayScaleValue}px`;
     wrap.style.height = `${compactMeta.height * displayScaleValue}px`;
     preview.dataset.state = state.state;
@@ -610,8 +711,17 @@ export function initEmulator(data) {
 
   fixtureControl?.addEventListener("change", (event) => setState({ fixture: event.target.value, layout: "all", page: 0 }));
   screenControl?.addEventListener("change", (event) => {
-    const target = SCREEN_IDS.includes(event.target.value) ? event.target.value : "map_stash";
+    const target = screenIdsFor(project).includes(event.target.value) ? event.target.value : (project.defaultScreen ?? screenIdsFor(project)[0]);
     const url = new URL(window.location.href); url.searchParams.set("screen", target); url.searchParams.set("layout", "all"); url.searchParams.set("page", "0"); window.location.href = url.toString();
+  });
+  projectControl?.addEventListener("change", (event) => {
+    const target = event.target.value || DEFAULT_PROJECT_ID;
+    const url = new URL(window.location.href);
+    if (target === DEFAULT_PROJECT_ID) url.searchParams.delete("project"); else url.searchParams.set("project", target);
+    url.searchParams.delete("screen");
+    url.searchParams.set("layout", "all");
+    url.searchParams.set("page", "0");
+    window.location.href = url.toString();
   });
   localeControl?.addEventListener("change", (event) => setState({ locale: event.target.value }));
   layoutControl?.addEventListener("change", (event) => setState({ layout: event.target.value }));
@@ -619,7 +729,7 @@ export function initEmulator(data) {
   scrollControl?.addEventListener("change", (event) => setState({ scroll: event.target.value }));
   stateControl?.addEventListener("change", (event) => setState({ state: event.target.value }));
   ["width", "height", "scale"].forEach((key) => document.getElementById(`${key}-control`)?.addEventListener("change", (event) => setState({ [key]: event.target.value })));
-  document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data); sync(); });
+  document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); sync(); });
   document.getElementById("copy")?.addEventListener("click", () => navigator.clipboard?.writeText(canonical(state)));
   document.getElementById("layout-list")?.addEventListener("scroll", (event) => {
     if (syncingList) return;
@@ -637,24 +747,58 @@ export function initEmulator(data) {
   window.forgeUIInspector = {
     getState: () => ({ ...state }),
     setState,
-    reset: () => { state = normalize({}, data); sync(); },
+    reset: () => { state = normalize({}, data, project); sync(); },
     getCanonicalUrl: () => canonical(state),
   };
   render();
   return window.forgeUIInspector;
 }
 
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`request failed: ${response.status}`);
+  return response.json();
+}
+
+function validProjectIndex(index) {
+  if (index?.schema !== PROJECT_INDEX_SCHEMA || index.version !== 1 || !Array.isArray(index.projects)) return DEFAULT_PROJECT_INDEX;
+  const projects = index.projects.filter((entry) => entry && typeof entry.id === "string" && typeof entry.manifest === "string");
+  return projects.length > 0 ? { ...index, projects } : DEFAULT_PROJECT_INDEX;
+}
+
 async function loadData() {
   if (typeof window === "undefined") return;
-  const requestedScreen = SCREEN_IDS.includes(new URLSearchParams(window.location.search).get("screen")) ? new URLSearchParams(window.location.search).get("screen") : "map_stash";
-  const fixtureFile = SCREEN_META[requestedScreen]?.fixtureFile ?? "map-stash";
+  const query = new URLSearchParams(window.location.search);
+  const baseUrl = new URL(".", window.location.href);
+  let projectIndex = DEFAULT_PROJECT_INDEX;
+  let project = DEFAULT_CTE2_PROJECT;
   try {
-    const response = await fetch(`fixtures/${fixtureFile}.json`);
-    if (!response.ok) throw new Error(`fixture request failed: ${response.status}`);
-    initEmulator(await response.json());
+    projectIndex = validProjectIndex(await fetchJson(new URL("projects/index.json", baseUrl)));
   } catch {
-    initEmulator(createFallbackForScreen(requestedScreen));
+    projectIndex = DEFAULT_PROJECT_INDEX;
   }
+  const requestedProject = query.get("project") || projectIndex.defaultProject || DEFAULT_PROJECT_ID;
+  const projectEntry = projectIndex.projects.find((entry) => entry.id === requestedProject) ?? projectIndex.projects.find((entry) => entry.id === DEFAULT_PROJECT_ID);
+  if (projectEntry) {
+    try {
+      project = await fetchJson(new URL(`projects/${projectEntry.manifest}`, baseUrl));
+      if (!validateProjectManifest(project).valid) throw new Error("invalid project manifest");
+    } catch {
+      project = DEFAULT_CTE2_PROJECT;
+    }
+  }
+  const screenIds = screenIdsFor(project);
+  const requestedScreen = screenIds.includes(query.get("screen")) ? query.get("screen") : (project.defaultScreen ?? screenIds[0]);
+  const meta = screenMetaFor(project, requestedScreen);
+  let data;
+  try {
+    const projectUrl = projectEntry ? new URL(`projects/${projectEntry.manifest}`, baseUrl) : baseUrl;
+    data = await fetchJson(new URL(meta.fixturePath, projectUrl));
+    if (!validateFixtureDocument(data, { project: project.id, screen: requestedScreen }).valid) throw new Error("invalid fixture document");
+  } catch {
+    data = project.id === DEFAULT_PROJECT_ID ? createFallbackForScreen(requestedScreen) : createGenericFallbackData(project, requestedScreen);
+  }
+  initEmulator(data, { project, projectIndex, projectId: project.id });
 }
 
 if (typeof window !== "undefined" && typeof document !== "undefined") loadData();

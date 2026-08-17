@@ -1,6 +1,9 @@
 {
+  "schema": "forge-ui-inspector.fixture",
   "version": 1,
+  "project": "cte2",
   "screen": "advanced_salvage",
+  "renderer": "advanced-salvage",
   "pageSize": 54,
   "fixtures": [
     { "id": "normal", "titleKey": "screen.forgeuiinspector.normal", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.salvage.catalog", "count": 4 }], "itemCount": 4, "items": [] },

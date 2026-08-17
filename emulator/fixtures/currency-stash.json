@@ -1,6 +1,9 @@
 {
+  "schema": "forge-ui-inspector.fixture",
   "version": 1,
+  "project": "cte2",
   "screen": "currency_stash",
+  "renderer": "compact-stash",
   "titleKey": "screen.forgeuiinspector.currencyTitle",
   "pageSize": 54,
   "fixtures": [

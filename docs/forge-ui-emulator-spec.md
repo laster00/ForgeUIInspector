@@ -239,11 +239,15 @@ emulator/index.html?fixture=many&locale=ja&layout=all&page=1&scroll=0&width=960&
 
 ```text
 forge-ui-emulator
+project-control
+screen-control
 map-stash-preview
+extended-preview
 layout-list
 layout-row-<id>
 stash-grid
 stash-slot-<index>
+generic-slot-<index>
 stash-page
 player-inventory
 fixture-control
@@ -256,7 +260,7 @@ locale-control
 
 ```js
 window.forgeUIInspector.getState()
-window.forgeUIInspector.setState({ fixture: "many", page: 1 })
+window.forgeUIInspector.setState({ project: "cte2", fixture: "many", page: 1 })
 window.forgeUIInspector.reset()
 window.forgeUIInspector.getCanonicalUrl()
 ```
@@ -342,6 +346,11 @@ Node.js組み込みの`node:test`だけで次を確認する。
 - JSON Schemaによるfixture検証
 - Playwrightまたはブラウザ自動撮影の任意導入
 - Forge側が同じFixture JSONを直接読む仕組み
+
+## 付録: プロジェクト単位のFixture登録
+
+この仕様の初期CTE2 Fixtureは後方互換のため `emulator/fixtures/` に残す。汎用運用では `emulator/projects/index.json` にプロジェクトを登録し、`emulator/projects/<project-id>/project.json` から画面・renderer・論理サイズ・Fixture相対パスを解決する。
+
+プロジェクト外のFixtureをCTE2ファイルへ追加してはいけない。新規プロジェクトは同梱の `.codex/skills/forge-ui-fixture-generator` で生成し、`docs/forge-ui-fixture-system.md` のスキーマ検証を通す。未知のrendererは汎用の読み取り専用プレビューへフォールバックし、既存の `?screen=...` URLは `cte2` プロジェクトとして解釈する。
 - 差分スクリーンショットによる回帰テスト
 - 実際のMinecraftアイコン画像を開発用アセットとして差し替える機能
-

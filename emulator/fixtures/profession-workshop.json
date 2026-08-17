@@ -1,6 +1,9 @@
 {
+  "schema": "forge-ui-inspector.fixture",
   "version": 1,
+  "project": "cte2",
   "screen": "profession_workshop",
+  "renderer": "profession-workshop",
   "pageSize": 54,
   "fixtures": [
     { "id": "normal", "titleKey": "screen.forgeuiinspector.normal", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.profession.tab.crafting", "count": 5 }], "itemCount": 5, "items": [] },
