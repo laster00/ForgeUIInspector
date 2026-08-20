@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Forge UI Inspector · Visual Compare</title>
+  <link rel="stylesheet" href="compare.css">
+</head>
+<body>
+  <main>
+    <header><h1>Visual Compare</h1><p>Compare deterministic captures only after their audit metadata matches.</p></header>
+    <section class="inputs">
+      <label>Before / Browser<input id="left-files" type="file" accept="image/png,application/json,.png,.json" multiple></label>
+      <label>After / Forge<input id="right-files" type="file" accept="image/png,application/json,.png,.json" multiple></label>
+      <label>Mode<select id="mode"><option value="side-by-side">Side by side</option><option value="overlay">Overlay</option><option value="difference">Visual difference</option></select></label>
+      <label>Overlay <input id="opacity" type="range" min="0" max="100" value="50"><output id="opacity-value">50%</output></label>
+      <label>Noise threshold <input id="threshold" type="number" min="0" max="255" value="16"></label>
+      <button id="render" type="button">Compare</button>
+      <button id="save" type="button" disabled>Save PNG + metadata</button>
+    </section>
+    <section id="status" class="status" role="status">Choose one PNG and its JSON sidecar on each side.</section>
+    <section class="canvas-wrap"><canvas id="comparison"></canvas></section>
+    <p class="note">Difference highlighting is evidence, not a defect verdict. Use the threshold to suppress low-level antialiasing and capture noise.</p>
+  </main>
+  <script type="module" src="compare.js"></script>
+</body>
+</html>

@@ -105,6 +105,8 @@ Forge 1.20.1 / Java 17向けの開発専用クライアントMODです。タイ�
 
 ForgeプレビューはUI確認専用です。Map StashやMine and Slashの保存領域、NBT、通信、権限、実際の収納処理には接続しません。
 
+browser／Forgeのfidelity比較では、browser側を`npm run capture:browser -- --scale 2 --viewport 960x540`、Forge側を`pwsh -File tools/minecraft-ui/capture.ps1 -GuiScale 2 ...`で取得します。両方のJSONに同じ論理状態を表す`pairKey`が入り、比較画面はmetadataと実PNG寸法が一致しない場合にgeometry／scale mismatchを表示します。production captureがない状態はbrowser-only監査の制約として明記し、browser画像だけでMinecraft固有描画の一致を断定しません。
+
 ## 開発とテスト
 
 Java 17を`JAVA_HOME`に設定して実行します。
@@ -128,6 +130,8 @@ npm run capture:browser -- --screens all --fixtures normal,empty,many,other --lo
 ```
 
 `--browser`または`FORGE_UI_BROWSER`で実行ファイルを指定できます。出力名にはproject、screen、fixture、state、locale、variant、論理サイズ、viewport、scaleが入り、同じbasenameのPNG／JSONと`capture-manifest.json`を生成します。失敗、未初期化、欠落・空PNGはmanifest上の`failed`として明示され、既存の単画面URL確認はそのまま利用できます。Forge captureと比較するときは同じ`--scale`と`--viewport`を使います。
+
+before／after比較は`tools/visual-compare/index.html`を開き、左右それぞれでPNGと同名JSONを選択します。project、screen、fixture、state、locale、variant、論理サイズ、scaleが一致しない組み合わせは描画前に拒否します。side-by-side、overlay、noise threshold付きvisual differenceを選べ、PR添付用のPNGと比較metadataを保存できます。differenceは自動的な不具合判定ではなく、監査者が判断するための視覚的証拠です。
 
 ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系のフォントスタックで近似します。文字幅と最終的な可読性はForge実プレビューで確認してください。
 

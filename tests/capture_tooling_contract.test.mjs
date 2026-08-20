@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 import { buildCaptureMatrix, parseCaptureArgs } from "../tools/browser-capture/capture.mjs";
 import { CAPTURE_SCHEMA, browserCaptureMetadata, captureFileStem, compareCaptureMetadata, validateCaptureMetadata } from "../tools/capture-contract.mjs";
+import { comparePair, comparisonMetadata, diffPixels } from "../tools/visual-compare/compare-core.mjs";
 
 const project = JSON.parse(fs.readFileSync(new URL("../emulator/projects/cte2/project.json", import.meta.url), "utf8"));
 
@@ -30,4 +31,19 @@ test("capture metadata and filenames preserve the canonical audit dimensions", (
   assert.equal(compareCaptureMetadata(metadata, structuredClone(metadata)).compatible, true);
   const mismatch = structuredClone(metadata); mismatch.fixture = "empty";
   assert.deepEqual(compareCaptureMetadata(metadata, mismatch).mismatches.map((entry) => entry.field), ["fixture"]);
+});
+
+test("visual comparison blocks metadata drift and thresholds pixel noise without declaring a defect", () => {
+  const left = browserCaptureMetadata({ project: "cte2", screen: "map_stash", fixture: "normal", state: "normal", locale: "ja", variant: null, alignment: { status: "production-derived", source: "contract" }, logicalSize: { width: 2, height: 1 }, pixelSize: { width: 2, height: 1 }, guiScale: 1, canonicalUrl: "index.html", image: "left.png" });
+  const right = { ...structuredClone(left), image: "right.png" };
+  assert.equal(comparePair(left, right).compatible, true);
+  right.locale = "en";
+  assert.equal(comparePair(left, right).compatible, false);
+  right.locale = "ja";
+  const diff = diffPixels(new Uint8ClampedArray([10, 10, 10, 255, 100, 100, 100, 255]), new Uint8ClampedArray([15, 15, 15, 255, 140, 100, 100, 255]), 16);
+  assert.equal(diff.changedPixels, 1);
+  assert.equal(diff.totalPixels, 2);
+  const metadata = comparisonMetadata(left, right, "difference", diff);
+  assert.match(metadata.interpretation, /not automatically product defects/);
+  assert.equal(metadata.difference.threshold, 16);
 });
