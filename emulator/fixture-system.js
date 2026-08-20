@@ -3,14 +3,21 @@ export const PROJECT_SCHEMA = "forge-ui-inspector.project";
 export const PROJECT_INDEX_SCHEMA = "forge-ui-inspector.project-index";
 export const DEFAULT_PROJECT_ID = "cte2";
 export const PAGE_SIZE = 54;
+export const ALIGNMENT_STATUSES = Object.freeze(["production", "production-derived", "approximate", "concept"]);
+export const MASTER_VARIANT_IDS = Object.freeze(["current", "classic", "dual", "rail", "overview", "clean_dual", "rail_dual", "single_focus"]);
+
+const alignment = (status, source = "", variants) => Object.freeze({ status, source, ...(variants ? { variants: Object.freeze(variants) } : {}) });
+const MASTER_ALIGNMENT = alignment("approximate", "MasterStashPreviewScreen", Object.fromEntries(MASTER_VARIANT_IDS.map((id) => [id,
+  alignment(id === "rail_dual" ? "production-derived" : "concept", id === "rail_dual" ? "MasterStashPreviewScreen rail/dual geometry" : "ForgeUIInspector design exploration"),
+])));
 
 const COMPACT_STASH_GEOMETRY = Object.freeze({ list: { x: 12, y: 34, width: 200, rowHeight: 18, rows: 10 }, stash: { x: 240, y: 34, columns: 12, rows: 8, slot: 18 }, inventory: { x: 267, y: 228, columns: 9, rows: 3 }, hotbar: { y: 290, columns: 9, rows: 1 }, page: { previousX: 240, nextX: 298, buttonY: 186, buttonWidth: 54, buttonHeight: 20, labelX: 360, labelY: 192 }, inventoryLabel: { x: 267, y: 216 } });
 const CTE2_SCREENS = [
-  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
-  { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
-  { id: "master_stash", labelKey: "screen.forgeuiinspector.master.title", renderer: "master-stash", width: 650, height: 350, grid: { columns: 9, rows: 9, slots: 81 }, fixtureFile: "master-stash", fixturePath: "../../fixtures/master-stash.json" },
-  { id: "profession_workshop", labelKey: "screen.forgeuiinspector.profession.title", renderer: "profession-workshop", width: 620, height: 340, grid: { columns: 9, rows: 6, slots: 54 }, fixtureFile: "profession-workshop", fixturePath: "../../fixtures/profession-workshop.json" },
-  { id: "advanced_salvage", labelKey: "screen.forgeuiinspector.salvage.title", renderer: "advanced-salvage", width: 960, height: 540, grid: { columns: 9, rows: 6, slots: 54 }, fixtureFile: "advanced-salvage", fixturePath: "../../fixtures/advanced-salvage.json" },
+  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, alignment: alignment("production-derived", "emulator/contracts/cte2-stash.json"), fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
+  { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, alignment: alignment("production-derived", "emulator/contracts/cte2-stash.json"), fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
+  { id: "master_stash", labelKey: "screen.forgeuiinspector.master.title", renderer: "master-stash", width: 650, height: 350, grid: { columns: 9, rows: 9, slots: 81 }, alignment: MASTER_ALIGNMENT, fixtureFile: "master-stash", fixturePath: "../../fixtures/master-stash.json" },
+  { id: "profession_workshop", labelKey: "screen.forgeuiinspector.profession.title", renderer: "profession-workshop", width: 620, height: 340, grid: { columns: 9, rows: 6, slots: 54 }, alignment: alignment("approximate", "ProfessionWorkshopPreviewScreen"), fixtureFile: "profession-workshop", fixturePath: "../../fixtures/profession-workshop.json" },
+  { id: "advanced_salvage", labelKey: "screen.forgeuiinspector.salvage.title", renderer: "advanced-salvage", width: 960, height: 540, grid: { columns: 9, rows: 6, slots: 54 }, alignment: alignment("approximate", "AdvancedSalvagePreviewScreen"), fixtureFile: "advanced-salvage", fixturePath: "../../fixtures/advanced-salvage.json" },
 ];
 
 export const DEFAULT_CTE2_PROJECT = Object.freeze({
@@ -59,6 +66,32 @@ export function rendererFor(project = DEFAULT_CTE2_PROJECT, screenId = "map_stas
   return screenMetaFor(project, screenId).renderer;
 }
 
+export function alignmentFor(project = DEFAULT_CTE2_PROJECT, screenId = "map_stash", variant) {
+  const declared = screenMetaFor(project, screenId).alignment ?? { status: "approximate", source: "undeclared" };
+  const selected = variant && declared.variants?.[variant] ? declared.variants[variant] : declared;
+  return { status: ALIGNMENT_STATUSES.includes(selected.status) ? selected.status : "approximate", source: selected.source || declared.source || "" };
+}
+
+function validateAlignmentContract(screen, errors) {
+  const declared = screen.alignment;
+  // Version-1 third-party manifests predate provenance. They remain loadable
+  // and alignmentFor() exposes them as approximate/undeclared at runtime.
+  if (declared === undefined) return;
+  if (!declared || typeof declared !== "object" || !ALIGNMENT_STATUSES.includes(declared.status)) {
+    errors.push(`screen ${screen.id} needs an alignment status`);
+    return;
+  }
+  if (typeof declared.source !== "string") errors.push(`screen ${screen.id} alignment source must be a string`);
+  for (const [variant, value] of Object.entries(declared.variants ?? {})) {
+    if (!MASTER_VARIANT_IDS.includes(variant)) errors.push(`screen ${screen.id} has unknown alignment variant: ${variant}`);
+    if (!value || typeof value !== "object" || !ALIGNMENT_STATUSES.includes(value.status)) errors.push(`screen ${screen.id} variant ${variant} needs an alignment status`);
+    if (typeof value?.source !== "string") errors.push(`screen ${screen.id} variant ${variant} alignment source must be a string`);
+  }
+  if (screen.id === "master_stash") {
+    for (const variant of MASTER_VARIANT_IDS) if (!declared.variants?.[variant]) errors.push(`screen master_stash needs alignment for variant ${variant}`);
+  }
+}
+
 export function validateProjectManifest(manifest) {
   const errors = [];
   if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) return result(["project manifest must be an object"]);
@@ -74,6 +107,7 @@ export function validateProjectManifest(manifest) {
     ids.add(screen.id);
     if (typeof screen.labelKey !== "string" || screen.labelKey.length === 0) errors.push(`screen ${screen.id} needs labelKey`);
     if (typeof screen.fixturePath !== "string" || screen.fixturePath.length === 0) errors.push(`screen ${screen.id} needs fixturePath`);
+    validateAlignmentContract(screen, errors);
     const meta = screenMetaFor({ screens: [screen] }, screen.id);
     if (!(meta.width > 0) || !(meta.height > 0)) errors.push(`screen ${screen.id} needs positive logicalSize`);
     if (screen.grid && (!Number.isInteger(screen.grid.columns) || !Number.isInteger(screen.grid.rows) || !Number.isInteger(screen.grid.slots)

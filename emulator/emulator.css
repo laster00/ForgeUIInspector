@@ -26,6 +26,10 @@
 * { box-sizing: border-box; }
 html, body { min-height: 100%; }
 body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-background); }
+body[data-capture-mode="true"] { padding: 0; overflow: hidden; }
+body[data-capture-mode="true"] .controls, body[data-capture-mode="true"] .alignment-badge { display: none; }
+body[data-capture-mode="true"] #forge-ui-emulator { display: grid; width: 100vw; height: 100vh; place-items: center; }
+body[data-capture-mode="true"] .preview-wrap { margin: 0; max-width: none; }
 
 .controls {
   display: flex;
@@ -64,6 +68,10 @@ body { margin: 0; padding: 16px; overflow-x: hidden; background: var(--ui-backgr
   margin: 16px auto;
   overflow: hidden;
 }
+.alignment-badge { position: absolute; right: 4px; top: 4px; z-index: 20; max-width: calc(100% - 8px); padding: 3px 6px; overflow: hidden; border: 1px solid var(--ui-border); background: rgba(21, 30, 40, .94); color: var(--ui-muted); font-size: 9px; white-space: nowrap; text-overflow: ellipsis; pointer-events: none; }
+.alignment-production, .alignment-production-derived { color: var(--ui-success); }
+.alignment-concept { color: var(--ui-selected); }
+.alignment-approximate { color: var(--ui-info); }
 
 .mc {
   position: relative;

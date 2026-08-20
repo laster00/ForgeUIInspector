@@ -12,6 +12,7 @@
       "logicalSize": { "width": 474, "height": 326 },
       "geometry": { "list": { "x": 12, "y": 34, "width": 200, "rowHeight": 18, "rows": 10 }, "stash": { "x": 240, "y": 34, "columns": 12, "rows": 8, "slot": 18 }, "inventory": { "x": 267, "y": 228, "columns": 9, "rows": 3 }, "hotbar": { "y": 290, "columns": 9, "rows": 1 }, "page": { "previousX": 240, "nextX": 298, "buttonY": 186, "buttonWidth": 54, "buttonHeight": 20, "labelX": 360, "labelY": 192 }, "inventoryLabel": { "x": 267, "y": 216 } },
       "grid": { "columns": 12, "rows": 8, "slots": 96 },
+      "alignment": { "status": "production-derived", "source": "emulator/contracts/cte2-stash.json" },
       "fixturePath": "../../fixtures/map-stash.json"
     },
     {
@@ -21,6 +22,7 @@
       "logicalSize": { "width": 474, "height": 326 },
       "geometry": { "list": { "x": 12, "y": 34, "width": 200, "rowHeight": 18, "rows": 10 }, "stash": { "x": 240, "y": 34, "columns": 12, "rows": 8, "slot": 18 }, "inventory": { "x": 267, "y": 228, "columns": 9, "rows": 3 }, "hotbar": { "y": 290, "columns": 9, "rows": 1 }, "page": { "previousX": 240, "nextX": 298, "buttonY": 186, "buttonWidth": 54, "buttonHeight": 20, "labelX": 360, "labelY": 192 }, "inventoryLabel": { "x": 267, "y": 216 } },
       "grid": { "columns": 12, "rows": 8, "slots": 96 },
+      "alignment": { "status": "production-derived", "source": "emulator/contracts/cte2-stash.json" },
       "fixturePath": "../../fixtures/currency-stash.json"
     },
     {
@@ -29,6 +31,20 @@
       "renderer": "master-stash",
       "logicalSize": { "width": 650, "height": 350 },
       "grid": { "columns": 9, "rows": 9, "slots": 81 },
+      "alignment": {
+        "status": "approximate",
+        "source": "MasterStashPreviewScreen",
+        "variants": {
+          "current": { "status": "concept", "source": "ForgeUIInspector design exploration" },
+          "classic": { "status": "concept", "source": "ForgeUIInspector design exploration" },
+          "dual": { "status": "concept", "source": "ForgeUIInspector design exploration" },
+          "rail": { "status": "concept", "source": "ForgeUIInspector design exploration" },
+          "overview": { "status": "concept", "source": "ForgeUIInspector design exploration" },
+          "clean_dual": { "status": "concept", "source": "ForgeUIInspector design exploration" },
+          "rail_dual": { "status": "production-derived", "source": "MasterStashPreviewScreen rail/dual geometry" },
+          "single_focus": { "status": "concept", "source": "ForgeUIInspector design exploration" }
+        }
+      },
       "fixturePath": "../../fixtures/master-stash.json"
     },
     {
@@ -37,6 +53,7 @@
       "renderer": "profession-workshop",
       "logicalSize": { "width": 620, "height": 340 },
       "grid": { "columns": 9, "rows": 6, "slots": 54 },
+      "alignment": { "status": "approximate", "source": "ProfessionWorkshopPreviewScreen" },
       "fixturePath": "../../fixtures/profession-workshop.json"
     },
     {
@@ -45,6 +62,7 @@
       "renderer": "advanced-salvage",
       "logicalSize": { "width": 960, "height": 540 },
       "grid": { "columns": 9, "rows": 6, "slots": 54 },
+      "alignment": { "status": "approximate", "source": "AdvancedSalvagePreviewScreen" },
       "fixturePath": "../../fixtures/advanced-salvage.json"
     }
   ]
