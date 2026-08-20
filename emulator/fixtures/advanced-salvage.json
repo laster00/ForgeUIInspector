@@ -9,6 +9,6 @@
     { "id": "normal", "titleKey": "screen.forgeuiinspector.normal", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.salvage.catalog", "count": 4 }], "itemCount": 4, "items": [] },
     { "id": "empty", "titleKey": "screen.forgeuiinspector.empty", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.salvage.catalog", "count": 0 }], "itemCount": 0, "items": [] },
     { "id": "many", "titleKey": "screen.forgeuiinspector.many", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.salvage.catalog", "count": 108 }], "itemCount": 108, "items": [] },
-    { "id": "other", "titleKey": "screen.forgeuiinspector.otherFixture", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.salvage.catalog", "count": 2 }], "itemCount": 2, "items": [] }
+    { "id": "other", "titleKey": "screen.forgeuiinspector.salvage.fixture.other", "layouts": [{ "id": "all", "labelKey": "screen.forgeuiinspector.salvage.catalog", "count": 2 }], "itemCount": 2, "items": [] }
   ]
 }
