@@ -4,6 +4,10 @@ param(
     [int]$GuiScale = 2,
     [ValidateSet('F7', 'F8', 'F9', 'F10', 'F11')]
     [string]$PreviewKey = 'F7',
+    [ValidateSet('normal', 'empty', 'many', 'other')]
+    [string]$Fixture = 'normal',
+    [ValidateSet('ja', 'en')]
+    [string]$Locale = 'ja',
     [int]$Width = 0,
     [int]$Height = 0,
     [ValidateRange(30, 600)]
@@ -45,6 +49,7 @@ $options = @(
     'version:3465',
     'fullscreen:false',
     "guiScale:$GuiScale",
+    "lang:$(if ($Locale -eq 'en') { 'en_us' } else { 'ja_jp' })",
     'tutorialStep:none',
     'onboardAccessibility:false',
     'skipMultiplayerWarning:true',
@@ -70,11 +75,24 @@ public static class ForgeUiInspectorNativeWindow
         public int Bottom;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
     [DllImport("user32.dll")]
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 
     [DllImport("user32.dll")]
     public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+
+    [DllImport("user32.dll")]
+    public static extern bool GetClientRect(IntPtr hWnd, out RECT rect);
+
+    [DllImport("user32.dll")]
+    public static extern bool ClientToScreen(IntPtr hWnd, ref POINT point);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool SetWindowPos(
@@ -103,8 +121,9 @@ function Save-WindowScreenshot {
     )
 
     [ForgeUiInspectorNativeWindow+RECT]$rect = New-Object ForgeUiInspectorNativeWindow+RECT
-    if (-not [ForgeUiInspectorNativeWindow]::GetWindowRect($Handle, [ref]$rect)) {
-        throw 'Minecraftウィンドウの位置を取得できませんでした。'
+    [ForgeUiInspectorNativeWindow+POINT]$origin = New-Object ForgeUiInspectorNativeWindow+POINT
+    if (-not [ForgeUiInspectorNativeWindow]::GetClientRect($Handle, [ref]$rect) -or -not [ForgeUiInspectorNativeWindow]::ClientToScreen($Handle, [ref]$origin)) {
+        throw 'Minecraftクライアント領域を取得できませんでした。'
     }
 
     $width = $rect.Right - $rect.Left
@@ -116,7 +135,7 @@ function Save-WindowScreenshot {
     $bitmap = [System.Drawing.Bitmap]::new($width, $height)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     try {
-        $graphics.CopyFromScreen($rect.Left, $rect.Top, 0, 0, $bitmap.Size)
+        $graphics.CopyFromScreen($origin.X, $origin.Y, 0, 0, $bitmap.Size)
         $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
     } finally {
         $graphics.Dispose()
@@ -124,8 +143,8 @@ function Save-WindowScreenshot {
     }
 
     [pscustomobject]@{
-        left = $rect.Left
-        top = $rect.Top
+        left = $origin.X
+        top = $origin.Y
         width = $width
         height = $height
     }
@@ -173,7 +192,16 @@ $env:Path = "$javaRuntime\bin;$oldPath"
 
 $gradleProcess = $null
 $minecraft = $null
-$capturePath = Join-Path $OutputDirectory "minecraft-$($PreviewKey.ToLowerInvariant())-gui$GuiScale-${Width}x${Height}.png"
+$previewContract = switch ($PreviewKey) {
+    'F7' { [pscustomobject]@{ previewId = 'currency'; screen = 'currency_stash'; logicalWidth = 474; logicalHeight = 326; variant = $null; alignment = 'production-derived'; source = 'emulator/contracts/cte2-stash.json' } }
+    'F8' { [pscustomobject]@{ previewId = 'map'; screen = 'map_stash'; logicalWidth = 474; logicalHeight = 326; variant = $null; alignment = 'production-derived'; source = 'emulator/contracts/cte2-stash.json' } }
+    'F9' { [pscustomobject]@{ previewId = 'master'; screen = 'master_stash'; logicalWidth = 650; logicalHeight = 350; variant = 'rail_dual'; alignment = 'production-derived'; source = 'MasterStashPreviewScreen rail/dual geometry' } }
+    'F10' { [pscustomobject]@{ previewId = 'profession'; screen = 'profession_workshop'; logicalWidth = 620; logicalHeight = 340; variant = $null; alignment = 'approximate'; source = 'ProfessionWorkshopPreviewScreen' } }
+    'F11' { [pscustomobject]@{ previewId = 'advanced_salvage'; screen = 'advanced_salvage'; logicalWidth = 960; logicalHeight = 540; variant = $null; alignment = 'approximate'; source = 'AdvancedSalvagePreviewScreen' } }
+}
+$variantToken = if ($null -eq $previewContract.variant) { 'default' } else { $previewContract.variant }
+$stem = "forge__cte2__$($previewContract.screen)__${Fixture}__normal__${Locale}__${variantToken}__$($previewContract.logicalWidth)x$($previewContract.logicalHeight)__viewport${Width}x${Height}__scale$GuiScale"
+$capturePath = Join-Path $OutputDirectory "$stem.png"
 $metadataPath = [System.IO.Path]::ChangeExtension($capturePath, '.json')
 $gradleLog = Join-Path $runDirectory 'capture-gradle.log'
 $gradleErrorLog = Join-Path $runDirectory 'capture-gradle-error.log'
@@ -183,14 +211,7 @@ try {
     # Both the repository and the isolated run directory have no spaces. Keeping
     # the wrapper path unquoted avoids cmd.exe treating the nested --args quotes
     # as the end of the /c command.
-    $previewId = switch ($PreviewKey) {
-        'F7' { 'currency' }
-        'F8' { 'map' }
-        'F9' { 'master' }
-        'F10' { 'profession' }
-        'F11' { 'advanced_salvage' }
-    }
-    $gradleCommand = "$wrapper -PforgeUiRunDir=run-ui -PforgeUiPreview=$previewId runClient --args=`"$minecraftArgs`""
+    $gradleCommand = "$wrapper -PforgeUiRunDir=run-ui -PforgeUiPreview=$($previewContract.previewId) -PforgeUiFixture=$Fixture runClient --args=`"$minecraftArgs`""
     $gradleProcess = Start-Process -FilePath 'cmd.exe' -ArgumentList @('/d', '/c', $gradleCommand) -WorkingDirectory $repoRoot -PassThru -WindowStyle Normal -RedirectStandardOutput $gradleLog -RedirectStandardError $gradleErrorLog
 
     $deadline = (Get-Date).AddSeconds($WaitSeconds)
@@ -226,14 +247,29 @@ try {
     Start-Sleep -Seconds 2
 
     $rect = Save-WindowScreenshot -Handle $minecraft.MainWindowHandle -Path $capturePath
+    $pairKey = "cte2:$($previewContract.screen):${Fixture}:normal:${Locale}:${variantToken}:$($previewContract.logicalWidth)x$($previewContract.logicalHeight):scale$GuiScale"
     [pscustomobject]@{
-        previewKey = $PreviewKey
+        schema = 'forge-ui-inspector.capture'
+        version = 1
+        kind = 'forge'
+        project = 'cte2'
+        screen = $previewContract.screen
+        fixture = $Fixture
+        state = 'normal'
+        locale = $Locale
+        variant = $previewContract.variant
+        alignment = [pscustomobject]@{ status = $previewContract.alignment; source = $previewContract.source }
+        logicalSize = [pscustomobject]@{ width = $previewContract.logicalWidth; height = $previewContract.logicalHeight }
+        pixelSize = [pscustomobject]@{ width = $rect.width; height = $rect.height }
         guiScale = $GuiScale
+        image = [System.IO.Path]::GetFileName($capturePath)
+        pairKey = $pairKey
+        previewKey = $PreviewKey
         requestedWidth = $Width
         requestedHeight = $Height
         window = $rect
         runDirectory = $runDirectory
-        image = $capturePath
+        limitations = @('Forge capture proves Minecraft rendering for this local fixture only; it does not prove server, NBT, menu, or production interaction behavior.')
     } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $metadataPath -Encoding utf8
 
     Write-Output "CAPTURED $capturePath"

@@ -21,6 +21,7 @@ abstract class FixturePreviewScreen extends Screen {
     protected FixturePreviewScreen(Screen parent, Component title) {
         super(title);
         this.parent = parent;
+        this.fixtureIndex = PreviewLaunchOptions.fixtureIndex();
     }
 
     protected abstract int logicalWidth();

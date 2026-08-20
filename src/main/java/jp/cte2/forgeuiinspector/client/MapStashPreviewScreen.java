@@ -14,7 +14,7 @@ public final class MapStashPreviewScreen extends Screen {
     private PreviewFixture fixture = PreviewFixture.NORMAL;
     private int fixtureIndex, selectedLayout, scroll, page, originX, originY;
     private float scale = 1;
-    public MapStashPreviewScreen(Screen parent) { super(Component.translatable("screen.forgeuiinspector.title")); this.parent = parent; }
+    public MapStashPreviewScreen(Screen parent) { super(Component.translatable("screen.forgeuiinspector.title")); this.parent = parent; this.fixtureIndex = PreviewLaunchOptions.fixtureIndex(); this.fixture = PreviewFixture.values()[fixtureIndex]; }
     @Override protected void init() { scale = Math.min(1, Math.min(width / (float) W, height / (float) H)); originX = Math.round((width - W * scale) / 2); originY = Math.round((height - H * scale) / 2); }
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         renderBackground(g); g.pose().pushPose(); g.pose().translate(originX, originY, 0); g.pose().scale(scale, scale, 1);

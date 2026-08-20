@@ -27,6 +27,10 @@ test("Minecraft UI harness is isolated, deterministic, and captures a real windo
   assert.match(captureScript, /forgeUiPreview/);
   assert.match(captureScript, /Save-WindowScreenshot/);
   assert.match(captureScript, /PreviewKey/);
+  assert.match(captureScript, /forge-ui-inspector\.capture/);
+  assert.match(captureScript, /pairKey/);
+  assert.match(captureScript, /GetClientRect/);
+  assert.match(captureScript, /forgeUiFixture/);
 });
 
 test("harness documentation covers both GUI scales and all preview keys", () => {
@@ -37,6 +41,7 @@ test("harness documentation covers both GUI scales and all preview keys", () => 
   assert.match(harnessReadme, /Profession WorkshopはF10/);
   assert.match(harnessReadme, /Advanced SalvageはF11/);
   assert.match(harnessReadme, /run-ui/);
+  assert.match(harnessReadme, /visual-compare/);
 });
 
 test("preview keys are usable from the title screen without a world", () => {
@@ -51,6 +56,13 @@ test("preview keys are usable from the title screen without a world", () => {
 test("capture harness maps every development key to a server-free preview", () => {
   for (const key of ["F7", "F8", "F9", "F10", "F11"]) assert.match(captureScript, new RegExp(`'${key}'`));
   assert.match(captureScript, /advanced_salvage/);
+});
+
+test("Forge capture metadata can match browser audit dimensions without claiming runtime behavior", () => {
+  for (const field of ["schema", "kind", "project", "screen", "fixture", "state", "locale", "variant", "alignment", "logicalSize", "pixelSize", "guiScale", "pairKey", "limitations"]) assert.match(captureScript, new RegExp(`${field}\\s*=`), field);
+  assert.match(captureScript, /Fixture = 'normal'/);
+  assert.match(captureScript, /Locale = 'ja'/);
+  assert.match(captureScript, /server, NBT, menu, or production interaction behavior/);
 });
 
 test("Map and Currency capture previews follow the required versioned stash contract", () => {
