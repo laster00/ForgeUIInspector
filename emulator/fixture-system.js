@@ -5,11 +5,11 @@ export const DEFAULT_PROJECT_ID = "cte2";
 export const PAGE_SIZE = 54;
 
 const CTE2_SCREENS = [
-  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 320, height: 230, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
-  { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 320, height: 230, fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
-  { id: "master_stash", labelKey: "screen.forgeuiinspector.master.title", renderer: "master-stash", width: 650, height: 350, fixtureFile: "master-stash", fixturePath: "../../fixtures/master-stash.json" },
-  { id: "profession_workshop", labelKey: "screen.forgeuiinspector.profession.title", renderer: "profession-workshop", width: 620, height: 340, fixtureFile: "profession-workshop", fixturePath: "../../fixtures/profession-workshop.json" },
-  { id: "advanced_salvage", labelKey: "screen.forgeuiinspector.salvage.title", renderer: "advanced-salvage", width: 960, height: 540, fixtureFile: "advanced-salvage", fixturePath: "../../fixtures/advanced-salvage.json" },
+  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
+  { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 474, height: 326, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
+  { id: "master_stash", labelKey: "screen.forgeuiinspector.master.title", renderer: "master-stash", width: 650, height: 350, grid: { columns: 9, rows: 9, slots: 81 }, fixtureFile: "master-stash", fixturePath: "../../fixtures/master-stash.json" },
+  { id: "profession_workshop", labelKey: "screen.forgeuiinspector.profession.title", renderer: "profession-workshop", width: 620, height: 340, grid: { columns: 9, rows: 6, slots: 54 }, fixtureFile: "profession-workshop", fixturePath: "../../fixtures/profession-workshop.json" },
+  { id: "advanced_salvage", labelKey: "screen.forgeuiinspector.salvage.title", renderer: "advanced-salvage", width: 960, height: 540, grid: { columns: 9, rows: 6, slots: 54 }, fixtureFile: "advanced-salvage", fixturePath: "../../fixtures/advanced-salvage.json" },
 ];
 
 export const DEFAULT_CTE2_PROJECT = Object.freeze({
@@ -47,6 +47,9 @@ export function screenMetaFor(project = DEFAULT_CTE2_PROJECT, screenId = "map_st
     width: Number.isFinite(Number(selected.width)) ? Number(selected.width) : Number(logicalSize.width) || 320,
     height: Number.isFinite(Number(selected.height)) ? Number(selected.height) : Number(logicalSize.height) || 230,
     renderer: selected.renderer || "generic",
+    grid: selected.grid && Number.isInteger(selected.grid.columns) && Number.isInteger(selected.grid.rows)
+      ? { columns: selected.grid.columns, rows: selected.grid.rows, slots: selected.grid.slots ?? selected.grid.columns * selected.grid.rows }
+      : { columns: 9, rows: 6, slots: 54 },
   };
 }
 
@@ -71,6 +74,10 @@ export function validateProjectManifest(manifest) {
     if (typeof screen.fixturePath !== "string" || screen.fixturePath.length === 0) errors.push(`screen ${screen.id} needs fixturePath`);
     const meta = screenMetaFor({ screens: [screen] }, screen.id);
     if (!(meta.width > 0) || !(meta.height > 0)) errors.push(`screen ${screen.id} needs positive logicalSize`);
+    if (screen.grid && (!Number.isInteger(screen.grid.columns) || !Number.isInteger(screen.grid.rows) || !Number.isInteger(screen.grid.slots)
+      || screen.grid.columns <= 0 || screen.grid.rows <= 0 || screen.grid.slots !== screen.grid.columns * screen.grid.rows)) {
+      errors.push(`screen ${screen.id} needs a consistent grid contract`);
+    }
   }
   if (typeof manifest.defaultScreen !== "string" || !ids.has(manifest.defaultScreen)) errors.push("defaultScreen must reference a screen");
   return result(errors);
@@ -87,6 +94,7 @@ export function validateFixtureDocument(data, expected = {}) {
   if (typeof data.screen !== "string" || !ID_PATTERN.test(data.screen)) errors.push("screen must be a valid id");
   if (typeof data.renderer !== "string" || data.renderer.length === 0) errors.push("renderer must be a non-empty string");
   if (!Number.isInteger(data.pageSize) || data.pageSize <= 0) errors.push("pageSize must be a positive integer");
+  if (expected.pageSize !== undefined && data.pageSize !== expected.pageSize) errors.push(`pageSize must be ${expected.pageSize} for ${expected.screen ?? data.screen}`);
   const fixtureIds = new Set();
   for (const fixture of data.fixtures ?? []) {
     if (!fixture || typeof fixture !== "object") { errors.push("fixture must be an object"); continue; }
@@ -103,8 +111,11 @@ export function validateFixtureDocument(data, expected = {}) {
       if (layout.count !== undefined && (!Number.isInteger(layout.count) || layout.count < 0)) errors.push(`layout ${layout.id} count must be non-negative`);
     }
     const items = Array.isArray(fixture.items) ? fixture.items : [];
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       if (!Number.isInteger(item?.slot) || item.slot < 0 || item.slot >= data.pageSize) errors.push(`fixture ${fixture.id} has an invalid slot`);
+      else if (item.slot !== index % data.pageSize) errors.push(`fixture ${fixture.id} item ${index} slot must be ${index % data.pageSize}`);
+      if (item?.page !== undefined && (!Number.isInteger(item.page) || item.page < 0)) errors.push(`fixture ${fixture.id} has an invalid page`);
+      else if (item?.page !== undefined && item.page !== Math.floor(index / data.pageSize)) errors.push(`fixture ${fixture.id} item ${index} page must be ${Math.floor(index / data.pageSize)}`);
       if (item?.count !== undefined && (!Number.isFinite(Number(item.count)) || Number(item.count) < 0)) errors.push(`fixture ${fixture.id} has an invalid item count`);
     }
     if (fixture.itemCount !== undefined && (!Number.isInteger(fixture.itemCount) || fixture.itemCount < 0)) errors.push(`fixture ${fixture.id} itemCount must be non-negative`);
@@ -112,6 +123,18 @@ export function validateFixtureDocument(data, expected = {}) {
   if (!Array.isArray(data.fixtures) || data.fixtures.length === 0) errors.push("fixtures must contain at least one fixture");
   for (const required of ["normal", "empty", "many", "other"]) if (!fixtureIds.has(required)) errors.push(`missing fixture: ${required}`);
   return result(errors);
+}
+
+export function normalizeFixtureItems(data) {
+  if (!data || typeof data !== "object") return data;
+  const pageSize = Number.isInteger(data.pageSize) && data.pageSize > 0 ? data.pageSize : PAGE_SIZE;
+  return {
+    ...data,
+    fixtures: (data.fixtures ?? []).map((fixture) => ({
+      ...fixture,
+      items: (fixture.items ?? []).map((item, index) => ({ ...item, slot: index % pageSize, page: Math.floor(index / pageSize) })),
+    })),
+  };
 }
 
 export function createFixtureRegistry(projects = []) {

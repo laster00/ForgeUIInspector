@@ -12,12 +12,14 @@ import {
   screenIdsFor,
   screenMetaFor,
   validateFixtureDocument,
+  normalizeFixtureItems,
   validateProjectManifest,
 } from "./fixture-system.js";
 
-export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, validateProjectManifest };
+export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, normalizeFixtureItems, validateProjectManifest };
 
 export const PAGE_SIZE = PROJECT_PAGE_SIZE;
+export const MAP_PAGE_SIZE = 96;
 export const MASTER_PAGE_SIZE = 81;
 export const FIXTURE_IDS = ["normal", "empty", "many", "other"];
 export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
@@ -194,8 +196,8 @@ export function createFallbackData() {
     { id: "other", labelKey: "screen.forgeuiinspector.other", count: 0 },
   ];
   const makeItems = (count, layoutFor) => Array.from({ length: count }, (_, index) => ({
-    slot: index % PAGE_SIZE,
-    page: Math.floor(index / PAGE_SIZE),
+    slot: index % MAP_PAGE_SIZE,
+    page: Math.floor(index / MAP_PAGE_SIZE),
     icon: index % 7 === 2 ? "unknown-icon" : index % 2 ? "paper" : "map",
     count: (index % 64) + 1,
     layout: layoutFor(index),
@@ -209,7 +211,7 @@ export function createFallbackData() {
     project: DEFAULT_PROJECT_ID,
     screen: "map_stash",
     renderer: "compact-stash",
-    pageSize: PAGE_SIZE,
+    pageSize: MAP_PAGE_SIZE,
     fixtures: [
       { id: "normal", titleKey: "screen.forgeuiinspector.normal", layouts: layouts(), items: normalItems },
       { id: "empty", titleKey: "screen.forgeuiinspector.empty", layouts: layouts(), items: [] },
@@ -221,8 +223,8 @@ export function createFallbackData() {
 
 export function createCurrencyFallbackData() {
   const labels = CURRENCY_CATEGORY_IDS.map((id) => ({ id, labelKey: id === "all" || id === "other" ? `screen.forgeuiinspector.${id}` : `screen.forgeuiinspector.${id}`, count: 0 }));
-  const make = (count) => Array.from({ length: count }, (_, index) => ({ slot: index % PAGE_SIZE, page: Math.floor(index / PAGE_SIZE), id: `cte2:currency_${index + 1}`, label: `Currency ${index + 1}`, icon: index % 11 === 0 ? "unknown-icon" : index % 3 === 0 ? "coin" : "orb", count: (index % 40) + 1, category: CURRENCY_CATEGORY_IDS[1 + (index % 8)] }));
-  return { schema: FIXTURE_SCHEMA, version: 1, project: DEFAULT_PROJECT_ID, screen: "currency_stash", renderer: "compact-stash", titleKey: "screen.forgeuiinspector.currencyTitle", pageSize: PAGE_SIZE, fixtures: [
+  const make = (count) => Array.from({ length: count }, (_, index) => ({ slot: index % MAP_PAGE_SIZE, page: Math.floor(index / MAP_PAGE_SIZE), id: `cte2:currency_${index + 1}`, label: `Currency ${index + 1}`, icon: index % 11 === 0 ? "unknown-icon" : index % 3 === 0 ? "coin" : "orb", count: (index % 40) + 1, category: CURRENCY_CATEGORY_IDS[1 + (index % 8)] }));
+  return { schema: FIXTURE_SCHEMA, version: 1, project: DEFAULT_PROJECT_ID, screen: "currency_stash", renderer: "compact-stash", titleKey: "screen.forgeuiinspector.currencyTitle", pageSize: MAP_PAGE_SIZE, fixtures: [
     { id: "normal", titleKey: "screen.forgeuiinspector.currencyFixture.normal", layouts: labels, items: make(18) },
     { id: "empty", titleKey: "screen.forgeuiinspector.currencyFixture.empty", layouts: labels, items: [] },
     { id: "many", titleKey: "screen.forgeuiinspector.currencyFixture.many", layouts: labels, items: make(108) },
@@ -248,7 +250,7 @@ export function createExtendedFallbackData(screen = "master_stash") {
     project: DEFAULT_PROJECT_ID,
     screen,
     renderer: meta.renderer,
-    pageSize: PAGE_SIZE,
+    pageSize: meta.grid?.slots ?? PAGE_SIZE,
     titleKey: meta.titleKey,
     fixtures: [makeFixture("normal", 18), makeFixture("empty", 0), makeFixture("many", 108), makeFixture("other", 6)],
   };
@@ -264,8 +266,8 @@ export function createGenericFallbackData(project = DEFAULT_CTE2_PROJECT, screen
     layouts: [{ ...layout, count }],
     itemCount: count,
     items: Array.from({ length: count }, (_, index) => ({
-      slot: index % PAGE_SIZE,
-      page: Math.floor(index / PAGE_SIZE),
+      slot: index % (meta.grid?.slots ?? PAGE_SIZE),
+      page: Math.floor(index / (meta.grid?.slots ?? PAGE_SIZE)),
       icon: index % 3 === 0 ? "paper" : index % 3 === 1 ? "orb" : "unknown-icon",
       count: (index % 32) + 1,
       label: `Fixture item ${index + 1}`,
@@ -278,7 +280,7 @@ export function createGenericFallbackData(project = DEFAULT_CTE2_PROJECT, screen
     screen,
     renderer: meta.renderer,
     titleKey: meta.labelKey || "screen.forgeuiinspector.genericTitle",
-    pageSize: PAGE_SIZE,
+    pageSize: meta.grid?.slots ?? PAGE_SIZE,
     fixtures: [fixture("normal", 18), fixture("empty", 0), fixture("many", 108), fixture("other", 6)],
   };
 }
@@ -311,8 +313,8 @@ export function itemsForLayout(fixture, layoutId = "all") {
   let all = Array.isArray(fixture?.items) ? fixture.items : [];
   if (all.length === 0 && Number(fixture?.itemCount) > 0) {
     all = Array.from({ length: Math.max(0, Number(fixture.itemCount)) }, (_, index) => ({
-      slot: index % PAGE_SIZE,
-      page: Math.floor(index / PAGE_SIZE),
+      slot: index % (Number(fixture?.pageSize) || PAGE_SIZE),
+      page: Math.floor(index / (Number(fixture?.pageSize) || PAGE_SIZE)),
       icon: index % 3 === 0 ? "orb" : index % 3 === 1 ? "map" : "paper",
       count: (index % 32) + 1,
       layout: layoutId === "other" ? "other" : "all",
@@ -332,9 +334,9 @@ export function itemsForCategory(fixture, category = "all") {
 }
 
 export function isCurrencyFixtureData(data) {
-  return data?.screen === "currency_stash" && data?.pageSize === PAGE_SIZE && Array.isArray(data?.fixtures)
+  return data?.screen === "currency_stash" && data?.pageSize === MAP_PAGE_SIZE && Array.isArray(data?.fixtures)
     && data.fixtures.every((fixture) => FIXTURE_IDS.includes(fixture.id) && Array.isArray(fixture.items)
-      && fixture.items.every((item) => CURRENCY_CATEGORY_IDS.includes(item.category) && Number.isInteger(item.slot) && item.slot >= 0 && item.slot < PAGE_SIZE));
+      && fixture.items.every((item) => CURRENCY_CATEGORY_IDS.includes(item.category) && Number.isInteger(item.slot) && item.slot >= 0 && item.slot < MAP_PAGE_SIZE));
 }
 
 export function pageCount(itemsOrCount, pageSize = PAGE_SIZE) {
@@ -344,14 +346,11 @@ export function pageCount(itemsOrCount, pageSize = PAGE_SIZE) {
 
 /**
  * Return the visual page size for a renderer. Fixture slots remain compatible
- * with the standard 54-slot schema; Master Stash lays out two 9x9 pages.
+ * with the screen-owned grid contract; Master Stash keeps its 9x9 visual page.
  */
 export function renderPageSize(data = createFallbackData(), project = DEFAULT_CTE2_PROJECT, screen = data?.screen ?? "map_stash") {
   const meta = screenMetaFor(project, screen);
-  const fixturePageSize = Number(data?.pageSize);
-  return meta.renderer === "master-stash"
-    ? MASTER_PAGE_SIZE
-    : Number.isInteger(fixturePageSize) && fixturePageSize > 0 ? fixturePageSize : PAGE_SIZE;
+  return meta.grid?.slots ?? PAGE_SIZE;
 }
 
 export function layoutScrollMax(fixture, visibleRows = 6) {
@@ -469,6 +468,7 @@ function snapshotFor(state, data, project) {
       layoutCount: fixture.layouts?.length ?? 0,
       pageSize,
       pageCount: pageCount(items, pageSize),
+      grid: { ...meta.grid },
     },
   };
 }
@@ -538,9 +538,14 @@ function masterGrid(items, offset, testPrefix) {
   const grid = createElement("div", "large-grid master-variant-grid");
   grid.setAttribute("role", "grid");
   grid.setAttribute("aria-label", testPrefix);
+  grid.style.setProperty("--grid-columns", "9");
+  grid.style.setProperty("--grid-rows", "9");
   for (let index = 0; index < MASTER_PAGE_SIZE; index += 1) {
     const slot = createElement("div", "slot");
     slot.dataset.testid = `${testPrefix}-slot-${index}`;
+    slot.setAttribute("role", "gridcell");
+    slot.setAttribute("aria-colindex", String((index % 9) + 1));
+    slot.setAttribute("aria-rowindex", String(Math.floor(index / 9) + 1));
     const item = items[offset + index];
     if (item) slot.append(screenItemIcon(item, offset + index));
     grid.append(slot);
@@ -708,7 +713,18 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
       panel.setAttribute("aria-label", `Master Stash page ${page + 1}`);
       const grid = createElement("div", "large-grid");
       grid.setAttribute("role", "grid");
-      for (let i = 0; i < MASTER_PAGE_SIZE; i += 1) { const slot = createElement("div", "slot"); slot.dataset.testid = `master-stash-page-${page}-slot-${i}`; slot.setAttribute("role", "gridcell"); const item = page === 0 ? items[i] : items[i + MASTER_PAGE_SIZE]; if (item) slot.append(screenItemIcon(item, i)); grid.append(slot); }
+      grid.style.setProperty("--grid-columns", "9");
+      grid.style.setProperty("--grid-rows", "9");
+      for (let i = 0; i < MASTER_PAGE_SIZE; i += 1) {
+        const slot = createElement("div", "slot");
+        slot.dataset.testid = `master-stash-page-${page}-slot-${i}`;
+        slot.setAttribute("role", "gridcell");
+        slot.setAttribute("aria-colindex", String((i % 9) + 1));
+        slot.setAttribute("aria-rowindex", String(Math.floor(i / 9) + 1));
+        const item = page === 0 ? items[i] : items[i + MASTER_PAGE_SIZE];
+        if (item) slot.append(screenItemIcon(item, i));
+        grid.append(slot);
+      }
       panel.append(grid, createElement("small", "panel-caption", page === 0 ? "1" : "2"));
       pages.append(panel);
     });
@@ -757,7 +773,12 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     genericList.append(createElement("p", "", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
     const genericGrid = createElement("div", "large-grid generic-grid");
     genericGrid.setAttribute("role", "grid");
-    for (let index = 0; index < PAGE_SIZE; index += 1) {
+    const columns = meta.grid?.columns ?? 9;
+    const rows = meta.grid?.rows ?? 6;
+    const slots = meta.grid?.slots ?? columns * rows;
+    genericGrid.style.setProperty("--grid-columns", String(columns));
+    genericGrid.style.setProperty("--grid-rows", String(rows));
+    for (let index = 0; index < slots; index += 1) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `generic-slot-${index}`;
       slot.setAttribute("role", "gridcell");
@@ -801,7 +822,7 @@ export function initEmulator(data, options = {}) {
   FIXTURE_IDS.forEach((id) => fixtureControl?.add(new Option(id, id)));
 
   const fixtureForState = () => data.fixtures?.find((fixture) => fixture.id === state.fixture) ?? data.fixtures?.[0];
-  const sync = () => {
+  const publishSnapshot = () => {
     state = normalize(state, data, project);
     safeReplaceUrl(canonical(state));
     render();
@@ -826,7 +847,7 @@ export function initEmulator(data, options = {}) {
       return;
     }
     state = mergeState(state, partial, data, project);
-    sync();
+    publishSnapshot();
     return { ...state };
   };
 
@@ -851,6 +872,11 @@ export function initEmulator(data, options = {}) {
     app?.setAttribute("data-screen", state.screen);
     app?.setAttribute("data-fixture", state.fixture);
     app?.setAttribute("data-state", state.state);
+    app?.setAttribute("data-layout", state.layout);
+    app?.setAttribute("data-scroll", String(state.scroll));
+    app?.setAttribute("data-page", String(state.page));
+    app?.setAttribute("data-page-count", String(pages));
+    app?.setAttribute("data-item-count", String(itemCount));
     if (snapshotNode) {
       const snapshotText = JSON.stringify(snapshot);
       snapshotNode.textContent = snapshotText;
@@ -955,12 +981,17 @@ export function initEmulator(data, options = {}) {
     grid.setAttribute("role", "grid");
     grid.setAttribute("aria-label", t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale));
     grid.replaceChildren();
-    for (let slotIndex = 0; slotIndex < PAGE_SIZE; slotIndex += 1) {
+    const columns = meta.grid?.columns ?? 9;
+    const rows = meta.grid?.rows ?? 6;
+    const slots = meta.grid?.slots ?? columns * rows;
+    grid.style.setProperty("--grid-columns", String(columns));
+    grid.style.setProperty("--grid-rows", String(rows));
+    for (let slotIndex = 0; slotIndex < slots; slotIndex += 1) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `stash-slot-${slotIndex}`;
       slot.setAttribute("role", "gridcell");
-      slot.setAttribute("aria-colindex", String((slotIndex % 9) + 1));
-      slot.setAttribute("aria-rowindex", String(Math.floor(slotIndex / 9) + 1));
+      slot.setAttribute("aria-colindex", String((slotIndex % columns) + 1));
+      slot.setAttribute("aria-rowindex", String(Math.floor(slotIndex / columns) + 1));
       const item = pageItems[slotIndex];
       if (item) {
         const icon = iconGlyph(item.icon);
@@ -1034,14 +1065,11 @@ export function initEmulator(data, options = {}) {
   stateControl?.addEventListener("change", (event) => setState({ state: event.target.value }));
   masterVariantControl?.addEventListener("change", (event) => setState({ variant: event.target.value }));
   ["width", "height", "scale"].forEach((key) => document.getElementById(`${key}-control`)?.addEventListener("change", (event) => setState({ [key]: event.target.value })));
-  document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); sync(); });
+  document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); publishSnapshot(); });
   document.getElementById("copy")?.addEventListener("click", () => navigator.clipboard?.writeText(canonical(state)));
   document.getElementById("layout-list")?.addEventListener("scroll", (event) => {
     if (syncingList) return;
-    state.scroll = clamp(Math.round(event.target.scrollTop / 18), 0, layoutScrollMax(fixtureForState()));
-    safeReplaceUrl(canonical(state));
-    document.getElementById("scroll-control").value = state.scroll;
-    document.getElementById("canonical").textContent = canonical(state);
+    setState({ scroll: Math.round(event.target.scrollTop / 18) });
   });
   document.getElementById("stash-grid")?.addEventListener("wheel", (event) => {
     const max = pageCount(itemsForLayout(fixtureForState(), state.layout), renderPageSize(data, project, state.screen)) - 1;
@@ -1053,10 +1081,11 @@ export function initEmulator(data, options = {}) {
   window.forgeUIInspector = {
     getState: () => ({ ...state }),
     setState,
-    reset: () => { state = normalize({}, data, project); sync(); return { ...state }; },
+    reset: () => { state = normalize({}, data, project); publishSnapshot(); return { ...state }; },
     getCanonicalUrl: () => canonical(state),
     getSnapshot,
   };
+  safeReplaceUrl(canonical(state));
   render();
   return window.forgeUIInspector;
 }
@@ -1101,10 +1130,16 @@ async function loadData() {
   try {
     const projectUrl = projectEntry ? new URL(`projects/${projectEntry.manifest}`, baseUrl) : baseUrl;
     data = await fetchJson(new URL(meta.fixturePath, projectUrl));
-    if (!validateFixtureDocument(data, { project: project.id, screen: requestedScreen }).valid) throw new Error("invalid fixture document");
   } catch {
     data = project.id === DEFAULT_PROJECT_ID ? createFallbackForScreen(requestedScreen) : createGenericFallbackData(project, requestedScreen);
   }
+  const validation = validateFixtureDocument(data, { project: project.id, screen: requestedScreen, pageSize: meta.grid?.slots });
+  if (!validation.valid) {
+    document.body.textContent = `Fixture load error: ${validation.errors.join("; ")}`;
+    document.body.dataset.fixtureError = "true";
+    return;
+  }
+  data = normalizeFixtureItems(data);
   initEmulator(data, { project, projectIndex, projectId: project.id });
 }
 

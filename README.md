@@ -50,7 +50,7 @@ python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py vali
 
 ### renderer
 
-`compact-stash`、`master-stash`、`profession-workshop`、`advanced-salvage`は既定CTE2プレビューを使用します。未知のrendererは、タイトル・Fixture名・54スロット・読み取り専用状態を表示する汎用rendererへ安全にフォールバックします。
+`compact-stash`、`master-stash`、`profession-workshop`、`advanced-salvage`は既定CTE2プレビューを使用します。Map／Currencyは474×326・12列×8行（96スロット）、Master Stashは81スロットです。未知のrendererは画面契約由来のスロット数で表示する汎用rendererへ安全にフォールバックします。
 
 ## 再現可能なURLとAPI
 

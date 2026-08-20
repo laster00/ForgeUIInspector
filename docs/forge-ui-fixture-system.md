@@ -56,4 +56,4 @@ index.html?project=demo&screen=inventory&fixture=many&locale=ja&page=1
 
 `compact-stash`, `master-stash`, `profession-workshop`, and `advanced-salvage` preserve the existing CTE2 previews. Any unknown renderer is shown in a deterministic generic panel with a title, fixture label, item slots, and read-only status. This keeps new projects useful immediately while leaving room for a deliberately added renderer when a project needs distinctive interaction.
 
-The `master-stash` visual page uses a 9x9 (81-slot) grid. Fixture JSON keeps the compatible `pageSize` and slot validation value of 54; URL `page` and `getSnapshot().fixture.pageSize` use the visual renderer size of 81.
+The Map/Currency screen contract uses a 12x8 (96-slot) grid at 474x326. The `master-stash` visual page keeps its existing 9x9 (81-slot) grid. URL `page` and `getSnapshot().fixture.pageSize` use the visual renderer size.

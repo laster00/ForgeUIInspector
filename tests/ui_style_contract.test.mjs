@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { UI_THEME } from "../emulator/emulator.js";
+import { CURRENCY_CATEGORY_IDS, UI_THEME } from "../emulator/emulator.js";
 
 const css = fs.readFileSync(new URL("../emulator/emulator.css", import.meta.url), "utf8");
 const cte2AddonRoot = new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/", import.meta.url);
@@ -22,6 +22,11 @@ const cte2Integration = {
   mapJa: readOptionalCte2File("src/main/resources/assets/cte2_map_stash/lang/ja_jp.json"),
   masterEn: readOptionalCte2File("src/main/resources/assets/cte2_master_stash/lang/en_us.json"),
   masterJa: readOptionalCte2File("src/main/resources/assets/cte2_master_stash/lang/ja_jp.json"),
+  currencyIndex: readOptionalCte2File("src/main/java/jp/cte2/currencystash/CurrencyStashIndex.java"),
+  mapIndex: readOptionalCte2File("src/main/java/jp/cte2/mapstash/MapStashIndex.java"),
+  masterCategories: readOptionalCte2File("src/main/java/jp/cte2/masterstash/MasterStashCategory.java"),
+  currencyMenu: readOptionalCte2File("src/main/java/jp/cte2/currencystash/menu/CurrencyStashMenu.java"),
+  mapMenu: readOptionalCte2File("src/main/java/jp/cte2/mapstash/menu/MapStashMenu.java"),
 };
 const hasCte2Integration = Object.values(cte2Integration).every((value) => value !== null);
 
@@ -46,23 +51,49 @@ test("browser theme exposes the shared core palette", () => {
 
 test("browser preview keeps the Minecraft font token and deterministic geometry", () => {
   assert.match(css, /--minecraft-font:/);
-  assert.match(css, /width:\s*320px/);
-  assert.match(css, /height:\s*230px/);
+  assert.match(css, /width:\s*474px/);
+  assert.match(css, /height:\s*326px/);
+});
+
+test("compact stash reserves the full 12x8 grid above inventory", () => {
+  assert.match(css, /grid-template-columns:\s*repeat\(var\(--grid-columns,\s*12\),\s*18px\)/);
+  assert.match(css, /grid-template-rows:\s*repeat\(var\(--grid-rows,\s*8\),\s*18px\)/);
+  assert.match(css, /\.stash\s*\{[^}]*top:\s*24px/);
+  assert.match(css, /\.page\s*\{[^}]*top:\s*0[^}]*height:\s*12px/);
+  assert.match(css, /\.mc\.page-active \.stash-grid\s*\{\s*margin-top:\s*12px/);
+  assert.match(css, /\.mc\.page-active \.inventory\s*\{\s*top:\s*184px/);
+  assert.match(css, /\.inventory\s*\{[^}]*top:\s*184px/);
+
+  const stashTop = 24;
+  const pageTop = 0;
+  const pageHeight = 12;
+  const pageOffset = 12;
+  const gridRows = 8;
+  const slotHeight = 18;
+  const inventoryTop = 184;
+  const pageBottom = stashTop + pageTop + pageHeight;
+  const gridTop = stashTop + pageOffset;
+  const gridBottom = gridTop + gridRows * slotHeight;
+  assert.ok(pageBottom <= gridTop);
+  assert.ok(gridBottom <= inventoryTop);
+  assert.equal(inventoryTop - gridBottom, 4);
 });
 
 test("CTE2 project integration keeps the shared theme and extension labels aligned", { skip: !hasCte2Integration }, () => {
-  const { javaTheme, stashLayout, storageConstants, modsToml, advancedEn, advancedJa, mapJa, masterEn, masterJa } = cte2Integration;
+  const {
+    javaTheme, stashLayout, storageConstants, modsToml, advancedEn, advancedJa, mapJa, masterEn, masterJa,
+    currencyIndex, mapIndex, masterCategories, currencyMenu, mapMenu,
+  } = cte2Integration;
   assert.match(storageConstants, /PHYSICAL_CAPACITY\s*=\s*PAGE_SIZE\s*\*\s*8/);
   assert.match(storageConstants, /PAGE_SIZE\s*=\s*PAGE_COLUMNS\s*\*\s*PAGE_ROWS/);
+  assert.match(storageConstants, /PAGE_COLUMNS\s*=\s*12/);
+  assert.match(storageConstants, /PAGE_ROWS\s*=\s*8/);
   assert.match(javaTheme, /SLOT_SIZE\s*=\s*18/);
   assert.match(javaTheme, /slotGroup\(GuiGraphics graphics/);
   assert.match(javaTheme, /public static String clip\(Font font/);
   assert.match(stashLayout, /SLOT_SIZE\s*=\s*Cte2UiTheme\.SLOT_SIZE/);
-  // The addon branch may use the compact 360x248 projection or the expanded
-  // 12x8 474x326 projection; the inspector keeps its own deterministic 320x230
-  // browser canvas and only requires the shared slot/theme helpers here.
-  assert.match(stashLayout, /WIDTH\s*=\s*(?:360|474)/);
-  assert.match(stashLayout, /HEIGHT\s*=\s*(?:248|326)/);
+  assert.match(stashLayout, /WIDTH\s*=\s*474/);
+  assert.match(stashLayout, /HEIGHT\s*=\s*326/);
   assert.match(stashLayout, /LIST_ROWS\s*=\s*10/);
   assert.match(stashLayout, /Cte2UiTheme\.slotGroup\(graphics/);
   for (const name of ["MapStashScreen.java", "CurrencyStashScreen.java"]) {
@@ -87,6 +118,16 @@ test("CTE2 project integration keeps the shared theme and extension labels align
   assert.match(mapJa, /"cte2_map_stash\.layout\.other"\s*:\s*"不明／その他"/);
   assert.match(masterEn, /"container\.cte2_master_stash\.master_stash": "Master Stash"/);
   assert.match(masterJa, /"container\.cte2_master_stash\.master_stash": "マスタースタッシュ"/);
+  assert.match(currencyIndex, /ALL\s*=\s*"all"/);
+  assert.match(currencyIndex, /OTHER\s*=\s*"other"/);
+  assert.match(currencyIndex, new RegExp(`List\\.of\\(${CURRENCY_CATEGORY_IDS.map((id) => id.toUpperCase()).join(",\\s*")}`));
+  assert.match(mapIndex, /ALL\s*=\s*"all"/);
+  assert.match(mapIndex, /OTHER\s*=\s*"other"/);
+  assert.match(masterCategories, /GEAR\([\s\S]*MAPS\([\s\S]*CURRENCY\([\s\S]*GEMS\([\s\S]*PROFESSION\(/);
+  for (const [name, source] of [["MapStashMenu", mapMenu], ["CurrencyStashMenu", currencyMenu]]) {
+    assert.match(source, /import jp\.cte2\.storage\.Cte2StashGeometry;/, name);
+    assert.doesNotMatch(source, /import jp\.cte2\.client\.ui\./, name);
+  }
   const screenPaths = [
     "src/main/java/jp/cte2/mapstash/client/MapStashScreen.java",
     "src/main/java/jp/cte2/currencystash/client/CurrencyStashScreen.java",
