@@ -8,15 +8,15 @@ import net.minecraft.network.chat.Component;
 
 /** Deterministic, network-free data used by the visual inspector. */
 public enum PreviewFixture {
-    NORMAL("screen.forgeuiinspector.normal", 18), EMPTY("screen.forgeuiinspector.empty", 0), MANY("screen.forgeuiinspector.many", 92), OTHER("screen.forgeuiinspector.other", 7);
+    NORMAL("screen.forgeuiinspector.normal", 18), EMPTY("screen.forgeuiinspector.empty", 0), MANY("screen.forgeuiinspector.many", 97), OTHER("screen.forgeuiinspector.other", 7);
 
     private final String translationKey;
     private final int entries;
     PreviewFixture(String translationKey, int entries) { this.translationKey = translationKey; this.entries = entries; }
     public String translationKey() { return translationKey; }
     public int entries() { return entries; }
-    public int pageCount() { return Math.max(1, (entries + 53) / 54); }
-    public int pageCountFor(int count) { return Math.max(1, (count + 53) / 54); }
+    public int pageCount() { return pageCountFor(entries); }
+    public int pageCountFor(int count) { return Math.max(1, (count + Cte2StashPreviewGeometry.PAGE_SIZE - 1) / Cte2StashPreviewGeometry.PAGE_SIZE); }
     public List<Component> layoutLabels() {
         List<Component> result = new ArrayList<>();
         result.add(Component.translatable("screen.forgeuiinspector.all"));

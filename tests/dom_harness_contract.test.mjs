@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-import { initEmulator } from "../emulator/emulator.js";
+import { DEFAULT_CTE2_PROJECT, initEmulator } from "../emulator/emulator.js";
 
 class HarnessElement {
   constructor(tag = "div") { this.tagName = tag; this.children = []; this.dataset = {}; this.style = { setProperty: (key, value) => { this.style[key] = value; } }; this.listeners = {}; this.classList = { toggle: () => {}, add: () => {} }; }
@@ -50,6 +50,12 @@ test("lightweight DOM harness keeps snapshot, hidden output, data attributes, pa
   assert.equal(populated(nodes.get("stash-grid")), 96);
   assertPublished(nodes, api);
   api.setState({ fixture: "many" });
+  assert.equal(data.fixtures.find((fixture) => fixture.id === "many").layouts.length, 30);
+  api.setState({ scroll: 999 });
+  assert.equal(api.getSnapshot().state.scroll, 20);
+  assert.equal(nodes.get("forge-ui-emulator").dataset.scroll, "20");
+  assert.equal(nodes.get("layout-list").scrollTop, 360);
+  assertPublished(nodes, api);
   assert.equal(populated(nodes.get("stash-grid")), 96);
   api.setState({ page: 1 });
   assert.equal(populated(nodes.get("stash-grid")), 1);
@@ -81,6 +87,27 @@ test("lightweight DOM harness keeps snapshot, hidden output, data attributes, pa
   assert.equal(api.getSnapshot().state.fixture, "normal");
   assertPublished(nodes, api);
   assert.equal(nodes.get("inspector-state").value, nodes.get("inspector-state").textContent);
+  delete globalThis.document;
+  delete globalThis.window;
+  delete globalThis.history;
+  delete globalThis.Option;
+});
+
+test("layout scrolling uses a non-default rowHeight from the project contract in both directions", () => {
+  const data = JSON.parse(fs.readFileSync(new URL("../emulator/fixtures/map-stash.json", import.meta.url), "utf8"));
+  const project = structuredClone(DEFAULT_CTE2_PROJECT);
+  project.id = "scroll-contract";
+  project.screens.find((screen) => screen.id === "map_stash").geometry.list = { x: 12, y: 34, width: 200, rows: 10, rowHeight: 23 };
+  const nodes = makeHarness();
+  const api = initEmulator(data, { project, projectId: project.id });
+  api.setState({ fixture: "many", scroll: 999 });
+  assert.equal(api.getSnapshot().state.scroll, 20);
+  assert.equal(nodes.get("layout-list").scrollTop, 460);
+  nodes.get("layout-list").scrollTop = 69;
+  nodes.get("layout-list").dispatch("scroll");
+  assert.equal(api.getSnapshot().state.scroll, 3);
+  assert.equal(nodes.get("forge-ui-emulator").dataset.scroll, "3");
+  assert.equal(nodes.get("layout-list").scrollTop, 69);
   delete globalThis.document;
   delete globalThis.window;
   delete globalThis.history;

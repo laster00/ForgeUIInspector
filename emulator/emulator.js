@@ -353,7 +353,7 @@ export function renderPageSize(data = createFallbackData(), project = DEFAULT_CT
   return meta.grid?.slots ?? PAGE_SIZE;
 }
 
-export function layoutScrollMax(fixture, visibleRows = 6) {
+export function layoutScrollMax(fixture, visibleRows = 10) {
   return Math.max(0, (fixture?.layouts?.length || 0) - visibleRows);
 }
 
@@ -366,6 +366,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
   const fixture = data.fixtures?.find((candidate) => candidate.id === fixtureId) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
   const layout = layoutById(fixture, input.layout) ? input.layout : "all";
   const items = itemsForLayout(fixture, layout);
+  const listGeometry = meta.geometry?.list;
   const pageMax = pageCount(items, renderPageSize(data, project, screen)) - 1;
   const scaleNumber = Number(input.scale);
   const next = {
@@ -374,7 +375,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
     locale,
     layout,
     page: clamp(finiteInteger(input.page, 0), 0, pageMax),
-    scroll: clamp(finiteInteger(input.scroll, 0), 0, layoutScrollMax(fixture)),
+    scroll: clamp(finiteInteger(input.scroll, 0), 0, layoutScrollMax(fixture, listGeometry?.rows ?? 6)),
     width: Math.max(meta.width, finiteInteger(input.width, 960)),
     height: Math.max(meta.height, finiteInteger(input.height, 540)),
     scale: Math.max(0.5, Number.isFinite(scaleNumber) ? scaleNumber : 2),
@@ -989,7 +990,7 @@ export function initEmulator(data, options = {}) {
       list.append(row);
     });
     syncingList = true;
-    list.scrollTop = state.scroll * 18;
+    list.scrollTop = state.scroll * (listGeometry?.rowHeight ?? 18);
     syncingList = false;
 
     grid.setAttribute("role", "grid");
@@ -1087,7 +1088,8 @@ export function initEmulator(data, options = {}) {
   document.getElementById("copy")?.addEventListener("click", () => navigator.clipboard?.writeText(canonical(state)));
   document.getElementById("layout-list")?.addEventListener("scroll", (event) => {
     if (syncingList) return;
-    setState({ scroll: Math.round(event.target.scrollTop / 18) });
+    const listGeometry = screenMetaFor(project, state.screen).geometry?.list ?? {};
+    setState({ scroll: Math.round(event.target.scrollTop / (listGeometry.rowHeight ?? 18)) });
   });
   document.getElementById("stash-grid")?.addEventListener("wheel", (event) => {
     const max = pageCount(itemsForLayout(fixtureForState(), state.layout), renderPageSize(data, project, state.screen)) - 1;
