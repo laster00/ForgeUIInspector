@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 
 /** Deterministic, network-free data used by the visual inspector. */
 public enum PreviewFixture {
-    NORMAL("screen.forgeuiinspector.normal", 18), EMPTY("screen.forgeuiinspector.empty", 0), MANY("screen.forgeuiinspector.many", 97), OTHER("screen.forgeuiinspector.other", 7);
+    NORMAL("screen.forgeuiinspector.normal", 18), EMPTY("screen.forgeuiinspector.empty", 0), MANY("screen.forgeuiinspector.many", 108), OTHER("screen.forgeuiinspector.other", 7);
 
     private final String translationKey;
     private final int entries;

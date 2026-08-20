@@ -42,7 +42,7 @@ emulator/
 同梱の `$forge-ui-fixture-generator` Skill、または次の標準ライブラリのみの生成スクリプトを使います。
 
 ```text
-python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py init --project-id demo --project-label-key project.demo.name --screen-id inventory --screen-label-key screen.demo.inventory --renderer generic --width 360 --height 240 --output emulator/projects/demo
+python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py init --project-id demo --project-label-key project.demo.name --screen-id inventory --screen-label-key screen.demo.inventory --renderer generic --width 360 --height 240 --columns 9 --rows 6 --output emulator/projects/demo
 python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py validate emulator/projects/demo
 ```
 
@@ -120,6 +120,8 @@ python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py vali
 ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系のフォントスタックで近似します。文字幅と最終的な可読性はForge実プレビューで確認してください。
 
 ForgeUIInspector単体でテストできます。CTE2の実装リポジトリが同じワークスペースにある場合だけ、追加のUIスタイル統合契約が有効になります。エミュレータ本体やForgeプレビューは`cte2-ja-patch`を実行時依存にしません。
+
+CTE2 stash geometryの通常checkout向け正本は`emulator/contracts/cte2-stash.json`です。production Java sourceが同じワークスペースにある場合は`python tools/export_cte2_stash_contract.py --check`でexportの鮮度を確認でき、更新時は同コマンドから`--check`を外します。sourceがないcheckoutでもテストはversioned exportを必須入力として実行されます。
 
 ## CTE2 UIスタイル
 

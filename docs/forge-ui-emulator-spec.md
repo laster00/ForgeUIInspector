@@ -91,7 +91,7 @@ Map／Currencyの基準論理サイズは **474×326**、グリッドは12列×8
 ┌────────────────────────────────┐
 │ タイトル             選択状態 │
 │                                │
-│ 左: レイアウト一覧 │ 中央: 9×6 │
+│ 左: レイアウト一覧 │ 中央:12×8 │
 │     件数付き        │ スロット  │
 │     ホイール対応    │ ページ表示│
 │                                │
@@ -195,13 +195,13 @@ Forge側のリソースへはビルド時にコピーする。ブラウザは同
 
 - `normal`: 日本語の長いレイアウト名を含む通常状態
 - `empty`: 0件
-- `many`: 55件以上。2ページ以上
+- `many`: 画面の`pageSize`を超える件数。2ページ以上
 - `other`: 不明／その他に件数を持つ状態
 
 ### 7.4 Fixtureの不変条件
 
 - レイアウトIDは一意
-- `pageSize`は画面契約の96（Master Stashは81）
+- `pageSize`はscreen manifestの`grid.slots`（`columns × rows`）から導出する。CTE2 Map／Currencyは96、Master Stashは81、その他の現行画面とdefault gridは54
 - スロット番号は0以上で、画面契約のスロット数未満
 - 件数は0以上
 - `many`は各画面の`pageSize`を超える件数
@@ -293,7 +293,7 @@ window.forgeUIInspector.getSnapshot()
 - 通常
 - 空
 - 満杯
-- 55件以上のページング
+- 画面の`pageSize`を超えるページング
 - 不明／その他
 - 未対応アイテム
 - stale表示

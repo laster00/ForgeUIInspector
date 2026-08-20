@@ -86,7 +86,7 @@ test("all five screen fixtures are available and keep deterministic four-state d
     assert.equal(screenData.pageSize, screen === "master_stash" ? 81 : screen === "map_stash" || screen === "currency_stash" ? 96 : 54);
     assert.deepEqual(screenData.fixtures.map((candidate) => candidate.id), FIXTURE_IDS);
     assert.ok(screenData.fixtures.every((candidate) => Number.isInteger(candidate.itemCount) && candidate.itemCount >= 0));
-    assert.ok(screenData.fixtures.find((candidate) => candidate.id === "many").itemCount >= 55);
+    assert.ok(screenData.fixtures.find((candidate) => candidate.id === "many").itemCount > screenData.pageSize);
   }
 });
 
@@ -120,7 +120,7 @@ test("normal, empty, many, and other contain the intended states", () => {
   assert.equal(fixture("normal").items.length, 18);
   assert.equal(fixture("normal").layouts.find((layout) => layout.id === "layout_01").labelKey, "screen.forgeuiinspector.layout.long");
   assert.equal(fixture("empty").items.length, 0);
-  assert.ok(fixture("many").items.length >= 108);
+  assert.equal(fixture("many").items.length, 108);
   assert.ok(fixture("other").items.length > 0);
   assert.ok(fixture("other").items.every((item) => item.layout === "other"));
 });

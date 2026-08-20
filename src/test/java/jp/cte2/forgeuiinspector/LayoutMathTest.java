@@ -16,6 +16,7 @@ public class LayoutMathTest {
     @Test public void fixturesAreDeterministic() {
         assertEquals(30, PreviewFixture.NORMAL.layoutLabels().size());
         assertEquals(18, PreviewFixture.NORMAL.countForLayout(0));
+        assertEquals(108, PreviewFixture.MANY.entries());
         assertEquals(2, PreviewFixture.MANY.pageCount());
         assertEquals(1, PreviewFixture.NORMAL.pageCountFor(96));
         assertEquals(2, PreviewFixture.NORMAL.pageCountFor(97));

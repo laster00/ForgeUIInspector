@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import { CURRENCY_CATEGORY_IDS, DEFAULT_CTE2_PROJECT, UI_THEME } from "../emulator/emulator.js";
 
 const css = fs.readFileSync(new URL("../emulator/emulator.css", import.meta.url), "utf8");
+const stashContract = JSON.parse(fs.readFileSync(new URL("../emulator/contracts/cte2-stash.json", import.meta.url), "utf8"));
+const cte2Manifest = JSON.parse(fs.readFileSync(new URL("../emulator/projects/cte2/project.json", import.meta.url), "utf8"));
 const cte2AddonRoot = new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/", import.meta.url);
 const readOptionalCte2File = (relativePath) => {
   const url = new URL(relativePath, cte2AddonRoot);
@@ -51,8 +53,26 @@ test("browser theme exposes the shared core palette", () => {
 
 test("browser preview keeps the Minecraft font token and deterministic geometry", () => {
   assert.match(css, /--minecraft-font:/);
-  assert.match(css, /width:\s*474px/);
-  assert.match(css, /height:\s*326px/);
+  assert.match(css, new RegExp(`width:\\s*${stashContract.logicalSize.width}px`));
+  assert.match(css, new RegExp(`height:\\s*${stashContract.logicalSize.height}px`));
+});
+
+test("checked-in stash contract is required by manifest and CSS geometry checks", () => {
+  const { geometry, grid, logicalSize } = stashContract;
+  assert.equal(stashContract.schema, "forge-ui-inspector.cte2-stash-contract");
+  assert.equal(stashContract.version, 1);
+  for (const screenId of ["map_stash", "currency_stash"]) {
+    const screen = cte2Manifest.screens.find((candidate) => candidate.id === screenId);
+    assert.deepEqual(screen.logicalSize, logicalSize, screenId);
+    assert.deepEqual(screen.geometry, geometry, screenId);
+    assert.deepEqual(screen.grid, grid, screenId);
+  }
+  for (const value of [geometry.stash.x, geometry.stash.y, geometry.stash.slot, geometry.list.width, geometry.list.rowHeight, geometry.page.buttonY, geometry.page.buttonWidth, geometry.page.buttonHeight, geometry.inventory.y, geometry.hotbar.y, geometry.inventoryLabel.x, geometry.inventoryLabel.y]) {
+    assert.match(css, new RegExp(`${value}px`), `${value}px`);
+  }
+  assert.match(css, new RegExp(`--stash-columns,\\s*${grid.columns}\\)`));
+  assert.match(css, new RegExp(`--stash-rows,\\s*${grid.rows}\\)`));
+  assert.match(css, new RegExp(`--list-rows,\\s*${geometry.list.rows}\\)`));
 });
 
 test("compact geometry is sourced from the production Cte2StashLayout contract", { skip: !hasCte2Integration }, () => {
