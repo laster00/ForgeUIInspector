@@ -53,8 +53,12 @@ export const I18N = {
     "screen.forgeuiinspector.genericReadonly": "読み取り専用・汎用レンダラー",
     "screen.forgeuiinspector.normal": "通常状態",
     "screen.forgeuiinspector.empty": "空の保管庫",
+    "screen.forgeuiinspector.emptySelected.map": "このカテゴリにマップはありません",
+    "screen.forgeuiinspector.emptySelected.currency": "このカテゴリに通貨はありません",
     "screen.forgeuiinspector.many": "多数のマップ",
     "screen.forgeuiinspector.otherFixture": "その他のマップ",
+    "screen.forgeuiinspector.profession.fixture.other": "その他のレシピ",
+    "screen.forgeuiinspector.salvage.fixture.other": "その他のサルベージ設定",
     "screen.forgeuiinspector.all": "すべて",
     "screen.forgeuiinspector.other": "不明／その他",
     "screen.forgeuiinspector.title": "マップ保管庫 プレビュー",
@@ -105,6 +109,7 @@ export const I18N = {
     "screen.forgeuiinspector.state.stale": "古い状態",
     "screen.forgeuiinspector.state.unsupported": "未対応",
     "screen.forgeuiinspector.master.title": "マスタースタッシュ プレビュー",
+    "screen.forgeuiinspector.master.fixture.other": "その他のアイテム",
     "screen.forgeuiinspector.profession.title": "職業ワークショップ プレビュー",
     "screen.forgeuiinspector.salvage.title": "高度サルベージ プレビュー",
     "screen.forgeuiinspector.master.search": "スタッシュを検索", "screen.forgeuiinspector.master.tab.all": "すべて", "screen.forgeuiinspector.master.tab.maps": "マップ", "screen.forgeuiinspector.master.tab.special": "特殊",
@@ -124,8 +129,12 @@ export const I18N = {
     "screen.forgeuiinspector.genericReadonly": "Read-only · generic renderer",
     "screen.forgeuiinspector.normal": "Normal state",
     "screen.forgeuiinspector.empty": "Empty stash",
+    "screen.forgeuiinspector.emptySelected.map": "No maps in this category",
+    "screen.forgeuiinspector.emptySelected.currency": "No currency in this category",
     "screen.forgeuiinspector.many": "Many maps",
     "screen.forgeuiinspector.otherFixture": "Other maps",
+    "screen.forgeuiinspector.profession.fixture.other": "Other recipes",
+    "screen.forgeuiinspector.salvage.fixture.other": "Other salvage settings",
     "screen.forgeuiinspector.all": "All",
     "screen.forgeuiinspector.other": "Unknown / Other",
     "screen.forgeuiinspector.title": "Map Stash Preview",
@@ -176,6 +185,7 @@ export const I18N = {
     "screen.forgeuiinspector.state.stale": "Stale",
     "screen.forgeuiinspector.state.unsupported": "Unsupported",
     "screen.forgeuiinspector.master.title": "Master Stash Preview",
+    "screen.forgeuiinspector.master.fixture.other": "Other items",
     "screen.forgeuiinspector.profession.title": "Profession Workshop Preview",
     "screen.forgeuiinspector.salvage.title": "Advanced Salvage Preview",
     "screen.forgeuiinspector.master.search": "Search stash", "screen.forgeuiinspector.master.tab.all": "All Items", "screen.forgeuiinspector.master.tab.maps": "Maps", "screen.forgeuiinspector.master.tab.special": "Special",
@@ -238,9 +248,16 @@ export function createExtendedFallbackData(screen = "master_stash") {
   const labels = screen === "profession_workshop"
     ? [{ id: "all", labelKey: "screen.forgeuiinspector.profession.tab.crafting", count: 0 }]
     : [{ id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 }];
+  const otherTitleKey = screen === "master_stash"
+    ? "screen.forgeuiinspector.master.fixture.other"
+    : screen === "profession_workshop"
+      ? "screen.forgeuiinspector.profession.fixture.other"
+      : screen === "advanced_salvage"
+        ? "screen.forgeuiinspector.salvage.fixture.other"
+        : "screen.forgeuiinspector.otherFixture";
   const makeFixture = (id, count) => ({
     id,
-    titleKey: `screen.forgeuiinspector.${id}`,
+    titleKey: id === "other" ? otherTitleKey : `screen.forgeuiinspector.${id}`,
     layouts: labels.map((layout) => ({ ...layout, count })),
     itemCount: count,
     items: [],
@@ -1031,6 +1048,14 @@ export function initEmulator(data, options = {}) {
         }
       }
       grid.append(slot);
+    }
+    preview.querySelector?.(".empty-state-card")?.remove();
+    if (itemCount === 0 && (state.screen === "map_stash" || state.screen === "currency_stash")) {
+      const emptyState = createElement("div", "empty-state-card",
+        t(`screen.forgeuiinspector.emptySelected.${state.screen === "map_stash" ? "map" : "currency"}`, state.locale));
+      emptyState.dataset.testid = `${state.screen}-empty-state`;
+      emptyState.setAttribute("role", "status");
+      preview.append(emptyState);
     }
     pageLabel.setAttribute("role", "status");
     pageLabel.textContent = pages > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pages]) : "";
