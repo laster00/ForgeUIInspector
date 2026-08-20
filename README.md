@@ -42,7 +42,7 @@ emulator/
 同梱の `$forge-ui-fixture-generator` Skill、または次の標準ライブラリのみの生成スクリプトを使います。
 
 ```text
-python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py init --project-id demo --project-label-key project.demo.name --screen-id inventory --screen-label-key screen.demo.inventory --renderer generic --width 360 --height 240 --output emulator/projects/demo
+python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py init --project-id demo --project-label-key project.demo.name --screen-id inventory --screen-label-key screen.demo.inventory --renderer generic --width 360 --height 240 --columns 9 --rows 6 --output emulator/projects/demo
 python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py validate emulator/projects/demo
 ```
 
@@ -50,7 +50,7 @@ python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py vali
 
 ### renderer
 
-`compact-stash`、`master-stash`、`profession-workshop`、`advanced-salvage`は既定CTE2プレビューを使用します。未知のrendererは、タイトル・Fixture名・54スロット・読み取り専用状態を表示する汎用rendererへ安全にフォールバックします。
+`compact-stash`、`master-stash`、`profession-workshop`、`advanced-salvage`は既定CTE2プレビューを使用します。Map／Currencyは474×326・12列×8行（96スロット）、Master Stashは81スロットです。未知のrendererは画面契約由来のスロット数で表示する汎用rendererへ安全にフォールバックします。
 
 ## 再現可能なURLとAPI
 
@@ -80,9 +80,11 @@ window.forgeUIInspector.getState()
 window.forgeUIInspector.setState({ project: "cte2", screen: "advanced_salvage", fixture: "many", page: 1 })
 window.forgeUIInspector.reset()
 window.forgeUIInspector.getCanonicalUrl()
+window.forgeUIInspector.getSnapshot()
 ```
 
 非CTE2プロジェクトの`getState()`には`project`が含まれます。画面やプロジェクトを切り替えると、対応するmanifestとFixtureを再読込します。
+`getSnapshot()`は状態、正規化済みURL、画面の論理サイズ、renderer、選択中Fixtureの件数・ページ数をまとめた機械可読JSONを返します。画面のルートには`data-project`、`data-screen`、`data-fixture`、`data-state`、`data-page`、`data-page-count`、`data-item-count`も付与され、`data-testid="inspector-state"`の非表示`output`から同じスナップショットを取得できます。
 
 ## Forge実プレビュー
 
@@ -118,6 +120,8 @@ python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py vali
 ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系のフォントスタックで近似します。文字幅と最終的な可読性はForge実プレビューで確認してください。
 
 ForgeUIInspector単体でテストできます。CTE2の実装リポジトリが同じワークスペースにある場合だけ、追加のUIスタイル統合契約が有効になります。エミュレータ本体やForgeプレビューは`cte2-ja-patch`を実行時依存にしません。
+
+CTE2 stash geometryの通常checkout向け正本は`emulator/contracts/cte2-stash.json`です。production Java sourceが同じワークスペースにある場合は`python tools/export_cte2_stash_contract.py --check`でexportの鮮度を確認でき、更新時は同コマンドから`--check`を外します。sourceがないcheckoutでもテストはversioned exportを必須入力として実行されます。
 
 ## CTE2 UIスタイル
 

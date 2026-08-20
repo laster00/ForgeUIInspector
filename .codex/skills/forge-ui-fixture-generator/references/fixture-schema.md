@@ -29,6 +29,7 @@ The manifest path is relative to `emulator/projects/index.json`.
     "labelKey": "screen.demo.inventory",
     "renderer": "generic",
     "logicalSize": { "width": 360, "height": 240 },
+    "grid": { "columns": 9, "rows": 6, "slots": 54 },
     "fixturePath": "fixtures/inventory.json"
   }]
 }
@@ -58,4 +59,4 @@ Every screen fixture uses:
 }
 ```
 
-Fixture ids and layout ids are unique. Counts are non-negative. Item slots are integers from `0` through `pageSize - 1`; `itemCount` may describe deterministic generated items when `items` is empty. Unknown icons and labels are safe fallbacks. Keep `pageSize` at `54` for compatibility with the standard preview grid.
+Fixture ids and layout ids are unique. Counts are non-negative. `pageSize` must equal the owning screen's `grid.slots`, and `grid.slots` must equal `columns * rows`. Item `slot` and optional `page` metadata follow their array index and the screen page size; `itemCount` may describe deterministic generated items when `items` is empty. The `many` fixture must contain more than one page. Unknown icons and labels are safe fallbacks. The generator defaults to 9x6 (54), while `--columns` and `--rows` select other screen contracts such as 12x8 (96) and 9x9 (81).

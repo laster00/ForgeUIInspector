@@ -11,9 +11,10 @@ public enum CurrencyPreviewFixture {
     private final String key; private final int entries;
     CurrencyPreviewFixture(String key, int entries) { this.key = key; this.entries = entries; }
     public String translationKey() { return key; }
-    public int pageCount() { return Math.max(1, (entries + 53) / 54); }
+    public int pageCountFor(int count) { return Math.max(1, (count + Cte2StashPreviewGeometry.PAGE_SIZE - 1) / Cte2StashPreviewGeometry.PAGE_SIZE); }
+    public int pageCount() { return pageCountFor(entries); }
     public int categoryCount(int category) { if (category == 0) return entries; if (entries == 0) return 0; int count = 0; for (int i = 0; i < entries; i++) if (categoryFor(i) == category) count++; return count; }
-    public int pageCountForCategory(int category) { return Math.max(1, (categoryCount(category) + 53) / 54); }
+    public int pageCountForCategory(int category) { return Math.max(1, (categoryCount(category) + Cte2StashPreviewGeometry.PAGE_SIZE - 1) / Cte2StashPreviewGeometry.PAGE_SIZE); }
     public ItemStack itemForCategory(int category, int index) { if (category == 0) return item(index); int found = 0; for (int i = 0; i < entries; i++) if (categoryFor(i) == category && found++ == index) return item(i); return ItemStack.EMPTY; }
     private int categoryFor(int index) { return this == OTHER ? 8 : 1 + (index % 8); }
     public List<Component> categories() { return List.of(Component.translatable("screen.forgeuiinspector.all"), Component.translatable("screen.forgeuiinspector.gear_orbs"), Component.translatable("screen.forgeuiinspector.map_orbs"), Component.translatable("screen.forgeuiinspector.gem_orbs"), Component.translatable("screen.forgeuiinspector.seeds"), Component.translatable("screen.forgeuiinspector.special_currency"), Component.translatable("screen.forgeuiinspector.prophecy"), Component.translatable("screen.forgeuiinspector.coins"), Component.translatable("screen.forgeuiinspector.other")); }

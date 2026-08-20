@@ -23,6 +23,7 @@ python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py init
   --screen-label-key screen.demo.inventory \
   --renderer generic \
   --width 360 --height 240 \
+  --columns 9 --rows 6 \
   --output emulator/projects/demo
 ```
 
@@ -39,8 +40,9 @@ Use `--force` only when intentionally replacing generated files. The script neve
 ## Project rules
 
 - A project manifest has `schema: "forge-ui-inspector.project"`, version `1`, an id, a default screen, and one or more screens.
-- Every screen declares a `renderer`, logical size, label key, and fixture path. Unknown renderers use the safe generic renderer.
-- Every fixture document has `schema: "forge-ui-inspector.fixture"`, `project`, `screen`, `renderer`, `pageSize: 54`, and unique `normal`, `empty`, `many`, and `other` states.
+- Every screen declares a `renderer`, logical size, label key, grid (`columns`, `rows`, and `slots = columns * rows`), and fixture path. Unknown renderers use the safe generic renderer.
+- Every fixture document has `schema: "forge-ui-inspector.fixture"`, `project`, `screen`, `renderer`, a `pageSize` equal to its screen grid slots, and unique `normal`, `empty`, `many`, and `other` states.
+- The generated `many` state contains exactly `pageSize + 1` items. Use `--columns 12 --rows 8` for a 96-slot screen or `--columns 9 --rows 9` for an 81-slot screen; omitted dimensions retain the generic 9x6 grid.
 - Fixture values are display data only. Keep item identifiers, counts, layout ids, and slots deterministic; never put secrets, player data, or mutable runtime state in a fixture.
 - Unknown icons and translation keys must remain safe: the emulator displays a fallback icon or key rather than failing.
 

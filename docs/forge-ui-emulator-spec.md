@@ -85,13 +85,13 @@ ForgeUIInspector/
 
 ### 5.2 Minecraftプレビュー領域
 
-基準論理サイズは **320×230** とする。ブラウザ上では整数倍表示を優先し、必要な場合だけ縮小する。
+Map／Currencyの基準論理サイズは **474×326**、グリッドは12列×8行（96スロット）とする。ブラウザ上では整数倍表示を優先し、必要な場合だけ縮小する。
 
 ```text
 ┌────────────────────────────────┐
 │ タイトル             選択状態 │
 │                                │
-│ 左: レイアウト一覧 │ 中央: 9×6 │
+│ 左: レイアウト一覧 │ 中央:12×8 │
 │     件数付き        │ スロット  │
 │     ホイール対応    │ ページ表示│
 │                                │
@@ -107,8 +107,8 @@ ForgeUIInspector/
 - 「すべて」、動的レイアウト、 「その他」
 - レイアウト名と件数
 - 左一覧のホイールスクロール
-- 中央の9×6スロット
-- 54件を超える場合だけページ表示
+- 中央の12×8スロット
+- 96件を超える場合だけページ表示
 - 下部のプレイヤー3×9インベントリと9スロットのホットバー
 - ItemStackの簡易アイコンと個数
 - 長い文字のpixel幅によるclip
@@ -165,7 +165,7 @@ Forge側のリソースへはビルド時にコピーする。ブラウザは同
 {
   "version": 1,
   "screen": "map_stash",
-  "pageSize": 54,
+  "pageSize": 96,
   "fixtures": [
     {
       "id": "normal",
@@ -195,16 +195,16 @@ Forge側のリソースへはビルド時にコピーする。ブラウザは同
 
 - `normal`: 日本語の長いレイアウト名を含む通常状態
 - `empty`: 0件
-- `many`: 55件以上。2ページ以上
+- `many`: 画面の`pageSize`を超える件数。2ページ以上
 - `other`: 不明／その他に件数を持つ状態
 
 ### 7.4 Fixtureの不変条件
 
 - レイアウトIDは一意
-- `pageSize`は54
-- スロット番号は0以上54未満
+- `pageSize`はscreen manifestの`grid.slots`（`columns × rows`）から導出する。CTE2 Map／Currencyは96、Master Stashは81、その他の現行画面とdefault gridは54
+- スロット番号は0以上で、画面契約のスロット数未満
 - 件数は0以上
-- `many`は少なくとも55件
+- `many`は各画面の`pageSize`を超える件数
 - 未知のfixture、レイアウト、アイコンは画面を壊さずフォールバック表示する
 
 ## 8. URLによる状態再現
@@ -263,9 +263,11 @@ window.forgeUIInspector.getState()
 window.forgeUIInspector.setState({ project: "cte2", fixture: "many", page: 1 })
 window.forgeUIInspector.reset()
 window.forgeUIInspector.getCanonicalUrl()
+window.forgeUIInspector.getSnapshot()
 ```
 
 `getState()`は、表示中のfixture、locale、layout、page、scroll、viewport、状態名をJSONで返す。
+`getSnapshot()`は、`state`、正規化済み`canonicalUrl`、project/screenメタデータ、選択中fixtureの`itemCount`・`layoutCount`・`pageSize`・`pageCount`を含む。画面ルートには同じ状態を表す`data-project`、`data-screen`、`data-fixture`、`data-state`、`data-layout`、`data-page`、`data-page-count`、`data-item-count`を付与する。`data-testid="inspector-state"`の非表示`output`にもJSON文字列を保持し、DOMだけを読むエージェントからも状態を取得できるようにする。
 
 ### 9.3 エージェントの標準確認手順
 
@@ -291,7 +293,7 @@ window.forgeUIInspector.getCanonicalUrl()
 - 通常
 - 空
 - 満杯
-- 55件以上のページング
+- 画面の`pageSize`を超えるページング
 - 不明／その他
 - 未対応アイテム
 - stale表示
@@ -307,7 +309,7 @@ Node.js組み込みの`node:test`だけで次を確認する。
 
 - Fixtureスキーマの不変条件
 - 28レイアウト＋「すべて」＋「その他」の件数
-- 54件、55件、108件のページ数
+- 96件、97件、192件のページ数
 - ページ・スクロールのclamp
 - URLパラメータの正規化
 - 日本語・英語の翻訳キー解決
@@ -332,9 +334,9 @@ Node.js組み込みの`node:test`だけで次を確認する。
 
 - Minecraftを起動せずに4Fixtureと日英表示を確認できる
 - URL一つで同じ状態を再現できる
-- 320×230基準の全要素が小さい画面でもはみ出さない
+- 474×326基準の全要素が小さい画面でもはみ出さない
 - 長い日本語が隣接要素へ侵入しない
-- 54件と55件の境界でページ表示が正しい
+- 96件と97件の境界でページ表示が正しい
 - レイアウト変更時にページが0へ戻る
 - `node --test`が成功する
 - 既存Forgeプロジェクトの`test`/`build`を壊さない

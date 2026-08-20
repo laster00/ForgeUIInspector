@@ -25,23 +25,26 @@
       <label>Scale <input id="scale-control" data-testid="scale-control" type="number" min="0.5" step="0.5"></label>
       <button id="reset" type="button">Reset</button>
       <button id="copy" type="button">Copy URL</button>
-      <output id="canonical" aria-live="polite"></output>
+      <output id="canonical" data-testid="canonical-url" aria-live="polite"></output>
+      <output id="inspector-state" data-testid="inspector-state" hidden aria-label="Machine-readable inspector state"></output>
     </section>
 
     <section class="preview-wrap" aria-label="Minecraft preview">
       <div id="map-stash-preview" data-testid="map-stash-preview" class="mc">
         <header>
           <strong id="title"></strong>
-          <span id="state"></span>
+          <span id="state" data-testid="preview-state"></span>
         </header>
         <div class="mc-body">
           <aside id="layout-list" data-testid="layout-list" aria-label="Layout list"></aside>
           <section class="stash" aria-label="Stash preview">
             <div id="selected-layout" class="selected-layout"></div>
             <div id="stash-grid" data-testid="stash-grid" class="stash-grid"></div>
-            <div id="stash-page" data-testid="stash-page" class="page" hidden></div>
           </section>
         </div>
+        <button id="stash-page-previous" data-testid="stash-page-previous" class="page-button page-previous" type="button" aria-label="Previous page">‹</button>
+        <button id="stash-page-next" data-testid="stash-page-next" class="page-button page-next" type="button" aria-label="Next page">›</button>
+        <div id="stash-page" data-testid="stash-page" class="page" hidden></div>
         <section id="player-inventory" data-testid="player-inventory" class="inventory"></section>
       </div>
       <div id="master-stash-preview" data-testid="master-stash-preview" class="mc extended-preview" hidden></div>
