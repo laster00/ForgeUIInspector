@@ -18,7 +18,7 @@ class HarnessElement {
 }
 
 function makeHarness(search = "") {
-  const ids = ["forge-ui-emulator", "fixture-control", "project-control", "screen-control", "master-variant-control", "master-variant-control-wrap", "locale-control", "layout-control", "page-control", "scroll-control", "state-control", "width-control", "height-control", "scale-control", "map-stash-preview", "master-stash-preview", "extended-preview", "layout-list", "stash-grid", "stash-page", "player-inventory", "inspector-state", "canonical", "title", "state", "selected-layout", "reset", "copy"];
+  const ids = ["forge-ui-emulator", "fixture-control", "project-control", "screen-control", "master-variant-control", "master-variant-control-wrap", "locale-control", "layout-control", "page-control", "scroll-control", "state-control", "width-control", "height-control", "scale-control", "map-stash-preview", "master-stash-preview", "extended-preview", "layout-list", "stash-grid", "stash-page", "stash-page-previous", "stash-page-next", "player-inventory", "inspector-state", "canonical", "title", "state", "selected-layout", "reset", "copy"];
   const nodes = new Map(ids.map((id) => [id, new HarnessElement(id === "inspector-state" ? "output" : "div")]));
   const previewWrap = new HarnessElement("div");
   globalThis.Option = class Option { constructor(text, value) { this.text = text; this.value = value; } };
@@ -53,6 +53,24 @@ test("lightweight DOM harness keeps snapshot, hidden output, data attributes, pa
   assert.equal(populated(nodes.get("stash-grid")), 96);
   api.setState({ page: 1 });
   assert.equal(populated(nodes.get("stash-grid")), 1);
+  assert.equal(nodes.get("stash-page-previous").disabled, false);
+  assert.equal(nodes.get("stash-page-next").disabled, true);
+  assert.equal(nodes.get("map-stash-preview").style["--stash-x"], "240px");
+  assert.equal(nodes.get("map-stash-preview").style["--stash-y"], "34px");
+  assert.equal(nodes.get("map-stash-preview").style["--inventory-x"], "267px");
+  assert.equal(nodes.get("map-stash-preview").style["--inventory-y"], "228px");
+  assert.equal(nodes.get("map-stash-preview").style["--hotbar-y"], "290px");
+  assert.equal(nodes.get("map-stash-preview").style["--inventory-label-x"], "267px");
+  assert.equal(nodes.get("map-stash-preview").style["--inventory-label-y"], "216px");
+  const [, mainInventory, hotbar] = nodes.get("player-inventory").children;
+  assert.equal(mainInventory.className, "inv-row inventory-main");
+  assert.equal(mainInventory.children.length, 27);
+  assert.equal(hotbar.className, "inv-row inventory-hotbar");
+  assert.equal(hotbar.children.length, 9);
+  nodes.get("stash-page-previous").dispatch("click");
+  assert.equal(api.getSnapshot().state.page, 0);
+  nodes.get("stash-page-next").dispatch("click");
+  assert.equal(api.getSnapshot().state.page, 1);
   assertPublished(nodes, api);
   nodes.get("layout-list").scrollTop = 36;
   nodes.get("layout-list").dispatch("scroll");

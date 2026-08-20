@@ -4,9 +4,10 @@ export const PROJECT_INDEX_SCHEMA = "forge-ui-inspector.project-index";
 export const DEFAULT_PROJECT_ID = "cte2";
 export const PAGE_SIZE = 54;
 
+const COMPACT_STASH_GEOMETRY = Object.freeze({ list: { x: 12, y: 34, width: 200, rowHeight: 18, rows: 10 }, stash: { x: 240, y: 34, columns: 12, rows: 8, slot: 18 }, inventory: { x: 267, y: 228, columns: 9, rows: 3 }, hotbar: { y: 290, columns: 9, rows: 1 }, page: { previousX: 240, nextX: 298, buttonY: 186, buttonWidth: 54, buttonHeight: 20, labelX: 360, labelY: 192 }, inventoryLabel: { x: 267, y: 216 } });
 const CTE2_SCREENS = [
-  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
-  { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 474, height: 326, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
+  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
+  { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
   { id: "master_stash", labelKey: "screen.forgeuiinspector.master.title", renderer: "master-stash", width: 650, height: 350, grid: { columns: 9, rows: 9, slots: 81 }, fixtureFile: "master-stash", fixturePath: "../../fixtures/master-stash.json" },
   { id: "profession_workshop", labelKey: "screen.forgeuiinspector.profession.title", renderer: "profession-workshop", width: 620, height: 340, grid: { columns: 9, rows: 6, slots: 54 }, fixtureFile: "profession-workshop", fixturePath: "../../fixtures/profession-workshop.json" },
   { id: "advanced_salvage", labelKey: "screen.forgeuiinspector.salvage.title", renderer: "advanced-salvage", width: 960, height: 540, grid: { columns: 9, rows: 6, slots: 54 }, fixtureFile: "advanced-salvage", fixturePath: "../../fixtures/advanced-salvage.json" },
@@ -50,6 +51,7 @@ export function screenMetaFor(project = DEFAULT_CTE2_PROJECT, screenId = "map_st
     grid: selected.grid && Number.isInteger(selected.grid.columns) && Number.isInteger(selected.grid.rows)
       ? { columns: selected.grid.columns, rows: selected.grid.rows, slots: selected.grid.slots ?? selected.grid.columns * selected.grid.rows }
       : { columns: 9, rows: 6, slots: 54 },
+    geometry: selected.geometry,
   };
 }
 

@@ -10,6 +10,7 @@
       "labelKey": "screen.forgeuiinspector.title",
       "renderer": "compact-stash",
       "logicalSize": { "width": 474, "height": 326 },
+      "geometry": { "list": { "x": 12, "y": 34, "width": 200, "rowHeight": 18, "rows": 10 }, "stash": { "x": 240, "y": 34, "columns": 12, "rows": 8, "slot": 18 }, "inventory": { "x": 267, "y": 228, "columns": 9, "rows": 3 }, "hotbar": { "y": 290, "columns": 9, "rows": 1 }, "page": { "previousX": 240, "nextX": 298, "buttonY": 186, "buttonWidth": 54, "buttonHeight": 20, "labelX": 360, "labelY": 192 }, "inventoryLabel": { "x": 267, "y": 216 } },
       "grid": { "columns": 12, "rows": 8, "slots": 96 },
       "fixturePath": "../../fixtures/map-stash.json"
     },
@@ -18,6 +19,7 @@
       "labelKey": "screen.forgeuiinspector.currencyTitle",
       "renderer": "compact-stash",
       "logicalSize": { "width": 474, "height": 326 },
+      "geometry": { "list": { "x": 12, "y": 34, "width": 200, "rowHeight": 18, "rows": 10 }, "stash": { "x": 240, "y": 34, "columns": 12, "rows": 8, "slot": 18 }, "inventory": { "x": 267, "y": 228, "columns": 9, "rows": 3 }, "hotbar": { "y": 290, "columns": 9, "rows": 1 }, "page": { "previousX": 240, "nextX": 298, "buttonY": 186, "buttonWidth": 54, "buttonHeight": 20, "labelX": 360, "labelY": 192 }, "inventoryLabel": { "x": 267, "y": 216 } },
       "grid": { "columns": 12, "rows": 8, "slots": 96 },
       "fixturePath": "../../fixtures/currency-stash.json"
     },

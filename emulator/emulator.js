@@ -813,6 +813,8 @@ export function initEmulator(data, options = {}) {
   const localeControl = document.getElementById("locale-control");
   const layoutControl = document.getElementById("layout-control");
   const pageControl = document.getElementById("page-control");
+  const pagePrevious = document.getElementById("stash-page-previous");
+  const pageNext = document.getElementById("stash-page-next");
   const scrollControl = document.getElementById("scroll-control");
   const stateControl = document.getElementById("state-control");
   const readUrl = () => Object.fromEntries(new URLSearchParams(window.location.search));
@@ -860,6 +862,19 @@ export function initEmulator(data, options = {}) {
     const list = document.getElementById("layout-list");
     const grid = document.getElementById("stash-grid");
     const pageLabel = document.getElementById("stash-page");
+    const meta = screenMetaFor(project, state.screen);
+    const geometry = meta.geometry ?? {};
+    const listGeometry = geometry.list ?? {};
+    const stashGeometry = geometry.stash ?? {};
+    const inventoryGeometry = geometry.inventory ?? {};
+    const pageGeometry = geometry.page ?? {};
+    const setGeometry = (name, value) => { if (Number.isFinite(value)) preview.style.setProperty(name, `${value}px`); };
+    setGeometry("--list-x", listGeometry.x); setGeometry("--list-y", listGeometry.y); setGeometry("--list-width", listGeometry.width); setGeometry("--list-row-height", listGeometry.rowHeight); preview.style.setProperty("--list-rows", String(listGeometry.rows ?? 10));
+    setGeometry("--stash-x", stashGeometry.x); setGeometry("--stash-y", stashGeometry.y); setGeometry("--stash-slot", stashGeometry.slot); preview.style.setProperty("--stash-columns", String(stashGeometry.columns ?? 12)); preview.style.setProperty("--stash-rows", String(stashGeometry.rows ?? 8));
+    setGeometry("--inventory-x", inventoryGeometry.x); setGeometry("--inventory-y", inventoryGeometry.y); preview.style.setProperty("--inventory-columns", String(inventoryGeometry.columns ?? 9)); preview.style.setProperty("--inventory-rows", String(inventoryGeometry.rows ?? 3));
+    setGeometry("--hotbar-y", geometry.hotbar?.y); preview.style.setProperty("--hotbar-columns", String(geometry.hotbar?.columns ?? 9)); preview.style.setProperty("--hotbar-rows", String(geometry.hotbar?.rows ?? 1));
+    setGeometry("--inventory-label-x", geometry.inventoryLabel?.x); setGeometry("--inventory-label-y", geometry.inventoryLabel?.y);
+    setGeometry("--page-previous-x", pageGeometry.previousX); setGeometry("--page-next-x", pageGeometry.nextX); setGeometry("--page-button-y", pageGeometry.buttonY); setGeometry("--page-button-width", pageGeometry.buttonWidth); setGeometry("--page-button-height", pageGeometry.buttonHeight); setGeometry("--page-label-x", pageGeometry.labelX); setGeometry("--page-label-y", pageGeometry.labelY);
     const pageItems = buildItems(fixture, state.layout, state.page, screenPageSize);
     const selectedLayout = layoutById(fixture, state.layout) ?? { id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 };
     const itemCount = selectedItems.length;
@@ -923,7 +938,6 @@ export function initEmulator(data, options = {}) {
       const control = document.getElementById(`${key}-control`);
       if (control) control.value = state[key];
     });
-    const meta = screenMetaFor(project, state.screen);
     const expanded = meta.renderer !== "compact-stash";
     const extendedContainers = ["master-stash-preview", "profession-workshop-preview", "advanced-salvage-preview", "extended-preview"].map((id) => document.getElementById(id)).filter(Boolean);
     extendedContainers.forEach((container) => { container.hidden = true; });
@@ -1007,17 +1021,19 @@ export function initEmulator(data, options = {}) {
     pageLabel.setAttribute("role", "status");
     pageLabel.textContent = pages > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pages]) : "";
     pageLabel.hidden = pages <= 1;
+    if (pagePrevious) { pagePrevious.hidden = pages <= 1; pagePrevious.disabled = pages <= 1 || state.page <= 0; }
+    if (pageNext) { pageNext.hidden = pages <= 1; pageNext.disabled = pages <= 1 || state.page >= pages - 1; }
     const inventory = document.getElementById("player-inventory");
     inventory.replaceChildren();
     inventory.append(createElement("div", "inventory-title", t("screen.forgeuiinspector.inventory", state.locale)));
-    const mainRow = createElement("div", "inv-row");
+    const mainRow = createElement("div", "inv-row inventory-main");
     for (let index = 0; index < 27; index += 1) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `inventory-slot-${index}`;
       slot.setAttribute("role", "gridcell");
       mainRow.append(slot);
     }
-    const hotbarRow = createElement("div", "inv-row");
+    const hotbarRow = createElement("div", "inv-row inventory-hotbar");
     for (let index = 0; index < 9; index += 1) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `inventory-slot-${index + 27}`;
@@ -1061,6 +1077,8 @@ export function initEmulator(data, options = {}) {
   localeControl?.addEventListener("change", (event) => setState({ locale: event.target.value }));
   layoutControl?.addEventListener("change", (event) => setState({ layout: event.target.value }));
   pageControl?.addEventListener("change", (event) => setState({ page: event.target.value }));
+  pagePrevious?.addEventListener("click", () => setState({ page: state.page - 1 }));
+  pageNext?.addEventListener("click", () => setState({ page: state.page + 1 }));
   scrollControl?.addEventListener("change", (event) => setState({ scroll: event.target.value }));
   stateControl?.addEventListener("change", (event) => setState({ state: event.target.value }));
   masterVariantControl?.addEventListener("change", (event) => setState({ variant: event.target.value }));

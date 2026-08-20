@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { CURRENCY_CATEGORY_IDS, UI_THEME } from "../emulator/emulator.js";
+import { CURRENCY_CATEGORY_IDS, DEFAULT_CTE2_PROJECT, UI_THEME } from "../emulator/emulator.js";
 
 const css = fs.readFileSync(new URL("../emulator/emulator.css", import.meta.url), "utf8");
 const cte2AddonRoot = new URL("../../cte2-ja-patch/addon/cte2-talent-description-search/", import.meta.url);
@@ -55,28 +55,29 @@ test("browser preview keeps the Minecraft font token and deterministic geometry"
   assert.match(css, /height:\s*326px/);
 });
 
-test("compact stash reserves the full 12x8 grid above inventory", () => {
-  assert.match(css, /grid-template-columns:\s*repeat\(var\(--grid-columns,\s*12\),\s*18px\)/);
-  assert.match(css, /grid-template-rows:\s*repeat\(var\(--grid-rows,\s*8\),\s*18px\)/);
-  assert.match(css, /\.stash\s*\{[^}]*top:\s*24px/);
-  assert.match(css, /\.page\s*\{[^}]*top:\s*0[^}]*height:\s*12px/);
-  assert.match(css, /\.mc\.page-active \.stash-grid\s*\{\s*margin-top:\s*12px/);
-  assert.match(css, /\.mc\.page-active \.inventory\s*\{\s*top:\s*184px/);
-  assert.match(css, /\.inventory\s*\{[^}]*top:\s*184px/);
+test("compact geometry is sourced from the production Cte2StashLayout contract", { skip: !hasCte2Integration }, () => {
+  const manifest = JSON.parse(fs.readFileSync(new URL("../emulator/projects/cte2/project.json", import.meta.url), "utf8"));
+  const names = ["WIDTH", "HEIGHT", "LIST_X", "LIST_Y", "LIST_WIDTH", "LIST_ROW_HEIGHT", "LIST_ROWS", "STASH_X", "STASH_Y", "STASH_COLUMNS", "STASH_ROWS", "SLOT_SIZE", "PLAYER_INVENTORY_X", "PLAYER_INVENTORY_Y", "HOTBAR_Y", "PAGE_PREVIOUS_X", "PAGE_NEXT_X", "PAGE_BUTTON_Y", "PAGE_BUTTON_WIDTH", "PAGE_BUTTON_HEIGHT", "PAGE_LABEL_X", "PAGE_LABEL_Y", "INVENTORY_LABEL_X", "INVENTORY_LABEL_Y"];
+  const value = (name) => Number((cte2Integration.stashLayout.match(new RegExp(`(?:int|final int)\\s+${name}\\s*=\\s*(\\d+)`)) ?? cte2Integration.javaTheme.match(new RegExp(`(?:int|final int)\\s+${name}\\s*=\\s*(\\d+)`)))?.[1]);
+  const geometry = manifest.screens.find((screen) => screen.id === "map_stash").geometry;
+  const expected = { width: value("WIDTH"), height: value("HEIGHT"), list: { x: value("LIST_X"), y: value("LIST_Y"), width: value("LIST_WIDTH"), rowHeight: value("LIST_ROW_HEIGHT"), rows: value("LIST_ROWS") }, stash: { x: value("STASH_X"), y: value("STASH_Y"), columns: value("STASH_COLUMNS"), rows: value("STASH_ROWS"), slot: value("SLOT_SIZE") }, inventory: { x: value("PLAYER_INVENTORY_X"), y: value("PLAYER_INVENTORY_Y"), columns: 9, rows: 3 }, hotbar: { y: value("HOTBAR_Y"), columns: 9, rows: 1 }, page: { previousX: value("PAGE_PREVIOUS_X"), nextX: value("PAGE_NEXT_X"), buttonY: value("PAGE_BUTTON_Y"), buttonWidth: value("PAGE_BUTTON_WIDTH"), buttonHeight: value("PAGE_BUTTON_HEIGHT"), labelX: value("PAGE_LABEL_X"), labelY: value("PAGE_LABEL_Y") }, inventoryLabel: { x: value("INVENTORY_LABEL_X"), y: value("INVENTORY_LABEL_Y") } };
+  assert.equal(geometry ? JSON.stringify(geometry) : null, JSON.stringify((( { width: _width, height: _height, ...contract } ) => contract)(expected)));
+  assert.deepEqual(manifest.screens.find((screen) => screen.id === "map_stash").logicalSize, { width: expected.width, height: expected.height });
+  assert.deepEqual(DEFAULT_CTE2_PROJECT.screens.find((screen) => screen.id === "currency_stash").geometry, geometry);
+});
 
-  const stashTop = 24;
-  const pageTop = 0;
-  const pageHeight = 12;
-  const pageOffset = 12;
-  const gridRows = 8;
-  const slotHeight = 18;
-  const inventoryTop = 184;
-  const pageBottom = stashTop + pageTop + pageHeight;
-  const gridTop = stashTop + pageOffset;
-  const gridBottom = gridTop + gridRows * slotHeight;
-  assert.ok(pageBottom <= gridTop);
-  assert.ok(gridBottom <= inventoryTop);
-  assert.equal(inventoryTop - gridBottom, 4);
+test("compact stash follows the production geometry contract without page offsets", () => {
+  assert.match(css, /grid-template-columns:\s*repeat\(var\(--stash-columns,\s*12\),\s*var\(--stash-slot,\s*18px\)\)/);
+  assert.match(css, /grid-template-rows:\s*repeat\(var\(--stash-rows,\s*8\),\s*var\(--stash-slot,\s*18px\)\)/);
+  assert.match(css, /\.stash\s*\{[^}]*left:\s*var\(--stash-x,\s*240px\)[^}]*top:\s*var\(--stash-y,\s*34px\)/);
+  assert.match(css, /\.mc aside\s*\{[^}]*box-sizing:\s*border-box[^}]*width:\s*var\(--list-width,\s*200px\)[^}]*height:\s*calc\(var\(--list-row-height,\s*18px\) \* var\(--list-rows,\s*10\)\)[^}]*padding:\s*0[^}]*border:\s*0/);
+  assert.match(css, /\.layout-row\s*\{[^}]*box-sizing:\s*border-box[^}]*height:\s*var\(--list-row-height,\s*18px\)/);
+  assert.match(css, /\.page-button[^}]*box-sizing:\s*border-box[^}]*top:\s*var\(--page-button-y,\s*186px\)[^}]*width:\s*var\(--page-button-width,\s*54px\)[^}]*height:\s*var\(--page-button-height,\s*20px\)/);
+  assert.doesNotMatch(css, /page-active \\.stash-grid|page-active \\.inventory/);
+  assert.match(css, /\.inventory-title\s*\{[^}]*left:\s*var\(--inventory-label-x,\s*267px\)[^}]*top:\s*var\(--inventory-label-y,\s*216px\)/);
+  assert.match(css, /\.inventory-main\s*\{[^}]*top:\s*var\(--inventory-y,\s*228px\)[^}]*grid-template-rows:\s*repeat\(var\(--inventory-rows,\s*3\),\s*var\(--stash-slot,\s*18px\)\)/);
+  assert.match(css, /\.inventory-hotbar\s*\{[^}]*top:\s*var\(--hotbar-y,\s*290px\)/);
+  assert.match(fs.readFileSync(new URL("../emulator/emulator.js", import.meta.url), "utf8"), /if \(Number\.isFinite\(value\)\) preview\.style\.setProperty\(name, `\$\{value\}px`\)/);
 });
 
 test("CTE2 project integration keeps the shared theme and extension labels aligned", { skip: !hasCte2Integration }, () => {
