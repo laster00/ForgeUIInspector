@@ -34,6 +34,7 @@ import {
   renderPageSize,
   t,
 } from "../emulator/emulator.js";
+import { cacheBustedUrl, fetchJson } from "../emulator/emulator.js";
 
 const data = JSON.parse(fs.readFileSync(new URL("../emulator/fixtures/map-stash.json", import.meta.url), "utf8"));
 const currencyData = JSON.parse(fs.readFileSync(new URL("../emulator/fixtures/currency-stash.json", import.meta.url), "utf8"));
@@ -139,7 +140,7 @@ test("96, 97, and 192 items produce the expected page counts", () => {
 
 test("normalize applies safe defaults and clamps URL values", () => {
   const state = normalize({ fixture: "unknown", locale: "xx", layout: "nope", page: -3, scroll: -4, width: 1, height: 1, scale: 0, state: "bad" }, data);
-  assert.deepEqual(state, { fixture: "normal", screen: "map_stash", locale: "ja", layout: "all", page: 0, scroll: 0, width: 474, height: 326, scale: 0.5, state: "normal" });
+  assert.deepEqual(state, { fixture: "normal", screen: "map_stash", locale: "ja", layout: "all", page: 0, scroll: 0, width: 474, height: 326, scale: 0.5, state: "normal", alignment: "production-derived" });
   assert.equal(normalize({ fixture: "many", layout: "all", page: 999 }, data).page, 1);
   assert.equal(normalize({ fixture: "many", layout: "all", scroll: 999 }, data).scroll, layoutScrollMax(fixture("many")));
   assert.equal(normalize({ screen: "currency_stash", fixture: "many", layout: "all", page: 999 }, currencyData).screen, "currency_stash");
@@ -155,7 +156,7 @@ test("all supported states and locales normalize without leaking arbitrary value
 
 test("canonical URL contains every reproducibility parameter in a stable order", () => {
   const url = canonical(normalize({ fixture: "many", locale: "en", layout: "all", page: 1, scroll: 2, width: 640, height: 360, scale: 2, state: "full" }, data));
-  assert.equal(url, "index.html?screen=map_stash&fixture=many&locale=en&layout=all&page=1&scroll=2&width=640&height=360&scale=2&state=full");
+  assert.equal(url, "index.html?screen=map_stash&fixture=many&locale=en&layout=all&page=1&scroll=2&width=640&height=360&scale=2&state=full&alignment=production-derived");
   assert.ok(SCREEN_IDS.includes(normalize({ screen: "currency_stash" }, currencyData).screen));
 });
 
@@ -199,6 +200,26 @@ test("master stash UI variants normalize and remain URL-reproducible", () => {
   for (const locale of ["ja", "en"]) {
     for (const variant of MASTER_VARIANT_IDS) assert.notEqual(t(`screen.forgeuiinspector.master.variant.${variant}`, locale), `screen.forgeuiinspector.master.variant.${variant}`);
   }
+});
+
+test("development asset and fixture reloads bypass stale same-port caches", async () => {
+  const requested = [];
+  const payload = { ok: true };
+  const loaded = await fetchJson("http://127.0.0.1:8765/fixtures/map-stash.json", {
+    cacheToken: "audit-2",
+    fetchImpl: async (url, options) => {
+      requested.push({ url: String(url), options });
+      return { ok: true, json: async () => payload };
+    },
+  });
+  assert.equal(loaded, payload);
+  assert.match(requested[0].url, /_reload=audit-2/);
+  assert.equal(requested[0].options.cache, "no-store");
+  assert.equal(cacheBustedUrl("http://localhost/emulator.css", "next").searchParams.get("_reload"), "next");
+  const html = fs.readFileSync(new URL("../emulator/index.html", import.meta.url), "utf8");
+  assert.match(html, /emulator\.css\?_reload=/);
+  assert.match(html, /emulator\.js\?_reload=/);
+  assert.match(html, /data-testid="reload-assets"/);
 });
 
 test("extended fallback other labels are screen-specific", () => {

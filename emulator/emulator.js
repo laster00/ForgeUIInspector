@@ -8,6 +8,7 @@ import {
   PROJECT_SCHEMA,
   createFixtureRegistry,
   createProjectIndex,
+  alignmentFor,
   rendererFor,
   screenIdsFor,
   screenMetaFor,
@@ -16,7 +17,7 @@ import {
   validateProjectManifest,
 } from "./fixture-system.js";
 
-export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, normalizeFixtureItems, validateProjectManifest };
+export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, alignmentFor, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, normalizeFixtureItems, validateProjectManifest };
 
 export const PAGE_SIZE = PROJECT_PAGE_SIZE;
 export const MAP_PAGE_SIZE = 96;
@@ -399,6 +400,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
     state: STATE_IDS.includes(input.state) ? input.state : "normal",
   };
   if (screen === "master_stash") next.variant = MASTER_VARIANT_IDS.includes(input.variant) ? input.variant : "rail_dual";
+  next.alignment = alignmentFor(project, screen, next.variant).status;
   if (project?.id && project.id !== DEFAULT_PROJECT_ID) next.project = project.id;
   return next;
 }
@@ -413,10 +415,10 @@ export function mergeState(current, partial = {}, data = createFallbackData(), p
 }
 
 export function canonical(state, base = "index.html") {
-  const keys = ["screen", "fixture", "locale", "layout", "page", "scroll", "width", "height", "scale", "state"];
+  const keys = ["screen", "fixture", "locale", "layout", "page", "scroll", "width", "height", "scale", "state", "alignment"];
   const query = new URLSearchParams();
   if (state.project && state.project !== DEFAULT_PROJECT_ID) query.set("project", state.project);
-  keys.forEach((key) => query.set(key, state[key]));
+  keys.forEach((key) => { if (state[key] !== undefined) query.set(key, state[key]); });
   if (state.screen === "master_stash") query.set("variant", state.variant ?? "rail_dual");
   return `${base}?${query.toString()}`;
 }
@@ -479,6 +481,7 @@ function snapshotFor(state, data, project) {
     canonicalUrl: canonical(state),
     project: { id: project.id, labelKey: project.labelKey ?? "" },
     screen: { id: state.screen, renderer: meta.renderer, width: meta.width, height: meta.height },
+    alignment: alignmentFor(project, state.screen, state.variant),
     fixture: {
       id: fixture.id ?? state.fixture,
       titleKey: fixture.titleKey ?? "",
@@ -816,6 +819,7 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
   container.dataset.page = String(state.page);
   container.dataset.pageCount = String(pages);
   container.dataset.itemCount = String(items.length);
+  container.dataset.alignment = state.alignment;
   return pageLabel;
 }
 
@@ -837,6 +841,7 @@ export function initEmulator(data, options = {}) {
   const stateControl = document.getElementById("state-control");
   const readUrl = () => Object.fromEntries(new URLSearchParams(window.location.search));
   let state = normalize({ ...readUrl(), project: options.projectId ?? readUrl().project }, data, project);
+  document.body.dataset.captureMode = readUrl().capture === "1" ? "true" : "false";
   let syncingList = false;
 
   FIXTURE_IDS.forEach((id) => fixtureControl?.add(new Option(id, id)));
@@ -910,6 +915,14 @@ export function initEmulator(data, options = {}) {
     app?.setAttribute("data-page", String(state.page));
     app?.setAttribute("data-page-count", String(pages));
     app?.setAttribute("data-item-count", String(itemCount));
+    app?.setAttribute("data-alignment", state.alignment);
+    const alignmentBadge = document.getElementById("alignment-badge");
+    if (alignmentBadge) {
+      alignmentBadge.textContent = `${state.alignment} · ${snapshot.alignment.source}`;
+      alignmentBadge.className = `alignment-badge alignment-${state.alignment}`;
+      alignmentBadge.dataset.status = state.alignment;
+      alignmentBadge.dataset.source = snapshot.alignment.source;
+    }
     if (snapshotNode) {
       const snapshotText = JSON.stringify(snapshot);
       snapshotNode.textContent = snapshotText;
@@ -1083,6 +1096,7 @@ export function initEmulator(data, options = {}) {
     preview.dataset.page = String(state.page);
     preview.dataset.pageCount = String(pages);
     preview.dataset.itemCount = String(itemCount);
+    preview.dataset.alignment = state.alignment;
     document.getElementById("canonical").textContent = canonical(state);
   }
 
@@ -1110,6 +1124,11 @@ export function initEmulator(data, options = {}) {
   masterVariantControl?.addEventListener("change", (event) => setState({ variant: event.target.value }));
   ["width", "height", "scale"].forEach((key) => document.getElementById(`${key}-control`)?.addEventListener("change", (event) => setState({ [key]: event.target.value })));
   document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); publishSnapshot(); });
+  document.getElementById("reload-assets")?.addEventListener("click", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("_reload", Date.now().toString(36));
+    window.location.assign(url.toString());
+  });
   document.getElementById("copy")?.addEventListener("click", () => navigator.clipboard?.writeText(canonical(state)));
   document.getElementById("layout-list")?.addEventListener("scroll", (event) => {
     if (syncingList) return;
@@ -1135,8 +1154,16 @@ export function initEmulator(data, options = {}) {
   return window.forgeUIInspector;
 }
 
-async function fetchJson(url) {
-  const response = await fetch(url);
+export function cacheBustedUrl(url, token = globalThis.window?.__FORGE_UI_CACHE_TOKEN__) {
+  const next = new URL(url);
+  if (token) next.searchParams.set("_reload", String(token));
+  return next;
+}
+
+export async function fetchJson(url, options = {}) {
+  const token = options.cacheToken ?? globalThis.window?.__FORGE_UI_CACHE_TOKEN__;
+  const requestUrl = cacheBustedUrl(url, token);
+  const response = await (options.fetchImpl ?? fetch)(requestUrl, { cache: "no-store" });
   if (!response.ok) throw new Error(`request failed: ${response.status}`);
   return response.json();
 }

@@ -48,7 +48,7 @@ test("registry accepts a separate project without changing CTE2 ids", () => {
     id: "demo",
     labelKey: "project.demo.name",
     defaultScreen: "inventory",
-    screens: [{ id: "inventory", labelKey: "screen.demo.inventory", renderer: "generic", logicalSize: { width: 360, height: 240 }, fixturePath: "fixtures/inventory.json" }],
+    screens: [{ id: "inventory", labelKey: "screen.demo.inventory", renderer: "generic", logicalSize: { width: 360, height: 240 }, alignment: { status: "approximate", source: "demo contract" }, fixturePath: "fixtures/inventory.json" }],
   };
   const registry = createFixtureRegistry([demo]);
   assert.deepEqual(registry.listProjects().map((entry) => entry.id), ["cte2", "demo"]);
@@ -64,4 +64,15 @@ test("registry accepts a separate project without changing CTE2 ids", () => {
 test("invalid project and fixture metadata are reported without throwing", () => {
   assert.equal(validateProjectManifest({ schema: PROJECT_SCHEMA, version: 1, id: "bad id", screens: [] }).valid, false);
   assert.equal(validateFixtureDocument({ schema: FIXTURE_SCHEMA, version: 1, project: "demo", screen: "inventory", pageSize: 54, fixtures: [] }).valid, false);
+});
+
+test("every CTE2 screen and Master variant declares review provenance", () => {
+  for (const screen of project.screens) assert.match(screen.alignment.status, /^(production|production-derived|approximate|concept)$/);
+  const master = project.screens.find((screen) => screen.id === "master_stash");
+  for (const variant of ["current", "classic", "dual", "rail", "overview", "clean_dual", "rail_dual", "single_focus"]) assert.ok(master.alignment.variants[variant], variant);
+  assert.equal(master.alignment.variants.current.status, "concept");
+  assert.equal(master.alignment.variants.rail_dual.status, "production-derived");
+  const promoted = structuredClone(project);
+  delete promoted.screens.find((screen) => screen.id === "master_stash").alignment.variants.rail_dual;
+  assert.equal(validateProjectManifest(promoted).valid, false);
 });

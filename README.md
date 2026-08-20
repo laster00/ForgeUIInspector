@@ -17,6 +17,8 @@ python -m http.server 8765 --directory emulator
 
 HTTPサーバーではプロジェクト一覧と各プロジェクトのFixtureを読み込みます。`file://`ではFetch制限により既定のCTE2 Fixtureへフォールバックします。カスタムプロジェクトを確認するときはHTTPサーバーを使ってください。
 
+ローカル監査では、通常のページ再読み込みだけでJavaScript、CSS、Fixture JSONへ新しいキャッシュキーが付きます。表示が古い疑いがある場合は操作領域の`Reload assets`を1回押してください。同じポートを使い続けても、Fixture取得は`no-store`で再検証されます。本番配信のキャッシュ方針とは独立した開発専用の挙動です。
+
 ## プロジェクトとFixture
 
 プロジェクト一覧、画面定義、Fixtureを分離して管理します。
@@ -86,6 +88,8 @@ window.forgeUIInspector.getSnapshot()
 非CTE2プロジェクトの`getState()`には`project`が含まれます。画面やプロジェクトを切り替えると、対応するmanifestとFixtureを再読込します。
 `getSnapshot()`は状態、正規化済みURL、画面の論理サイズ、renderer、選択中Fixtureの件数・ページ数をまとめた機械可読JSONを返します。画面のルートには`data-project`、`data-screen`、`data-fixture`、`data-state`、`data-page`、`data-page-count`、`data-item-count`も付与され、`data-testid="inspector-state"`の非表示`output`から同じスナップショットを取得できます。
 
+各screenはmanifestで`alignment.status`と`alignment.source`を宣言します。値は`production`、`production-derived`、`approximate`、`concept`のいずれかです。Master Stashはvariantごとに宣言し、`current`などの構想案とproduction-alignedな`rail_dual`を区別します。現在値はプレビューのbadge、canonical URLの`alignment`、`getSnapshot().alignment`、`data-alignment`へ同時に公開されます。URLから別のstatusへ偽装することはできません。旧version-1 projectで宣言がない場合は読み込みを壊さず`approximate / undeclared`として公開します。
+
 ## Forge実プレビュー
 
 Forge 1.20.1 / Java 17向けの開発専用クライアントMODです。タイトル画面でも次のキーを受け付けるため、ワールドを作成せず実フォントと実描画を確認できます。
@@ -116,6 +120,14 @@ Java 17を`JAVA_HOME`に設定して実行します。
 npm run test:all
 python .codex/skills/forge-ui-fixture-generator/scripts/generate_fixture.py validate emulator/projects/cte2
 ```
+
+ブラウザpreviewの決定的なmatrix capture（Chromium／Edge／Chromeのいずれかが必要）:
+
+```text
+npm run capture:browser -- --screens all --fixtures normal,empty,many,other --locales ja --states normal --scale 2 --viewport 960x540
+```
+
+`--browser`または`FORGE_UI_BROWSER`で実行ファイルを指定できます。出力名にはproject、screen、fixture、state、locale、variant、論理サイズ、viewport、scaleが入り、同じbasenameのPNG／JSONと`capture-manifest.json`を生成します。失敗、未初期化、欠落・空PNGはmanifest上の`failed`として明示され、既存の単画面URL確認はそのまま利用できます。Forge captureと比較するときは同じ`--scale`と`--viewport`を使います。
 
 ブラウザ側はMinecraftの配布フォントを同梱せず、固定ピクセル系のフォントスタックで近似します。文字幅と最終的な可読性はForge実プレビューで確認してください。
 

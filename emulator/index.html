@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Forge UI Inspector</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="emulator.css">
+  <link id="emulator-stylesheet" rel="stylesheet" href="emulator.css">
+  <script>
+    // A fresh token on every document load keeps local audit assets honest even
+    // when the browser reuses a tab or an HTTP cache entry on the same port.
+    window.__FORGE_UI_CACHE_TOKEN__ = new URLSearchParams(location.search).get("_reload") || Date.now().toString(36);
+    document.getElementById("emulator-stylesheet").href = `emulator.css?_reload=${encodeURIComponent(window.__FORGE_UI_CACHE_TOKEN__)}`;
+  </script>
 </head>
 <body>
   <main id="forge-ui-emulator" data-testid="forge-ui-emulator">
@@ -24,12 +30,14 @@
       <label>Height <input id="height-control" data-testid="height-control" type="number" min="230" step="1"></label>
       <label>Scale <input id="scale-control" data-testid="scale-control" type="number" min="0.5" step="0.5"></label>
       <button id="reset" type="button">Reset</button>
+      <button id="reload-assets" data-testid="reload-assets" type="button">Reload assets</button>
       <button id="copy" type="button">Copy URL</button>
       <output id="canonical" data-testid="canonical-url" aria-live="polite"></output>
       <output id="inspector-state" data-testid="inspector-state" hidden aria-label="Machine-readable inspector state"></output>
     </section>
 
     <section class="preview-wrap" aria-label="Minecraft preview">
+      <output id="alignment-badge" data-testid="alignment-badge" class="alignment-badge" aria-label="Preview alignment"></output>
       <div id="map-stash-preview" data-testid="map-stash-preview" class="mc">
         <header>
           <strong id="title"></strong>
@@ -53,6 +61,8 @@
       <div id="extended-preview" data-testid="extended-preview" class="mc extended-preview" hidden></div>
     </section>
   </main>
-  <script type="module" src="emulator.js"></script>
+  <script type="module">
+    import(`./emulator.js?_reload=${encodeURIComponent(window.__FORGE_UI_CACHE_TOKEN__)}`);
+  </script>
 </body>
 </html>

@@ -109,6 +109,7 @@ def generate(args: argparse.Namespace) -> int:
             "renderer": args.renderer,
             "logicalSize": {"width": args.width, "height": args.height},
             "grid": grid,
+            "alignment": {"status": "approximate", "source": "generated project fixture"},
             "fixturePath": f"fixtures/{screen_id}.json",
         }],
     }
@@ -209,6 +210,11 @@ def validate_project(path: Path) -> int:
         if not isinstance(size.get("width"), (int, float)) or not isinstance(size.get("height"), (int, float)) or size["width"] <= 0 or size["height"] <= 0:
             fail(f"screen logicalSize must be positive: {manifest_path}")
         page_size = grid_page_size(screen.get("grid"), f"screen {screen_id}")
+        alignment = screen.get("alignment")
+        if not isinstance(alignment, dict) or alignment.get("status") not in {"production", "production-derived", "approximate", "concept"}:
+            fail(f"screen {screen_id} needs a valid alignment status: {manifest_path}")
+        if not isinstance(alignment.get("source"), str):
+            fail(f"screen {screen_id} alignment source must be a string: {manifest_path}")
         fixture_path = root / str(screen.get("fixturePath", ""))
         validate_fixture(read_json(fixture_path), fixture_path, project_id, screen_id, page_size)
     if manifest.get("defaultScreen") not in screen_ids:
