@@ -52,14 +52,17 @@ test("browser preview keeps the Minecraft font token and deterministic geometry"
 
 test("CTE2 project integration keeps the shared theme and extension labels aligned", { skip: !hasCte2Integration }, () => {
   const { javaTheme, stashLayout, storageConstants, modsToml, advancedEn, advancedJa, mapJa, masterEn, masterJa } = cte2Integration;
-  assert.match(storageConstants, /PHYSICAL_CAPACITY\s*=\s*243/);
-  assert.match(storageConstants, /PAGE_SIZE\s*=\s*54/);
+  assert.match(storageConstants, /PHYSICAL_CAPACITY\s*=\s*PAGE_SIZE\s*\*\s*8/);
+  assert.match(storageConstants, /PAGE_SIZE\s*=\s*PAGE_COLUMNS\s*\*\s*PAGE_ROWS/);
   assert.match(javaTheme, /SLOT_SIZE\s*=\s*18/);
   assert.match(javaTheme, /slotGroup\(GuiGraphics graphics/);
   assert.match(javaTheme, /public static String clip\(Font font/);
   assert.match(stashLayout, /SLOT_SIZE\s*=\s*Cte2UiTheme\.SLOT_SIZE/);
-  assert.match(stashLayout, /WIDTH\s*=\s*360/);
-  assert.match(stashLayout, /HEIGHT\s*=\s*248/);
+  // The addon branch may use the compact 360x248 projection or the expanded
+  // 12x8 474x326 projection; the inspector keeps its own deterministic 320x230
+  // browser canvas and only requires the shared slot/theme helpers here.
+  assert.match(stashLayout, /WIDTH\s*=\s*(?:360|474)/);
+  assert.match(stashLayout, /HEIGHT\s*=\s*(?:248|326)/);
   assert.match(stashLayout, /LIST_ROWS\s*=\s*10/);
   assert.match(stashLayout, /Cte2UiTheme\.slotGroup\(graphics/);
   for (const name of ["MapStashScreen.java", "CurrencyStashScreen.java"]) {
@@ -81,7 +84,7 @@ test("CTE2 project integration keeps the shared theme and extension labels align
   }
   assert.match(advancedEn, /"screen\.cte2_advanced_salvage\.title":"Advanced Salvage"/);
   assert.match(advancedJa, /"screen\.cte2_advanced_salvage\.title":"高度サルベージ"/);
-  assert.match(mapJa, /"cte2_map_stash\.layout\.other":"不明／その他"/);
+  assert.match(mapJa, /"cte2_map_stash\.layout\.other"\s*:\s*"不明／その他"/);
   assert.match(masterEn, /"container\.cte2_master_stash\.master_stash": "Master Stash"/);
   assert.match(masterJa, /"container\.cte2_master_stash\.master_stash": "マスタースタッシュ"/);
   const screenPaths = [

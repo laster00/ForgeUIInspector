@@ -80,9 +80,11 @@ window.forgeUIInspector.getState()
 window.forgeUIInspector.setState({ project: "cte2", screen: "advanced_salvage", fixture: "many", page: 1 })
 window.forgeUIInspector.reset()
 window.forgeUIInspector.getCanonicalUrl()
+window.forgeUIInspector.getSnapshot()
 ```
 
 非CTE2プロジェクトの`getState()`には`project`が含まれます。画面やプロジェクトを切り替えると、対応するmanifestとFixtureを再読込します。
+`getSnapshot()`は状態、正規化済みURL、画面の論理サイズ、renderer、選択中Fixtureの件数・ページ数をまとめた機械可読JSONを返します。画面のルートには`data-project`、`data-screen`、`data-fixture`、`data-state`、`data-page`、`data-page-count`、`data-item-count`も付与され、`data-testid="inspector-state"`の非表示`output`から同じスナップショットを取得できます。
 
 ## Forge実プレビュー
 

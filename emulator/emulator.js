@@ -18,6 +18,7 @@ import {
 export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, validateProjectManifest };
 
 export const PAGE_SIZE = PROJECT_PAGE_SIZE;
+export const MASTER_PAGE_SIZE = 81;
 export const FIXTURE_IDS = ["normal", "empty", "many", "other"];
 export const STATE_IDS = ["normal", "loading", "full", "stale", "unsupported"];
 export const SCREEN_IDS = Object.freeze(screenIdsFor(DEFAULT_CTE2_PROJECT));
@@ -341,6 +342,18 @@ export function pageCount(itemsOrCount, pageSize = PAGE_SIZE) {
   return Math.max(1, Math.ceil(count / pageSize));
 }
 
+/**
+ * Return the visual page size for a renderer. Fixture slots remain compatible
+ * with the standard 54-slot schema; Master Stash lays out two 9x9 pages.
+ */
+export function renderPageSize(data = createFallbackData(), project = DEFAULT_CTE2_PROJECT, screen = data?.screen ?? "map_stash") {
+  const meta = screenMetaFor(project, screen);
+  const fixturePageSize = Number(data?.pageSize);
+  return meta.renderer === "master-stash"
+    ? MASTER_PAGE_SIZE
+    : Number.isInteger(fixturePageSize) && fixturePageSize > 0 ? fixturePageSize : PAGE_SIZE;
+}
+
 export function layoutScrollMax(fixture, visibleRows = 6) {
   return Math.max(0, (fixture?.layouts?.length || 0) - visibleRows);
 }
@@ -354,7 +367,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
   const fixture = data.fixtures?.find((candidate) => candidate.id === fixtureId) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
   const layout = layoutById(fixture, input.layout) ? input.layout : "all";
   const items = itemsForLayout(fixture, layout);
-  const pageMax = pageCount(items, data.pageSize || PAGE_SIZE) - 1;
+  const pageMax = pageCount(items, renderPageSize(data, project, screen)) - 1;
   const scaleNumber = Number(input.scale);
   const next = {
     fixture: fixtureId,
@@ -439,6 +452,27 @@ function buildItems(fixture, layoutId, page, pageSize) {
   return items.slice(page * pageSize, (page + 1) * pageSize);
 }
 
+function snapshotFor(state, data, project) {
+  const meta = screenMetaFor(project, state.screen);
+  const fixture = data.fixtures?.find((candidate) => candidate.id === state.fixture) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
+  const items = itemsForLayout(fixture, state.layout);
+  const pageSize = renderPageSize(data, project, state.screen);
+  return {
+    state: { ...state },
+    canonicalUrl: canonical(state),
+    project: { id: project.id, labelKey: project.labelKey ?? "" },
+    screen: { id: state.screen, renderer: meta.renderer, width: meta.width, height: meta.height },
+    fixture: {
+      id: fixture.id ?? state.fixture,
+      titleKey: fixture.titleKey ?? "",
+      itemCount: items.length,
+      layoutCount: fixture.layouts?.length ?? 0,
+      pageSize,
+      pageCount: pageCount(items, pageSize),
+    },
+  };
+}
+
 function safeReplaceUrl(url) {
   if (typeof history !== "undefined" && typeof history.replaceState === "function") history.replaceState(null, "", url);
 }
@@ -474,9 +508,12 @@ function masterCategoryCount(total, index) {
 
 function masterCategoryTabs(locale, total, selected = 0, className = "master-variant-tabs") {
   const tabs = createElement("div", className);
+  tabs.setAttribute("role", "tablist");
   MASTER_CATEGORIES.forEach((category, index) => {
     const tab = createElement("div", `master-category-tab${index === selected ? " selected" : ""}`);
     tab.dataset.testid = `master-category-${category.id}`;
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", String(index === selected));
     tab.append(createElement("span", "master-category-label", t(category.key, locale)), createElement("em", "master-category-count", String(masterCategoryCount(total, index))));
     tabs.append(tab);
   });
@@ -486,9 +523,11 @@ function masterCategoryTabs(locale, total, selected = 0, className = "master-var
 function masterCategoryRail(locale, total, selected = 0) {
   const rail = createElement("nav", "master-category-rail");
   rail.dataset.testid = "master-category-rail";
+  rail.setAttribute("aria-label", "Master Stash categories");
   MASTER_CATEGORIES.forEach((category, index) => {
     const row = createElement("div", `master-category-rail-row${index === selected ? " selected" : ""}`);
     row.dataset.testid = `master-rail-${category.id}`;
+    row.setAttribute("aria-current", index === selected ? "true" : "false");
     row.append(createElement("span", "master-category-label", t(category.key, locale)), createElement("em", "master-category-count", String(masterCategoryCount(total, index))));
     rail.append(row);
   });
@@ -497,7 +536,9 @@ function masterCategoryRail(locale, total, selected = 0) {
 
 function masterGrid(items, offset, testPrefix) {
   const grid = createElement("div", "large-grid master-variant-grid");
-  for (let index = 0; index < 81; index += 1) {
+  grid.setAttribute("role", "grid");
+  grid.setAttribute("aria-label", testPrefix);
+  for (let index = 0; index < MASTER_PAGE_SIZE; index += 1) {
     const slot = createElement("div", "slot");
     slot.dataset.testid = `${testPrefix}-slot-${index}`;
     const item = items[offset + index];
@@ -519,7 +560,14 @@ function masterInventory(locale) {
   inventory.dataset.testid = "master-variant-inventory";
   inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", locale)));
   const grid = createElement("div", "large-grid inventory-grid master-inventory-grid");
-  for (let index = 0; index < 36; index += 1) grid.append(createElement("div", "slot"));
+  grid.dataset.testid = "master-variant-inventory-grid";
+  grid.setAttribute("role", "grid");
+  for (let index = 0; index < 36; index += 1) {
+    const slot = createElement("div", "slot");
+    slot.dataset.testid = `master-variant-inventory-slot-${index}`;
+    slot.setAttribute("role", "gridcell");
+    grid.append(slot);
+  }
   inventory.append(grid);
   return inventory;
 }
@@ -547,7 +595,7 @@ function masterInfoFooter(locale, total, pageText) {
 }
 
 function masterPageText(locale, items, page) {
-  const pages = pageCount(items, 81);
+  const pages = pageCount(items, MASTER_PAGE_SIZE);
   return pages > 1 ? t("screen.forgeuiinspector.page", locale, [clamp(page + 1, 1, pages), pages]) : "";
 }
 
@@ -562,7 +610,7 @@ function renderMasterVariant(body, state, fixture) {
 
   if (variant === "classic") {
     root.append(masterCategoryTabs(locale, total));
-    const panel = masterPagePanel(items, state.page * 81, "master-classic", pageText);
+    const panel = masterPagePanel(items, state.page * MASTER_PAGE_SIZE, "master-classic", pageText);
     panel.classList.add("master-classic-grid-panel");
     root.append(panel);
     const status = createElement("section", "extended-panel master-variant-status master-classic-status");
@@ -571,7 +619,7 @@ function renderMasterVariant(body, state, fixture) {
   } else if (variant === "dual") {
     root.append(masterCategoryTabs(locale, total));
     const leftPanel = masterPagePanel(items, 0, "master-dual-left", "1");
-    const rightPanel = masterPagePanel(items, 81, "master-dual-right", "2");
+    const rightPanel = masterPagePanel(items, MASTER_PAGE_SIZE, "master-dual-right", "2");
     leftPanel.classList.add("master-dual-left-panel");
     rightPanel.classList.add("master-dual-right-panel");
     root.append(leftPanel, rightPanel);
@@ -580,7 +628,7 @@ function renderMasterVariant(body, state, fixture) {
     root.append(status, masterInventory(locale), masterActions(locale));
   } else if (variant === "rail") {
     root.append(masterCategoryRail(locale, total));
-    const panel = masterPagePanel(items, state.page * 81, "master-rail-grid", pageText);
+    const panel = masterPagePanel(items, state.page * MASTER_PAGE_SIZE, "master-rail-grid", pageText);
     panel.classList.add("master-rail-grid-panel");
     root.append(panel);
     const status = createElement("section", "extended-panel master-variant-status master-rail-status");
@@ -589,20 +637,20 @@ function renderMasterVariant(body, state, fixture) {
   } else if (variant === "clean_dual") {
     root.append(masterCategoryTabs(locale, total));
     const leftPanel = masterPagePanel(items, 0, "master-clean-dual-left", "1");
-    const rightPanel = masterPagePanel(items, 81, "master-clean-dual-right", "2");
+    const rightPanel = masterPagePanel(items, MASTER_PAGE_SIZE, "master-clean-dual-right", "2");
     leftPanel.classList.add("master-clean-dual-left-panel");
     rightPanel.classList.add("master-clean-dual-right-panel");
     root.append(leftPanel, rightPanel, masterInventory(locale), masterFooter(locale, total, pageText));
   } else if (variant === "rail_dual") {
     root.append(masterCategoryRail(locale, total));
     const leftPanel = masterPagePanel(items, 0, "master-rail-dual-left", "1");
-    const rightPanel = masterPagePanel(items, 81, "master-rail-dual-right", "2");
+    const rightPanel = masterPagePanel(items, MASTER_PAGE_SIZE, "master-rail-dual-right", "2");
     leftPanel.classList.add("master-rail-dual-left-panel");
     rightPanel.classList.add("master-rail-dual-right-panel");
     root.append(leftPanel, rightPanel, masterInventory(locale), masterInfoFooter(locale, total, pageText));
   } else if (variant === "single_focus") {
     root.append(masterCategoryTabs(locale, total));
-    const panel = masterPagePanel(items, state.page * 81, "master-single-focus", pageText);
+    const panel = masterPagePanel(items, state.page * MASTER_PAGE_SIZE, "master-single-focus", pageText);
     panel.classList.add("master-single-focus-panel");
     root.append(panel, masterInventory(locale), masterFooter(locale, total, pageText));
   } else if (variant === "overview") {
@@ -634,12 +682,16 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
   container.style.height = `${meta.height}px`;
   container.replaceChildren();
   const header = createElement("header");
+  header.dataset.testid = "preview-header";
+  header.dataset.state = state.state;
   header.append(createElement("strong", "extended-title", t(meta.titleKey || meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale)), createElement("span", "extended-fixture", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
   container.append(header);
   const body = createElement("div", "extended-body");
   const items = itemsForLayout(fixture, state.layout);
-  const pageItems = items.slice(state.page * PAGE_SIZE, (state.page + 1) * PAGE_SIZE);
-  const pageLabel = pageCount(items) > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pageCount(items)]) : "";
+  const screenPageSize = renderPageSize(data, project, state.screen);
+  const pageItems = items.slice(state.page * screenPageSize, (state.page + 1) * screenPageSize);
+  const pages = pageCount(items, screenPageSize);
+  const pageLabel = pages > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pages]) : "";
   if (meta.renderer === "master-stash") {
     if (state.variant && state.variant !== "current") {
       renderMasterVariant(body, state, fixture);
@@ -652,8 +704,11 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     [0, 1].forEach((page) => {
       const panel = createElement("section", "extended-panel master-page-panel");
       panel.dataset.testid = `master-stash-page-${page}`;
+      panel.setAttribute("role", "region");
+      panel.setAttribute("aria-label", `Master Stash page ${page + 1}`);
       const grid = createElement("div", "large-grid");
-      for (let i = 0; i < 81; i += 1) { const slot = createElement("div", "slot"); const item = page === 0 ? items[i] : items[i + 81]; if (item) slot.append(screenItemIcon(item, i)); grid.append(slot); }
+      grid.setAttribute("role", "grid");
+      for (let i = 0; i < MASTER_PAGE_SIZE; i += 1) { const slot = createElement("div", "slot"); slot.dataset.testid = `master-stash-page-${page}-slot-${i}`; slot.setAttribute("role", "gridcell"); const item = page === 0 ? items[i] : items[i + MASTER_PAGE_SIZE]; if (item) slot.append(screenItemIcon(item, i)); grid.append(slot); }
       panel.append(grid, createElement("small", "panel-caption", page === 0 ? "1" : "2"));
       pages.append(panel);
     });
@@ -668,7 +723,11 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     const inventory = createElement("section", "extended-inventory");
     inventory.dataset.testid = "master-stash-inventory";
     inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", state.locale)));
-    const inv = createElement("div", "large-grid inventory-grid"); for (let i = 0; i < 36; i += 1) inv.append(createElement("div", "slot")); inventory.append(inv);
+    const inv = createElement("div", "large-grid inventory-grid");
+    inv.dataset.testid = "master-stash-inventory-grid";
+    inv.setAttribute("role", "grid");
+    for (let i = 0; i < 36; i += 1) { const slot = createElement("div", "slot"); slot.dataset.testid = `master-stash-inventory-slot-${i}`; slot.setAttribute("role", "gridcell"); inv.append(slot); }
+    inventory.append(inv);
     body.append(inventory);
     }
   } else if (meta.renderer === "profession-workshop") {
@@ -677,7 +736,7 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     body.append(tabs, createElement("div", "extended-search profession-search", t("screen.forgeuiinspector.profession.search", state.locale)), createElement("div", "extended-filter", t("screen.forgeuiinspector.profession.filter", state.locale)));
     const list = createElement("section", "extended-panel recipe-list"); list.dataset.testid = "profession-workshop-list";
     const recipeCount = fixture?.itemCount === 0 ? 0 : state.fixture === "many" ? 9 : state.fixture === "other" ? 1 : 5;
-    for (let i = 0; i < 9; i += 1) { const row = createElement("div", `recipe-row${i === 0 ? " selected" : ""}`); if (i < recipeCount) { row.append(screenItemIcon({ icon: i % 2 ? "orb" : "paper", count: 1 }, i), createElement("span", "recipe-label", clipLabel(t("screen.forgeuiinspector.profession.recipe", state.locale, [i + 1]), 160)), createElement("em", "recipe-count", String(12 + i))); } list.append(row); }
+    for (let i = 0; i < 9; i += 1) { const row = createElement("div", `recipe-row${i === 0 ? " selected" : ""}`); row.dataset.testid = `profession-workshop-recipe-${i}`; row.setAttribute("aria-selected", String(i === 0)); if (i < recipeCount) { row.append(screenItemIcon({ icon: i % 2 ? "orb" : "paper", count: 1 }, i), createElement("span", "recipe-label", clipLabel(t("screen.forgeuiinspector.profession.recipe", state.locale, [i + 1]), 160)), createElement("em", "recipe-count", String(12 + i))); } list.append(row); }
     body.append(list);
     const detail = createElement("section", "extended-panel recipe-detail"); detail.dataset.testid = "profession-workshop-detail";
     ["detail", "output", "materials", "craft", "readonly", "status"].forEach((key) => detail.append(createElement("p", key === "status" ? "success" : "", t(`screen.forgeuiinspector.profession.${key}`, state.locale))));
@@ -686,10 +745,10 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     body.append(createElement("div", "salvage-workflow", t("screen.forgeuiinspector.salvage.workflow", state.locale)));
     const catalog = createElement("section", "extended-panel salvage-catalog"); catalog.dataset.testid = "advanced-salvage-catalog"; catalog.append(createElement("h3", "", t("screen.forgeuiinspector.salvage.catalog", state.locale)));
     const presetCount = state.fixture === "empty" ? 0 : state.fixture === "many" ? 11 : state.fixture === "other" ? 2 : 4;
-    for (let i = 0; i < 11; i += 1) { const row = createElement("div", `preset-row${i === 0 ? " selected" : ""}`); if (i < presetCount) row.textContent = `${t("screen.forgeuiinspector.salvage.preset", state.locale, [i + 1])} · ${i % 2 ? t("screen.forgeuiinspector.salvage.salvage", state.locale) : t("screen.forgeuiinspector.salvage.keep", state.locale)}`; catalog.append(row); }
+    for (let i = 0; i < 11; i += 1) { const row = createElement("div", `preset-row${i === 0 ? " selected" : ""}`); row.dataset.testid = `advanced-salvage-preset-${i}`; row.setAttribute("aria-selected", String(i === 0)); if (i < presetCount) row.textContent = `${t("screen.forgeuiinspector.salvage.preset", state.locale, [i + 1])} · ${i % 2 ? t("screen.forgeuiinspector.salvage.salvage", state.locale) : t("screen.forgeuiinspector.salvage.keep", state.locale)}`; catalog.append(row); }
     const detail = createElement("section", "extended-panel salvage-detail"); detail.dataset.testid = "advanced-salvage-detail";
     ["selected", "selectedName", "ruleSummary", "held", "history"].forEach((key) => detail.append(createElement("p", "", t(`screen.forgeuiinspector.salvage.${key}`, state.locale))));
-    const grid = createElement("div", "large-grid salvage-items"); pageItems.slice(0, 18).forEach((item, index) => { const slot = createElement("div", "slot"); slot.append(screenItemIcon(item, index)); grid.append(slot); }); detail.append(grid); for (let i = 0; i < 4; i += 1) detail.append(createElement("small", "history-row", t("screen.forgeuiinspector.salvage.historyEntry", state.locale, [i + 1])));
+    const grid = createElement("div", "large-grid salvage-items"); grid.dataset.testid = "advanced-salvage-items"; grid.setAttribute("role", "grid"); pageItems.slice(0, 18).forEach((item, index) => { const slot = createElement("div", "slot"); slot.dataset.testid = `advanced-salvage-slot-${index}`; slot.setAttribute("role", "gridcell"); slot.append(screenItemIcon(item, index)); grid.append(slot); }); detail.append(grid); for (let i = 0; i < 4; i += 1) detail.append(createElement("small", "history-row", t("screen.forgeuiinspector.salvage.historyEntry", state.locale, [i + 1])));
     body.append(catalog, detail);
     body.append(createElement("div", "salvage-footer", `${t("screen.forgeuiinspector.salvage.readonly", state.locale)} · ${t("screen.forgeuiinspector.salvage.status", state.locale)}`));
   } else {
@@ -697,9 +756,11 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
     genericList.append(createElement("strong", "", t("screen.forgeuiinspector.genericReadonly", state.locale)));
     genericList.append(createElement("p", "", t("screen.forgeuiinspector.fixture", state.locale, [t(fixture?.titleKey, state.locale)])));
     const genericGrid = createElement("div", "large-grid generic-grid");
+    genericGrid.setAttribute("role", "grid");
     for (let index = 0; index < PAGE_SIZE; index += 1) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `generic-slot-${index}`;
+      slot.setAttribute("role", "gridcell");
       const item = pageItems[index];
       if (item) slot.append(screenItemIcon(item, index));
       genericGrid.append(slot);
@@ -711,6 +772,11 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
   container.dataset.screen = state.screen;
   container.dataset.fixture = state.fixture;
   container.dataset.renderer = meta.renderer;
+  container.dataset.project = project.id;
+  container.dataset.layout = state.layout;
+  container.dataset.page = String(state.page);
+  container.dataset.pageCount = String(pages);
+  container.dataset.itemCount = String(items.length);
   return pageLabel;
 }
 
@@ -761,19 +827,35 @@ export function initEmulator(data, options = {}) {
     }
     state = mergeState(state, partial, data, project);
     sync();
+    return { ...state };
   };
 
   function render() {
     state = normalize(state, data, project);
     const fixture = fixtureForState();
+    const screenPageSize = renderPageSize(data, project, state.screen);
+    const selectedItems = itemsForLayout(fixture, state.layout);
     const preview = document.getElementById("map-stash-preview");
     const list = document.getElementById("layout-list");
     const grid = document.getElementById("stash-grid");
     const pageLabel = document.getElementById("stash-page");
-    const pageItems = buildItems(fixture, state.layout, state.page, data.pageSize || PAGE_SIZE);
+    const pageItems = buildItems(fixture, state.layout, state.page, screenPageSize);
     const selectedLayout = layoutById(fixture, state.layout) ?? { id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 };
-    const itemCount = itemsForLayout(fixture, state.layout).length;
-    const pages = pageCount(itemCount, data.pageSize || PAGE_SIZE);
+    const itemCount = selectedItems.length;
+    const pages = pageCount(itemCount, screenPageSize);
+    const snapshot = snapshotFor(state, data, project);
+    const app = document.getElementById("forge-ui-emulator");
+    const snapshotNode = document.getElementById("inspector-state");
+    app?.setAttribute("data-ready", "true");
+    app?.setAttribute("data-project", project.id);
+    app?.setAttribute("data-screen", state.screen);
+    app?.setAttribute("data-fixture", state.fixture);
+    app?.setAttribute("data-state", state.state);
+    if (snapshotNode) {
+      const snapshotText = JSON.stringify(snapshot);
+      snapshotNode.textContent = snapshotText;
+      snapshotNode.value = snapshotText;
+    }
     preview.classList.toggle("page-active", pages > 1);
 
     if (fixtureControl) {
@@ -819,6 +901,7 @@ export function initEmulator(data, options = {}) {
     const expanded = meta.renderer !== "compact-stash";
     const extendedContainers = ["master-stash-preview", "profession-workshop-preview", "advanced-salvage-preview", "extended-preview"].map((id) => document.getElementById(id)).filter(Boolean);
     extendedContainers.forEach((container) => { container.hidden = true; });
+    document.documentElement.lang = state.locale;
     if (expanded) {
       preview.hidden = true;
       const knownContainer = document.getElementById(`${state.screen.replaceAll("_", "-")}-preview`);
@@ -833,7 +916,6 @@ export function initEmulator(data, options = {}) {
       return;
     }
     preview.hidden = false;
-    document.documentElement.lang = state.locale;
     document.getElementById("title").textContent = t(data.titleKey || meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale);
     const stateNode = document.getElementById("state");
     const selectedSummary = `${clipLabel(t(selectedLayout.labelKey, state.locale), 54)} (${itemCount})`;
@@ -843,12 +925,20 @@ export function initEmulator(data, options = {}) {
     stateNode.setAttribute("aria-label", stateNode.title);
     stateNode.className = `state-${state.state}`;
     document.getElementById("selected-layout").textContent = `${clipLabel(t(selectedLayout.labelKey, state.locale), 108)} (${itemCount})`;
-    document.getElementById("layout-list").setAttribute("aria-label", t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale));
+    list.setAttribute("role", "listbox");
+    list.setAttribute("aria-label", t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale));
+    list.setAttribute("aria-activedescendant", `layout-row-${state.layout}`);
+    list.setAttribute("aria-setsize", String(fixture?.layouts?.length ?? 0));
 
     list.replaceChildren();
-    (fixture?.layouts ?? []).forEach((layout) => {
+    (fixture?.layouts ?? []).forEach((layout, index) => {
       const row = createElement("div", `layout-row${layout.id === state.layout ? " selected" : ""}`);
       row.dataset.testid = `layout-row-${layout.id}`;
+      row.id = `layout-row-${layout.id}`;
+      row.setAttribute("role", "option");
+      row.setAttribute("aria-selected", String(layout.id === state.layout));
+      row.setAttribute("aria-posinset", String(index + 1));
+      row.setAttribute("aria-setsize", String(fixture?.layouts?.length ?? 0));
       row.tabIndex = 0;
       const label = createElement("span", "layout-label", clipLabel(t(layout.labelKey, state.locale), 92));
       label.title = t(layout.labelKey, state.locale);
@@ -862,10 +952,15 @@ export function initEmulator(data, options = {}) {
     list.scrollTop = state.scroll * 18;
     syncingList = false;
 
+    grid.setAttribute("role", "grid");
+    grid.setAttribute("aria-label", t(meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale));
     grid.replaceChildren();
     for (let slotIndex = 0; slotIndex < PAGE_SIZE; slotIndex += 1) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `stash-slot-${slotIndex}`;
+      slot.setAttribute("role", "gridcell");
+      slot.setAttribute("aria-colindex", String((slotIndex % 9) + 1));
+      slot.setAttribute("aria-rowindex", String(Math.floor(slotIndex / 9) + 1));
       const item = pageItems[slotIndex];
       if (item) {
         const icon = iconGlyph(item.icon);
@@ -878,15 +973,26 @@ export function initEmulator(data, options = {}) {
       }
       grid.append(slot);
     }
+    pageLabel.setAttribute("role", "status");
     pageLabel.textContent = pages > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pages]) : "";
     pageLabel.hidden = pages <= 1;
     const inventory = document.getElementById("player-inventory");
     inventory.replaceChildren();
     inventory.append(createElement("div", "inventory-title", t("screen.forgeuiinspector.inventory", state.locale)));
     const mainRow = createElement("div", "inv-row");
-    for (let index = 0; index < 27; index += 1) mainRow.append(createElement("div", "slot"));
+    for (let index = 0; index < 27; index += 1) {
+      const slot = createElement("div", "slot");
+      slot.dataset.testid = `inventory-slot-${index}`;
+      slot.setAttribute("role", "gridcell");
+      mainRow.append(slot);
+    }
     const hotbarRow = createElement("div", "inv-row");
-    for (let index = 0; index < 9; index += 1) hotbarRow.append(createElement("div", "slot"));
+    for (let index = 0; index < 9; index += 1) {
+      const slot = createElement("div", "slot");
+      slot.dataset.testid = `inventory-slot-${index + 27}`;
+      slot.setAttribute("role", "gridcell");
+      hotbarRow.append(slot);
+    }
     inventory.append(mainRow, hotbarRow);
 
     const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32), project);
@@ -897,6 +1003,13 @@ export function initEmulator(data, options = {}) {
     wrap.style.height = `${compactMeta.height * displayScaleValue}px`;
     preview.dataset.state = state.state;
     preview.dataset.screen = state.screen;
+    preview.dataset.project = project.id;
+    preview.dataset.fixture = state.fixture;
+    preview.dataset.renderer = meta.renderer;
+    preview.dataset.layout = state.layout;
+    preview.dataset.page = String(state.page);
+    preview.dataset.pageCount = String(pages);
+    preview.dataset.itemCount = String(itemCount);
     document.getElementById("canonical").textContent = canonical(state);
   }
 
@@ -931,16 +1044,18 @@ export function initEmulator(data, options = {}) {
     document.getElementById("canonical").textContent = canonical(state);
   });
   document.getElementById("stash-grid")?.addEventListener("wheel", (event) => {
-    const max = pageCount(itemsForLayout(fixtureForState(), state.layout), data.pageSize || PAGE_SIZE) - 1;
+    const max = pageCount(itemsForLayout(fixtureForState(), state.layout), renderPageSize(data, project, state.screen)) - 1;
     if (max > 0) { event.preventDefault(); setState({ page: state.page + (event.deltaY > 0 ? 1 : -1) }); }
   }, { passive: false });
   window.addEventListener("resize", render);
 
+  const getSnapshot = () => snapshotFor(state, data, project);
   window.forgeUIInspector = {
     getState: () => ({ ...state }),
     setState,
-    reset: () => { state = normalize({}, data, project); sync(); },
+    reset: () => { state = normalize({}, data, project); sync(); return { ...state }; },
     getCanonicalUrl: () => canonical(state),
+    getSnapshot,
   };
   render();
   return window.forgeUIInspector;

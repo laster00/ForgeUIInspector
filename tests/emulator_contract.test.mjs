@@ -4,10 +4,13 @@ import fs from "node:fs";
 
 import {
   CURRENCY_CATEGORY_IDS,
+  DEFAULT_CTE2_PROJECT,
   FIXTURE_IDS,
   I18N,
   MINECRAFT_FONT_STACK,
+  MASTER_PAGE_SIZE,
   MASTER_VARIANT_IDS,
+  PAGE_SIZE,
   SCREEN_META,
   SCREEN_IDS,
   STATE_IDS,
@@ -26,6 +29,7 @@ import {
   mergeState,
   normalize,
   pageCount,
+  renderPageSize,
   t,
 } from "../emulator/emulator.js";
 
@@ -158,6 +162,26 @@ test("master stash UI variants normalize and remain URL-reproducible", () => {
   assert.match(canonical(rail), /variant=rail$/);
   for (const locale of ["ja", "en"]) {
     for (const variant of MASTER_VARIANT_IDS) assert.notEqual(t(`screen.forgeuiinspector.master.variant.${variant}`, locale), `screen.forgeuiinspector.master.variant.${variant}`);
+  }
+});
+
+test("renderer page boundaries match the visual grid", () => {
+  const masterData = createExtendedFallbackData("master_stash");
+  assert.equal(MASTER_PAGE_SIZE, 81);
+  assert.equal(renderPageSize(masterData, DEFAULT_CTE2_PROJECT, "master_stash"), MASTER_PAGE_SIZE);
+  assert.equal(renderPageSize(data, DEFAULT_CTE2_PROJECT, "map_stash"), PAGE_SIZE);
+  assert.equal(normalize({ screen: "master_stash", fixture: "many", page: 99 }, masterData).page, 1);
+});
+
+test("agent snapshot and stable DOM identifiers are part of the public shell", () => {
+  const source = fs.readFileSync(new URL("../emulator/emulator.js", import.meta.url), "utf8");
+  const html = fs.readFileSync(new URL("../emulator/index.html", import.meta.url), "utf8");
+  assert.match(source, /getSnapshot/);
+  for (const testId of ["forge-ui-emulator", "project-control", "fixture-control", "screen-control", "layout-list", "stash-grid", "stash-page", "inspector-state"]) {
+    assert.match(html, new RegExp(`data-testid="${testId}"`), testId);
+  }
+  for (const property of ["project", "screen", "fixture", "state", "pageCount", "itemCount"]) {
+    assert.match(source, new RegExp(`dataset\\.${property}`), `dataset.${property}`);
   }
 });
 

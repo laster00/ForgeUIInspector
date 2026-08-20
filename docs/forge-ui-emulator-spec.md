@@ -263,9 +263,11 @@ window.forgeUIInspector.getState()
 window.forgeUIInspector.setState({ project: "cte2", fixture: "many", page: 1 })
 window.forgeUIInspector.reset()
 window.forgeUIInspector.getCanonicalUrl()
+window.forgeUIInspector.getSnapshot()
 ```
 
 `getState()`は、表示中のfixture、locale、layout、page、scroll、viewport、状態名をJSONで返す。
+`getSnapshot()`は、`state`、正規化済み`canonicalUrl`、project/screenメタデータ、選択中fixtureの`itemCount`・`layoutCount`・`pageSize`・`pageCount`を含む。画面ルートには同じ状態を表す`data-project`、`data-screen`、`data-fixture`、`data-state`、`data-layout`、`data-page`、`data-page-count`、`data-item-count`を付与する。`data-testid="inspector-state"`の非表示`output`にもJSON文字列を保持し、DOMだけを読むエージェントからも状態を取得できるようにする。
 
 ### 9.3 エージェントの標準確認手順
 
