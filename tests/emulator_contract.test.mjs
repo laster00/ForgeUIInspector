@@ -222,6 +222,47 @@ test("development asset and fixture reloads bypass stale same-port caches", asyn
   assert.match(html, /data-testid="reload-assets"/);
 });
 
+test("extended fallback other labels are screen-specific", () => {
+  assert.equal(createExtendedFallbackData("master_stash").fixtures.find((fixture) => fixture.id === "other").titleKey,
+    "screen.forgeuiinspector.master.fixture.other");
+  assert.equal(createExtendedFallbackData("profession_workshop").fixtures.find((fixture) => fixture.id === "other").titleKey,
+    "screen.forgeuiinspector.profession.fixture.other");
+  assert.equal(createExtendedFallbackData("advanced_salvage").fixtures.find((fixture) => fixture.id === "other").titleKey,
+    "screen.forgeuiinspector.salvage.fixture.other");
+  for (const locale of ["ja", "en"]) {
+    assert.notEqual(t("screen.forgeuiinspector.profession.fixture.other", locale), "その他のマップ");
+    assert.notEqual(t("screen.forgeuiinspector.salvage.fixture.other", locale), "その他のマップ");
+    assert.notEqual(t("screen.forgeuiinspector.profession.fixture.other", locale), "Other maps");
+    assert.notEqual(t("screen.forgeuiinspector.salvage.fixture.other", locale), "Other maps");
+  }
+});
+
+test("checked-in extended fixtures keep screen-specific other labels", () => {
+  const fixtureFor = (name) => JSON.parse(fs.readFileSync(new URL(`../emulator/fixtures/${name}.json`, import.meta.url), "utf8"));
+  const expected = {
+    "master-stash": "screen.forgeuiinspector.master.fixture.other",
+    "profession-workshop": "screen.forgeuiinspector.profession.fixture.other",
+    "advanced-salvage": "screen.forgeuiinspector.salvage.fixture.other",
+  };
+  for (const [name, titleKey] of Object.entries(expected)) {
+    const fixture = fixtureFor(name).fixtures.find((candidate) => candidate.id === "other");
+    assert.equal(fixture.titleKey, titleKey, name);
+    assert.notEqual(fixture.titleKey, "screen.forgeuiinspector.otherFixture", name);
+  }
+  assert.equal(fixtureFor("map-stash").fixtures.find((candidate) => candidate.id === "other").titleKey,
+    "screen.forgeuiinspector.otherFixture");
+});
+
+test("preview sources expose production-aligned info-card and empty-state semantics", () => {
+  const source = fs.readFileSync(new URL("../emulator/emulator.js", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../emulator/emulator.css", import.meta.url), "utf8");
+  assert.match(source, /empty-state-card/);
+  assert.match(source, /emptySelected\.map/);
+  assert.match(source, /emptySelected\.currency/);
+  assert.match(css, /master-variant-rail_dual \.master-detail-less-footer/);
+  assert.match(css, /empty-state-card/);
+});
+
 test("renderer page boundaries match the visual grid", () => {
   const masterData = createExtendedFallbackData("master_stash");
   assert.equal(MASTER_PAGE_SIZE, 81);
