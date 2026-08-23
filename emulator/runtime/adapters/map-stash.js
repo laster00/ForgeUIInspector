@@ -46,27 +46,39 @@ export function createMapStashAdapter(options = {}) {
     return { page, pageCount: Math.max(1, Math.ceil(allMatches.length / MAP_STASH_PAGE_SIZE)), matchCount: allMatches.length, layoutCounts, physicalIndices: [...ids], slots: ids.map(index => cloneItemStack(physical[index])) };
   }
   function snapshot() { clampPage(); return { capacity: MAP_STASH_CAPACITY, storage: cloneSlots(physical, MAP_STASH_CAPACITY), playerInventory: cloneSlots(player, PLAYER_INVENTORY_SIZE), carried: carried ? cloneItemStack(carried) : null, layout, rarity, page }; }
+  function view() { clampPage(); return { layout, rarity, page }; }
   function emptyPhysicalIndex() { return physical.findIndex(stack => stack === null); }
   function resolveDisplay(displayIndex, allowEmpty = false) { if (!Number.isSafeInteger(displayIndex) || displayIndex < 0 || displayIndex >= MAP_STASH_PAGE_SIZE) return -1; const ids = projection().physicalIndices; return ids[displayIndex] ?? (allowEmpty ? emptyPhysicalIndex() : -1); }
   function commit(before, nextPhysical, nextPlayer, nextCarried) { const beforeTotals = totals([...before.storage, ...before.playerInventory, before.carried].filter(Boolean)); const afterTotals = totals([...nextPhysical, ...nextPlayer, nextCarried].filter(Boolean)); if (!sameTotals(beforeTotals, afterTotals)) throw new Error("conservation failure"); physical = nextPhysical; player = nextPlayer; carried = nextCarried; }
   function result(accepted, reason, before, nextPhysical = physical, nextPlayer = player, nextCarried = carried, extra = {}) { if (accepted) commit(before, nextPhysical, nextPlayer, nextCarried); return cloneResult({ accepted, reason, carried: carried ? cloneItemStack(carried) : null, ...extra, snapshot: snapshot() }); }
 
-  function click(target = {}, _ignoredCarried = undefined, requestedButton = 0) {
-    const index = resolveDisplay(target.displayIndex, true); const before = snapshot(); const button = requestedButton ?? 0;
-    if (![0, 1, 2].includes(button) || index < 0) return result(false, index < 0 ? "bounds" : "button", before);
-    const nextPhysical = cloneSlots(physical, MAP_STASH_CAPACITY); let nextCarried = carried ? cloneItemStack(carried) : null; const slot = nextPhysical[index];
+  function clickSlot(slots, index, before, nextPhysical, nextPlayer, requestedButton, placementAllowed) {
+    const button = requestedButton ?? 0;
+    if (![0, 1].includes(button) || !Number.isSafeInteger(index) || index < 0 || index >= slots.length) return result(false, ![0, 1].includes(button) ? "button" : "bounds", before);
+    let nextCarried = carried ? cloneItemStack(carried) : null;
+    const slot = slots[index];
     if (button === 0) {
-      if (!nextCarried && slot) { nextPhysical[index] = null; nextCarried = cloneItemStack(slot); }
-      else if (nextCarried && !slot) { if (!selected(nextCarried)) return result(false, "filter", before); nextPhysical[index] = cloneItemStack(nextCarried); nextCarried = null; }
-      else if (nextCarried && slot && canMergeItemStacks(nextCarried, slot)) { const amount = Math.min(nextCarried.count, slot.maxStackSize - slot.count); if (amount === 0) return result(false, "capacity", before); nextPhysical[index] = { ...slot, count: slot.count + amount }; nextCarried = amount === nextCarried.count ? null : { ...nextCarried, count: nextCarried.count - amount }; }
-      else if (nextCarried && slot) { if (!selected(nextCarried)) return result(false, "filter", before); nextPhysical[index] = cloneItemStack(nextCarried); nextCarried = cloneItemStack(slot); }
+      if (!nextCarried && slot) { slots[index] = null; nextCarried = cloneItemStack(slot); }
+      else if (nextCarried && !slot) { if (!placementAllowed(nextCarried)) return result(false, "filter", before); slots[index] = cloneItemStack(nextCarried); nextCarried = null; }
+      else if (nextCarried && slot && canMergeItemStacks(nextCarried, slot)) { const amount = Math.min(nextCarried.count, slot.maxStackSize - slot.count); if (amount === 0) return result(false, "capacity", before); slots[index] = { ...slot, count: slot.count + amount }; nextCarried = amount === nextCarried.count ? null : { ...nextCarried, count: nextCarried.count - amount }; }
+      else if (nextCarried && slot) { if (!placementAllowed(nextCarried)) return result(false, "filter", before); slots[index] = cloneItemStack(nextCarried); nextCarried = cloneItemStack(slot); }
       else return result(false, "empty", before);
-    } else if (button === 1) {
-      if (!nextCarried && slot) { const amount = Math.ceil(slot.count / 2); nextPhysical[index] = amount === slot.count ? null : { ...slot, count: slot.count - amount }; nextCarried = { ...slot, count: amount }; }
-      else if (nextCarried && (!slot || canMergeItemStacks(nextCarried, slot))) { if (!selected(nextCarried) || (slot && slot.count >= slot.maxStackSize)) return result(false, slot ? "capacity" : "filter", before); nextPhysical[index] = slot ? { ...slot, count: slot.count + 1 } : { ...nextCarried, count: 1 }; nextCarried = nextCarried.count === 1 ? null : { ...nextCarried, count: nextCarried.count - 1 }; }
-      else return result(false, "incompatible", before);
-    } else return result(false, "unsupported", before);
-    return result(true, "ok", before, nextPhysical, player, nextCarried);
+    } else if (!nextCarried && slot) {
+      const amount = Math.ceil(slot.count / 2); slots[index] = amount === slot.count ? null : { ...slot, count: slot.count - amount }; nextCarried = { ...slot, count: amount };
+    } else if (nextCarried && (!slot || canMergeItemStacks(nextCarried, slot))) {
+      if (!placementAllowed(nextCarried) || (slot && slot.count >= slot.maxStackSize)) return result(false, slot ? "capacity" : "filter", before);
+      slots[index] = slot ? { ...slot, count: slot.count + 1 } : { ...nextCarried, count: 1 };
+      nextCarried = nextCarried.count === 1 ? null : { ...nextCarried, count: nextCarried.count - 1 };
+    } else return result(false, "incompatible", before);
+    return result(true, "ok", before, nextPhysical, nextPlayer, nextCarried);
+  }
+
+  function click(target = {}, _ignoredCarried = undefined, requestedButton = 0) {
+    const before = snapshot(); const nextPhysical = cloneSlots(physical, MAP_STASH_CAPACITY); const nextPlayer = cloneSlots(player, PLAYER_INVENTORY_SIZE);
+    if (target.kind === "player") return clickSlot(nextPlayer, target.inventoryIndex ?? target.index, before, nextPhysical, nextPlayer, requestedButton, () => true);
+    const index = resolveDisplay(target.displayIndex, true);
+    if (index < 0) return result(false, "bounds", before);
+    return clickSlot(nextPhysical, index, before, nextPhysical, nextPlayer, requestedButton, stack => selected(stack));
   }
 
   function quickMove(direction, displayIndex) {
@@ -89,5 +101,5 @@ export function createMapStashAdapter(options = {}) {
   }
   function setView(next = {}) { const rawLayout = next.layout ?? layout; const requestedLayout = typeof rawLayout === "string" && rawLayout.trim() === "" ? "all" : rawLayout; const requestedRarity = typeof (next.rarity ?? rarity) === "string" ? (next.rarity ?? rarity).trim().toLowerCase() : next.rarity ?? rarity; if (!filterValid(requestedLayout, validLayouts) || !filterValid(requestedRarity, validRarities, true) || (next.page !== undefined && (!Number.isSafeInteger(next.page) || next.page < 0))) return { accepted: false, reason: "filter", snapshot: snapshot() }; layout = requestedLayout; rarity = requestedRarity; if (next.page !== undefined) page = next.page; clampPage(); return cloneResult({ accepted: true, reason: "ok", projection: projection(), snapshot: snapshot() }); }
   function restore(input) { if (!input || input.capacity !== MAP_STASH_CAPACITY || !Array.isArray(input.storage) || input.storage.length !== MAP_STASH_CAPACITY || !Array.isArray(input.playerInventory) || input.playerInventory.length !== PLAYER_INVENTORY_SIZE || !Number.isSafeInteger(input.page) || input.page < 0 || !filterValid(input.layout, validLayouts) || !filterValid(input.rarity, validRarities, true)) throw new TypeError("invalid adapter snapshot"); const nextPhysical = cloneSlots(input.storage, MAP_STASH_CAPACITY); const nextPlayer = cloneSlots(input.playerInventory, PLAYER_INVENTORY_SIZE); const nextCarried = input.carried == null ? null : normalizeSlot(input.carried); const nextLayout = input.layout; const nextRarity = input.rarity.trim().toLowerCase(); const nextPage = input.page; physical = nextPhysical; player = nextPlayer; carried = nextCarried; layout = nextLayout; rarity = nextRarity; page = nextPage; clampPage(); return snapshot(); }
-  return Object.freeze({ snapshot, restore, projection, setView, click, quickMove, organize, selector, resolvePhysicalIndex: target => resolveDisplay(target?.displayIndex ?? target, false) });
+  return Object.freeze({ snapshot, view, restore, projection, setView, click, quickMove, organize, selector, resolvePhysicalIndex: target => resolveDisplay(target?.displayIndex ?? target, false) });
 }

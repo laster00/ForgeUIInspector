@@ -4,17 +4,18 @@ function nonNegativeSafeInteger(value, name) { if (!Number.isSafeInteger(value) 
 
 export function createDeterministicTransport(options = {}) {
   if (typeof options.handler !== "function") throw new TypeError("handler required");
-  let tick = 0; let sequence = 0; const queue = []; const trace = [];
+  let tick = 0; let sequence = 0; const queue = []; const trace = []; const processed = [];
   const delayFn = options.delay ?? (() => 0); const duplicateFn = options.duplicate ?? (() => 0); const reorderFn = options.reorder ?? (ready => ready);
-  function enqueueInternal(request, dueTick, applyInjection = true) { const duplicate = applyInjection ? duplicateFn(request) : 0; const copies = nonNegativeSafeInteger(duplicate, "duplicate"); const due = dueTick ?? tick + nonNegativeSafeInteger(applyInjection ? delayFn(request) : 0, "delay"); for (let i = 0; i <= copies; i += 1) queue.push({ due, sequence: sequence++, request: clone(request) }); return queue.length; }
-  function enqueue(request) { return enqueueInternal(request); }
+  function enqueueInternal(request, dueTick, applyInjection = true) { const duplicate = applyInjection ? duplicateFn(request) : 0; const copies = nonNegativeSafeInteger(duplicate, "duplicate"); const due = dueTick ?? tick + nonNegativeSafeInteger(applyInjection ? delayFn(request) : 0, "delay"); const sequences = []; for (let i = 0; i <= copies; i += 1) { sequences.push(sequence); queue.push({ due, sequence: sequence++, request: clone(request) }); } return { primarySequence: sequences[0], sequences, due, queueLength: queue.length }; }
+  function enqueue(request) { return enqueueInternal(request).queueLength; }
+  function enqueueDetailed(request) { return clone(enqueueInternal(request)); }
   function readyAtCurrentTick() {
     const ready = queue.filter(item => item.due <= tick); for (const item of ready) queue.splice(queue.indexOf(item), 1);
     const ordered = reorderFn(ready.map(item => ({ due: item.due, sequence: item.sequence, request: clone(item.request) })));
     if (!Array.isArray(ordered) || ordered.length !== ready.length) throw new TypeError("reorder must return every ready entry exactly once");
     const expected = new Set(ready.map(item => item.sequence)); const seen = new Set(); for (const item of ordered) { if (!item || !expected.has(item.sequence) || seen.has(item.sequence)) throw new TypeError("reorder must return every ready entry exactly once"); seen.add(item.sequence); }
     if (seen.size !== expected.size) throw new TypeError("reorder must return every ready entry exactly once");
-    for (const item of ordered) { const response = options.handler(clone(item.request)); trace.push({ tick, sequence: item.sequence, request: clone(item.request), response: clone(response) }); }
+    for (const item of ordered) { const response = options.handler(clone(item.request)); const envelope = { tick, sequence: item.sequence, request: clone(item.request), response: clone(response) }; trace.push(envelope); processed.push(clone(envelope)); }
     return ready.length;
   }
   function tickOnce() { tick += 1; return readyAtCurrentTick(); }
@@ -22,12 +23,14 @@ export function createDeterministicTransport(options = {}) {
   function traceDocument() { return { version: 1, entries: trace, finalTick: tick, queue: queue.map(item => ({ due: item.due, sequence: item.sequence, request: item.request })) }; }
   function getTrace() { return stable(clone(traceDocument())); }
   function getSnapshot() { const handlerSnapshot = typeof options.snapshot === "function" ? options.snapshot() : undefined; return stable(clone({ tick, queue: queue.map(item => ({ due: item.due, sequence: item.sequence, request: item.request })), trace, handlerSnapshot })); }
+  function getSummary() { return clone({ tick, pending: queue.length, nextDue: queue.length ? Math.min(...queue.map(item => item.due)) : null }); }
+  function takeProcessed() { const result = clone(processed); processed.length = 0; return result; }
   function enqueueTrace(request, due, traceSequence) {
     const exactSequence = nonNegativeSafeInteger(traceSequence, "sequence");
     queue.push({ due: nonNegativeSafeInteger(due, "tick"), sequence: exactSequence, request: clone(request) });
     sequence = Math.max(sequence, exactSequence + 1);
   }
-  return Object.freeze({ enqueue, tick: tickOnce, drain, getTrace, getSnapshot, _enqueueAt: (request, due) => enqueueInternal(request, nonNegativeSafeInteger(due, "tick"), false), _enqueueTrace: enqueueTrace, _flush: readyAtCurrentTick });
+  return Object.freeze({ enqueue, enqueueDetailed, tick: tickOnce, drain, getTrace, getSnapshot, getSummary, takeProcessed, _enqueueAt: (request, due) => enqueueInternal(request, nonNegativeSafeInteger(due, "tick"), false).queueLength, _enqueueTrace: enqueueTrace, _flush: readyAtCurrentTick });
 }
 
 export function replayTrace(traceDocument, factory) {

@@ -114,7 +114,12 @@ test("MineAndSlashAddons integration keeps current theme, storage, language, scr
   assert.match(langEn, /screen\.lasters_mns_utilities/);
   assert.match(langJa, /[ぁ-んァ-ヶ一-龯]/);
   for (const [name, source] of [["MapStashScreen", mapScreen], ["CurrencyStashScreen", currencyScreen]]) {
-    assert.match(source, /MnsStashLayout/); assert.match(source, /MnsUiTheme/); assert.match(source, /drawBackground/); assert.match(source, /drawListRow/); assert.match(source, /drawScrollbar/); assert.match(source, new RegExp(`class ${name}`));
+    assert.match(source, /MnsStashLayout/); assert.match(source, /MnsUiTheme/); assert.match(source, /protected void renderBg\(/); assert.match(source, new RegExp(`class ${name}`));
+    if (name === "MapStashScreen") {
+      assert.match(source, /MnsStashLayout\.drawBackground\(/); assert.match(source, /drawListRow/); assert.match(source, /drawScrollbar/);
+    } else {
+      assert.match(source, /LIST_ROW\s*=\s*18/); assert.match(source, /listScroll/); assert.match(source, /mouseScrolled\(/); assert.match(source, /categories\.size\(\)\s*>\s*LIST_ROWS/);
+    }
   }
   for (const [name, source] of [["MapStashMenu", mapMenu], ["CurrencyStashMenu", currencyMenu]]) {
     assert.match(source, /storage\.StashGeometry/); assert.doesNotMatch(source, /client\.ui\./); assert.match(source, new RegExp(`class ${name}`));

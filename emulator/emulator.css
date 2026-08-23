@@ -416,6 +416,26 @@ body[data-capture-mode="true"] .preview-wrap { margin: 0; max-width: none; }
 .page-button { position: absolute; box-sizing: border-box; top: var(--page-button-y, 186px); width: var(--page-button-width, 54px); height: var(--page-button-height, 20px); padding: 0; border: 1px solid var(--ui-border); background: var(--ui-control); color: var(--ui-text); font: inherit; line-height: 18px; z-index: 2; }
 .page-previous { left: var(--page-previous-x, 240px); }
 .page-next { left: var(--page-next-x, 298px); }
+.rarity-filter {
+  position: absolute;
+  left: var(--rarity-x, 112px);
+  top: var(--rarity-y, 6px);
+  width: var(--rarity-width, 106px);
+  height: var(--rarity-height, 18px);
+  box-sizing: border-box;
+  padding: 0 4px;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-control);
+  color: var(--ui-text);
+  font: 9px/16px var(--minecraft-font);
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  z-index: 4;
+}
+.rarity-filter:hover,
+.rarity-filter:focus-visible { border-color: var(--ui-selected); outline: 1px solid var(--ui-selected); outline-offset: -2px; }
 
 .inventory { position: static; margin: 0; }
 .inventory-title { position: absolute; left: var(--inventory-label-x, 267px); top: var(--inventory-label-y, 216px); display: block; width: calc(var(--inventory-columns, 9) * var(--stash-slot, 18px)); height: 12px; overflow: hidden; color: var(--ui-muted); font-size: 9px; line-height: 12px; white-space: nowrap; }

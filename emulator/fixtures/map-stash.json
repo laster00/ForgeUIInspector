@@ -167,28 +167,32 @@
           "page": 0,
           "icon": "map",
           "count": 1,
-          "layout": "layout_01"
+          "layout": "layout_01",
+          "rarity": "common"
         },
         {
           "slot": 1,
           "page": 0,
           "icon": "paper",
           "count": 2,
-          "layout": "layout_01"
+          "layout": "layout_01",
+          "rarity": "rare"
         },
         {
           "slot": 2,
           "page": 0,
           "icon": "map",
           "count": 3,
-          "layout": "layout_01"
+          "layout": "layout_01",
+          "rarity": "unique"
         },
         {
           "slot": 3,
           "page": 0,
           "icon": "unknown-icon",
           "count": 4,
-          "layout": "layout_01"
+          "layout": "layout_01",
+          "rarity": "mythic"
         },
         {
           "slot": 4,
@@ -608,49 +612,56 @@
           "page": 0,
           "icon": "map",
           "count": 1,
-          "layout": "other"
+          "layout": "other",
+          "rarity": "common"
         },
         {
           "slot": 1,
           "page": 0,
           "icon": "paper",
           "count": 2,
-          "layout": "layout_02"
+          "layout": "layout_02",
+          "rarity": "uncommon"
         },
         {
           "slot": 2,
           "page": 0,
           "icon": "map",
           "count": 3,
-          "layout": "layout_03"
+          "layout": "layout_03",
+          "rarity": "rare"
         },
         {
           "slot": 3,
           "page": 0,
           "icon": "unknown-icon",
           "count": 4,
-          "layout": "layout_04"
+          "layout": "layout_04",
+          "rarity": "epic"
         },
         {
           "slot": 4,
           "page": 0,
           "icon": "map",
           "count": 5,
-          "layout": "layout_05"
+          "layout": "layout_05",
+          "rarity": "legendary"
         },
         {
           "slot": 5,
           "page": 0,
           "icon": "paper",
           "count": 6,
-          "layout": "layout_06"
+          "layout": "layout_06",
+          "rarity": "mythic"
         },
         {
           "slot": 6,
           "page": 0,
           "icon": "map",
           "count": 7,
-          "layout": "layout_07"
+          "layout": "layout_07",
+          "rarity": "unique"
         },
         {
           "slot": 7,
@@ -1522,21 +1533,24 @@
           "page": 0,
           "icon": "map",
           "count": 1,
-          "layout": "other"
+          "layout": "other",
+          "rarity": "common"
         },
         {
           "slot": 1,
           "page": 0,
           "icon": "paper",
           "count": 2,
-          "layout": "other"
+          "layout": "other",
+          "rarity": "rare"
         },
         {
           "slot": 2,
           "page": 0,
           "icon": "map",
           "count": 3,
-          "layout": "other"
+          "layout": "other",
+          "rarity": "unique"
         },
         {
           "slot": 3,

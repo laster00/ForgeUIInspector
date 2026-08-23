@@ -44,6 +44,17 @@ test("constructor normalizes a canonical empty carried stack to null", () => {
   assert.equal(adapter.snapshot().carried, null);
 });
 
+test("normal cursor operations use server-owned carried across player and stash slots", () => {
+  const player = Array.from({ length: 36 }, () => null); player[0] = stack("cte2:a", 8); player[1] = stack("cte2:a", 60);
+  const adapter = createMapStashAdapter({ ...catalog, slots: [stack("cte2:b", 2)], playerInventory: player, selector: s => ({ accepted: true, ...s.components.map_stash }) });
+  assert.equal(adapter.click({ kind: "player", inventoryIndex: 0 }, undefined, 0).carried.count, 8);
+  let result = adapter.click({ kind: "player", inventoryIndex: 1 }, undefined, 0); assert.equal(result.snapshot.playerInventory[1].count, 64); assert.equal(result.carried.count, 4);
+  result = adapter.click({ kind: "player", inventoryIndex: 2 }, undefined, 1); assert.equal(result.snapshot.playerInventory[2].count, 1); assert.equal(result.carried.count, 3);
+  result = adapter.click({ displayIndex: 0 }, undefined, 0); assert.equal(result.snapshot.storage[0].itemId, "cte2:a"); assert.equal(result.snapshot.storage[0].count, 3); assert.equal(result.carried.itemId, "cte2:b");
+  result = adapter.click({ kind: "player", inventoryIndex: 3 }, undefined, 0); assert.equal(result.snapshot.playerInventory[3].itemId, "cte2:b"); assert.equal(result.carried, null);
+  const before = adapter.snapshot(); assert.equal(adapter.click({ kind: "player", inventoryIndex: 36 }, undefined, 0).reason, "bounds"); assert.deepEqual(adapter.snapshot(), before);
+});
+
 test("projection resolves filtered display positions and quickMove uses display index", () => {
   const slots = Array.from({ length: 100 }, (_, i) => stack(`cte2:m${i}`, 1, i < 50 ? "normal" : "other")); const adapter = createMapStashAdapter({ ...catalog, slots, layout: "other", selector: s => ({ accepted: true, ...s.components.map_stash }) });
   assert.equal(adapter.projection().physicalIndices[0], 50); const result = adapter.quickMove("storage", 0); assert.equal(result.accepted, true); assert.equal(result.snapshot.storage[50], null); assert.equal(result.snapshot.storage[0].itemId, "cte2:m0");

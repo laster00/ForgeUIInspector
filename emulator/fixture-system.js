@@ -5,6 +5,7 @@ export const DEFAULT_PROJECT_ID = "cte2";
 export const PAGE_SIZE = 54;
 export const ALIGNMENT_STATUSES = Object.freeze(["production", "production-derived", "approximate", "concept"]);
 export const MASTER_VARIANT_IDS = Object.freeze(["current", "classic", "dual", "rail", "overview", "clean_dual", "rail_dual", "single_focus"]);
+const MAP_RARITY_IDS = new Set(["all", "common", "uncommon", "rare", "epic", "legendary", "mythic", "unique", "other"]);
 
 const alignment = (status, source = "", variants) => Object.freeze({ status, source, ...(variants ? { variants: Object.freeze(variants) } : {}) });
 const MASTER_ALIGNMENT = alignment("approximate", "MasterStashPreviewScreen", Object.fromEntries(MASTER_VARIANT_IDS.map((id) => [id,
@@ -13,7 +14,7 @@ const MASTER_ALIGNMENT = alignment("approximate", "MasterStashPreviewScreen", Ob
 
 const COMPACT_STASH_GEOMETRY = Object.freeze({ list: { x: 12, y: 34, width: 200, rowHeight: 18, rows: 10 }, stash: { x: 240, y: 34, columns: 12, rows: 8, slot: 18 }, inventory: { x: 267, y: 228, columns: 9, rows: 3 }, hotbar: { y: 290, columns: 9, rows: 1 }, page: { previousX: 240, nextX: 298, buttonY: 186, buttonWidth: 54, buttonHeight: 20, labelX: 360, labelY: 192 }, inventoryLabel: { x: 267, y: 216 } });
 const CTE2_SCREENS = [
-  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, alignment: alignment("production-derived", "emulator/contracts/cte2-stash.json"), interaction: { kind: "container", adapter: "cte2-map-stash", storage: { capacity: 768 }, projection: { kind: "filtered-physical", pageSize: 96 }, playerInventory: { slots: 36 } }, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
+  { id: "map_stash", labelKey: "screen.forgeuiinspector.title", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, alignment: alignment("production-derived", "emulator/contracts/cte2-stash.json"), interaction: { kind: "container", adapter: "cte2-map-stash", storage: { capacity: 768 }, projection: { kind: "filtered-physical", pageSize: 96 }, playerInventory: { slots: 36 }, rarityWidget: { x: 112, y: 6, width: 106, height: 18 } }, fixtureFile: "map-stash", fixturePath: "../../fixtures/map-stash.json" },
   { id: "currency_stash", labelKey: "screen.forgeuiinspector.currencyTitle", renderer: "compact-stash", width: 474, height: 326, geometry: COMPACT_STASH_GEOMETRY, grid: { columns: 12, rows: 8, slots: 96 }, alignment: alignment("production-derived", "emulator/contracts/cte2-stash.json"), fixtureFile: "currency-stash", fixturePath: "../../fixtures/currency-stash.json" },
   { id: "master_stash", labelKey: "screen.forgeuiinspector.master.title", renderer: "master-stash", width: 650, height: 350, grid: { columns: 9, rows: 9, slots: 81 }, alignment: MASTER_ALIGNMENT, fixtureFile: "master-stash", fixturePath: "../../fixtures/master-stash.json" },
   { id: "profession_workshop", labelKey: "screen.forgeuiinspector.profession.title", renderer: "profession-workshop", width: 620, height: 340, grid: { columns: 9, rows: 6, slots: 54 }, alignment: alignment("approximate", "ProfessionWorkshopPreviewScreen"), fixtureFile: "profession-workshop", fixturePath: "../../fixtures/profession-workshop.json" },
@@ -153,6 +154,7 @@ export function validateFixtureDocument(data, expected = {}) {
       if (item?.page !== undefined && (!Number.isInteger(item.page) || item.page < 0)) errors.push(`fixture ${fixture.id} has an invalid page`);
       else if (item?.page !== undefined && item.page !== Math.floor(index / data.pageSize)) errors.push(`fixture ${fixture.id} item ${index} page must be ${Math.floor(index / data.pageSize)}`);
       if (item?.count !== undefined && (!Number.isFinite(Number(item.count)) || Number(item.count) < 0)) errors.push(`fixture ${fixture.id} has an invalid item count`);
+      if (data.screen === "map_stash" && item?.rarity !== undefined && !MAP_RARITY_IDS.has(String(item.rarity).toLowerCase())) errors.push(`fixture ${fixture.id} has an invalid rarity`);
     }
     if (fixture.itemCount !== undefined && (!Number.isInteger(fixture.itemCount) || fixture.itemCount < 0)) errors.push(`fixture ${fixture.id} itemCount must be non-negative`);
   }

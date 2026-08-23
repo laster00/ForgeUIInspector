@@ -33,6 +33,7 @@ export function createMenuState(options = {}) {
   const seen = new Set();
   let maxRequestId = 0;
   function snapshot() { const { adapter, ...publicState } = state; return clone({ ...publicState, adapter: adapter.snapshot() }); }
+  function summary() { return clone({ menuId: state.menuId, sessionId: state.sessionId, revision: state.revision }); }
   function rollback(adapterSnapshot) {
     const restoredResult = state.adapter.restore(clone(adapterSnapshot));
     const restored = state.adapter.snapshot();
@@ -66,5 +67,5 @@ export function createMenuState(options = {}) {
     if (result?.accepted && result.changed !== false && request.operation !== "setView") state.revision += 1;
     return clone({ accepted: Boolean(result?.accepted), reason: result?.reason ?? (result?.accepted ? "ok" : "rejected"), revision: state.revision, requestId: request.requestId, snapshot: snapshot(), result });
   }
-  return Object.freeze({ handle, snapshot, get seenRequestIds() { return [...seen]; } });
+  return Object.freeze({ handle, snapshot, summary, get seenRequestIds() { return [...seen]; } });
 }

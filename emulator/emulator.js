@@ -47,13 +47,27 @@ export const UI_THEME = Object.freeze({
   error: "#E27A7A",
 });
 
-const MAP_RARITIES = Object.freeze(["all", "common", "uncommon", "rare", "epic", "legendary", "mythic", "unique", "other"]);
+export const RARITY_IDS = Object.freeze(["all", "common", "uncommon", "rare", "epic", "legendary", "mythic", "unique", "other"]);
+const MAP_RARITIES = RARITY_IDS;
 const EMPTY_RUNTIME = Object.freeze({ enabled: false, reason: "read-only", menu: null, adapter: null, transport: null });
 
 function detached(value) { return value === undefined ? undefined : structuredClone(value); }
+function deepFreeze(value) { if (value && typeof value === "object" && !Object.isFrozen(value)) { Object.freeze(value); Object.values(value).forEach(deepFreeze); } return value; }
+function fixtureToken(value) { return String(value ?? "").toLowerCase().replace(/[^a-z0-9/._-]+/g, "_").replace(/^_+|_+$/g, ""); }
+function fixtureItemId(item, classification, render) {
+  if (typeof item.itemId === "string" && item.itemId.includes(":")) return item.itemId;
+  if (typeof item.id === "string" && item.id.includes(":")) return item.id;
+  const token = [classification.layout, classification.rarity, render.icon, render.labelKey, render.label].map(fixtureToken).filter(Boolean).join("_");
+  return `forgeuiinspector:${token || "map"}`;
+}
+function registerSidecar(target, itemId, value, name) {
+  if (target[itemId] !== undefined && JSON.stringify(target[itemId]) !== JSON.stringify(value)) throw new TypeError(`conflicting ${name} sidecar for ${itemId}`);
+  target[itemId] = detached(value);
+}
 
 function mapRuntimeSeed(fixture) {
   const physical = Array(768).fill(null);
+  const sidecars = { render: {}, classification: {} };
   const source = detached(fixture ?? { layouts: [], items: [] });
   const layouts = (source.layouts ?? []).map((layout) => layout.id).filter((id) => typeof id === "string");
   const validLayouts = [...new Set(["all", ...layouts])];
@@ -66,18 +80,22 @@ function mapRuntimeSeed(fixture) {
     if (!Number.isSafeInteger(count) || count <= 0 || count > 64) throw new RangeError("fixture item count is not a valid ItemStack count");
     const layout = validLayouts.includes(item.layout) ? item.layout : "other";
     const rarity = MAP_RARITIES.includes(String(item.rarity ?? "other").toLowerCase()) ? String(item.rarity ?? "other").toLowerCase() : "other";
-    const renderMeta = { icon: item.icon ?? "unknown-icon", physicalIndex, fixtureId: source.id ?? "fixture" };
+    const renderMeta = { icon: item.icon ?? "unknown-icon" };
     if (item.label !== undefined) renderMeta.label = item.label;
     if (item.labelKey !== undefined) renderMeta.labelKey = item.labelKey;
+    const classification = { accepted: true, layout, rarity };
+    const itemId = fixtureItemId(item, classification, renderMeta);
+    registerSidecar(sidecars.render, itemId, renderMeta, "render");
+    registerSidecar(sidecars.classification, itemId, classification, "classification");
     physical[physicalIndex] = createCanonicalItemStack({
-      itemId: `cte2:map/${source.id ?? "fixture"}/${physicalIndex}`,
+      itemId,
       count,
-      maxStackSize: 64,
-      tag: {},
-      components: { map_stash: { layout, rarity }, forge_ui_inspector: renderMeta },
+      maxStackSize: Number.isSafeInteger(item.maxStackSize) ? item.maxStackSize : 64,
+      tag: item.tag ?? {},
+      components: item.components ?? {},
     });
   }
-  return { storage: physical, playerInventory: Array(36).fill(null), validLayouts, validRarities: [...MAP_RARITIES] };
+  return { storage: physical, playerInventory: Array(36).fill(null), validLayouts, validRarities: [...MAP_RARITIES], sidecars: deepFreeze(sidecars) };
 }
 
 const LAYOUT_IDS = Array.from({ length: 28 }, (_, index) => `layout_${String(index + 1).padStart(2, "0")}`);
@@ -99,6 +117,16 @@ export const I18N = {
     "screen.forgeuiinspector.salvage.fixture.other": "その他のサルベージ設定",
     "screen.forgeuiinspector.all": "すべて",
     "screen.forgeuiinspector.other": "不明／その他",
+    "screen.forgeuiinspector.rarity.button": "レアリティ：{0}",
+    "screen.forgeuiinspector.rarity.all": "すべて",
+    "screen.forgeuiinspector.rarity.common": "コモン",
+    "screen.forgeuiinspector.rarity.uncommon": "アンコモン",
+    "screen.forgeuiinspector.rarity.rare": "レア",
+    "screen.forgeuiinspector.rarity.epic": "エピック",
+    "screen.forgeuiinspector.rarity.legendary": "レジェンダリー",
+    "screen.forgeuiinspector.rarity.mythic": "ミシック",
+    "screen.forgeuiinspector.rarity.unique": "ユニーク",
+    "screen.forgeuiinspector.rarity.other": "その他",
     "screen.forgeuiinspector.title": "マップ保管庫 プレビュー",
     "screen.forgeuiinspector.currencyTitle": "通貨保管庫 プレビュー",
     "screen.forgeuiinspector.fixture": "フィクスチャ：{0}",
@@ -247,6 +275,16 @@ export const I18N = {
     "screen.forgeuiinspector.salvage.fixture.other": "Other salvage settings",
     "screen.forgeuiinspector.all": "All",
     "screen.forgeuiinspector.other": "Unknown / Other",
+    "screen.forgeuiinspector.rarity.button": "Rarity: {0}",
+    "screen.forgeuiinspector.rarity.all": "All",
+    "screen.forgeuiinspector.rarity.common": "Common",
+    "screen.forgeuiinspector.rarity.uncommon": "Uncommon",
+    "screen.forgeuiinspector.rarity.rare": "Rare",
+    "screen.forgeuiinspector.rarity.epic": "Epic",
+    "screen.forgeuiinspector.rarity.legendary": "Legendary",
+    "screen.forgeuiinspector.rarity.mythic": "Mythic",
+    "screen.forgeuiinspector.rarity.unique": "Unique",
+    "screen.forgeuiinspector.rarity.other": "Other",
     "screen.forgeuiinspector.title": "Map Stash Preview",
     "screen.forgeuiinspector.currencyTitle": "Currency Stash Preview",
     "screen.forgeuiinspector.fixture": "Fixture: {0}",
@@ -563,6 +601,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
   const meta = screenMetaFor(project, screen);
   const fixtureId = FIXTURE_IDS.includes(input.fixture) ? input.fixture : "normal";
   const locale = ["ja", "en"].includes(input.locale) ? input.locale : "ja";
+  const rarity = MAP_RARITIES.includes(String(input.rarity ?? "all").toLowerCase()) ? String(input.rarity ?? "all").toLowerCase() : "all";
   const fixture = data.fixtures?.find((candidate) => candidate.id === fixtureId) ?? data.fixtures?.[0] ?? { layouts: [], items: [] };
   const layout = layoutById(fixture, input.layout) ? input.layout : "all";
   const items = itemsForLayout(fixture, layout);
@@ -574,6 +613,7 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
     screen,
     locale,
     layout,
+    rarity,
     page: clamp(finiteInteger(input.page, 0), 0, pageMax),
     scroll: clamp(finiteInteger(input.scroll, 0), 0, layoutScrollMax(fixture, listGeometry?.rows ?? 6)),
     width: Math.max(meta.width, finiteInteger(input.width, 960)),
@@ -589,15 +629,16 @@ export function normalize(input = {}, data = createFallbackData(), project = DEF
 
 export function mergeState(current, partial = {}, data = createFallbackData(), project = DEFAULT_CTE2_PROJECT) {
   const layoutChanged = Object.prototype.hasOwnProperty.call(partial, "layout") && partial.layout !== current.layout;
+  const rarityChanged = Object.prototype.hasOwnProperty.call(partial, "rarity") && partial.rarity !== current.rarity;
   const fixtureChanged = Object.prototype.hasOwnProperty.call(partial, "fixture") && partial.fixture !== current.fixture;
   const next = { ...current, ...partial };
   if (fixtureChanged && !Object.prototype.hasOwnProperty.call(partial, "layout")) next.layout = "all";
-  if (layoutChanged) next.page = 0;
+  if (layoutChanged || rarityChanged) next.page = 0;
   return normalize(next, data, project);
 }
 
 export function canonical(state, base = "index.html") {
-  const keys = ["screen", "fixture", "locale", "layout", "page", "scroll", "width", "height", "scale", "state", "alignment"];
+  const keys = ["screen", "fixture", "locale", "layout", "rarity", "page", "scroll", "width", "height", "scale", "state", "alignment"];
   const query = new URLSearchParams();
   if (state.project && state.project !== DEFAULT_PROJECT_ID) query.set("project", state.project);
   keys.forEach((key) => { if (state[key] !== undefined) query.set(key, state[key]); });
@@ -698,21 +739,20 @@ function screenItemIcon(item, index = 0) {
   return node;
 }
 
-function runtimeItemMeta(stack) {
-  const meta = stack?.components?.forge_ui_inspector ?? {};
-  return { icon: meta.icon ?? "unknown-icon", label: meta.label, labelKey: meta.labelKey, physicalIndex: meta.physicalIndex };
+function runtimeItemMeta(stack, renderSidecars = {}) {
+  const meta = stack ? renderSidecars[stack.itemId] ?? {} : {};
+  return { icon: meta.icon ?? "unknown-icon", label: meta.label, labelKey: meta.labelKey };
 }
 
-function renderRuntimeSlot(slot, stack, locale, testid, authoritativePhysicalIndex) {
+function renderRuntimeSlot(slot, stack, locale, testid, authoritativePhysicalIndex, renderSidecars) {
   slot.dataset.runtime = "true";
   if (!stack) return;
-  const meta = runtimeItemMeta(stack);
+  const meta = runtimeItemMeta(stack, renderSidecars);
   const icon = iconGlyph(meta.icon);
   slot.append(createElement("span", icon.className, icon.glyph), createElement("span", "count", String(stack.count)));
   const label = meta.labelKey ? t(meta.labelKey, locale) : (meta.label || stack.itemId);
   if (label) { slot.title = label; slot.setAttribute("aria-label", label); }
-  const physicalIndex = authoritativePhysicalIndex ?? meta.physicalIndex;
-  if (physicalIndex !== undefined) slot.dataset.physicalIndex = String(physicalIndex);
+  if (authoritativePhysicalIndex !== undefined) slot.dataset.physicalIndex = String(authoritativePhysicalIndex);
   slot.dataset.testid = testid;
 }
 
@@ -1224,6 +1264,7 @@ export function initEmulator(data, options = {}) {
   const pageControl = document.getElementById("page-control");
   const pagePrevious = document.getElementById("stash-page-previous");
   const pageNext = document.getElementById("stash-page-next");
+  const rarityFilter = document.getElementById("rarity-filter");
   const scrollControl = document.getElementById("scroll-control");
   const stateControl = document.getElementById("state-control");
   const readUrl = () => Object.fromEntries(new URLSearchParams(window.location.search));
@@ -1242,9 +1283,12 @@ export function initEmulator(data, options = {}) {
   FIXTURE_IDS.forEach((id) => fixtureControl?.add(new Option(id, id)));
 
   const fixtureForState = () => data.fixtures?.find((fixture) => fixture.id === state.fixture) ?? data.fixtures?.[0];
+  const validRarityWidget = (widget) => Boolean(widget && [widget.x, widget.y, widget.width, widget.height].every(Number.isFinite)
+    && widget.width > 0 && widget.height > 0);
   const knownMapInteraction = (interaction) => Boolean(interaction && interaction.kind === "container" && interaction.adapter === "cte2-map-stash"
     && interaction.storage?.capacity === 768 && interaction.projection?.kind === "filtered-physical"
-    && interaction.projection?.pageSize === 96 && interaction.playerInventory?.slots === 36);
+    && interaction.projection?.pageSize === 96 && interaction.playerInventory?.slots === 36
+    && validRarityWidget(interaction.rarityWidget));
   const runtimeEnabled = () => knownMapInteraction(screenMetaFor(project, state.screen).interaction);
   const createRuntime = () => {
     runtimeRequestId = 0;
@@ -1256,12 +1300,18 @@ export function initEmulator(data, options = {}) {
     inputLog = [];
     if (!runtimeEnabled()) { runtime = EMPTY_RUNTIME; return; }
     const seed = mapRuntimeSeed(fixtureForState());
-    const adapter = createMapStashAdapter({ ...seed, storage: { slots: seed.storage }, layout: state.layout, page: state.page, rarity: "all", validLayouts: seed.validLayouts, validRarities: seed.validRarities });
+    const adapter = createMapStashAdapter({ ...seed, storage: { slots: seed.storage }, layout: state.layout, page: state.page, rarity: state.rarity, validLayouts: seed.validLayouts, validRarities: seed.validRarities, selector: stack => detached(seed.sidecars.classification[stack.itemId] ?? { accepted: false }) });
     const menu = createMenuState({ menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", adapter });
-    const transport = createDeterministicTransport({ handler: (request) => menu.handle(request), snapshot: () => menu.snapshot() });
+    const policy = options.transportPolicy ?? {};
+    const transport = createDeterministicTransport({ handler: (request) => menu.handle(request), delay: policy.delay, duplicate: policy.duplicate, reorder: policy.reorder });
     runtime = { enabled: true, reason: "ok", seed, adapter, menu, transport };
+    adapter.projection();
+    state = { ...state, ...adapter.view() };
   };
-  const runtimeSnapshot = () => runtime.enabled ? detached({ enabled: true, reason: runtime.reason, requestId: runtimeRequestId, menu: runtime.menu.snapshot(), adapter: runtime.adapter.snapshot(), projection: runtime.adapter.projection(), transport: runtime.transport.getSnapshot(), input: { pointerDownTarget: runtimeInputTarget, hoverTarget: runtimeHoverTarget, pointer: { ...runtimePointer } } }) : detached({ ...EMPTY_RUNTIME, requestId: 0, input: { pointerDownTarget: null, hoverTarget: null, pointer: { ...runtimePointer } } });
+  const inputSummary = () => ({ pointerDownTarget: runtimeInputTarget, hoverTarget: runtimeHoverTarget, pointer: { ...runtimePointer } });
+  const projectionSummary = (projection) => ({ page: projection.page, pageCount: projection.pageCount, matchCount: projection.matchCount, physicalIndices: [...projection.physicalIndices] });
+  const machineRuntimeSnapshot = () => runtime.enabled ? detached({ enabled: true, reason: runtime.reason, requestId: runtimeRequestId, menu: runtime.menu.summary(), view: { layout: state.layout, rarity: state.rarity, page: state.page, scroll: state.scroll }, projection: projectionSummary(runtime.adapter.projection()), transport: runtime.transport.getSummary(), input: inputSummary() }) : detached({ enabled: false, reason: "read-only", requestId: 0, menu: null, view: { layout: state.layout, rarity: state.rarity, page: state.page, scroll: state.scroll }, projection: null, transport: { tick: 0, pending: 0, nextDue: null }, input: inputSummary() });
+  const runtimeSnapshot = () => runtime.enabled ? detached({ enabled: true, reason: runtime.reason, requestId: runtimeRequestId, menu: runtime.menu.summary(), adapter: runtime.adapter.snapshot(), projection: runtime.adapter.projection(), transport: runtime.transport.getSummary(), input: inputSummary(), sidecars: runtime.seed.sidecars }) : machineRuntimeSnapshot();
   const publicSnapshot = () => {
     const result = snapshotFor(state, data, project);
     if (runtime.enabled) {
@@ -1270,13 +1320,13 @@ export function initEmulator(data, options = {}) {
       result.fixture.pageCount = projection.pageCount;
       result.fixture.pageSize = MAP_PAGE_SIZE;
     }
-    result.runtime = runtimeSnapshot();
+    result.runtime = machineRuntimeSnapshot();
     return result;
   };
   const publishRuntimeMachineState = () => {
     const app = document.getElementById("forge-ui-emulator");
     app?.setAttribute("data-runtime-enabled", String(Boolean(runtime.enabled)));
-    app?.setAttribute("data-runtime-revision", String(runtime.enabled ? runtime.menu.snapshot().revision : 0));
+    app?.setAttribute("data-runtime-revision", String(runtime.enabled ? runtime.menu.summary().revision : 0));
     app?.setAttribute("data-runtime-hover-target", runtimeHoverTarget?.kind ?? "");
     app?.setAttribute("data-runtime-hover-index", runtimeHoverTarget?.displayIndex !== undefined ? String(runtimeHoverTarget.displayIndex) : runtimeHoverTarget?.inventoryIndex !== undefined ? String(runtimeHoverTarget.inventoryIndex) : "");
     const snapshotNode = document.getElementById("inspector-state");
@@ -1288,16 +1338,16 @@ export function initEmulator(data, options = {}) {
   };
   const runtimeRequest = (operation, target = {}, modifiers = {}) => {
     if (!runtime.enabled) return { accepted: false, reason: "read-only", revision: 0, requestId: null, snapshot: null };
-    const request = { requestId: ++runtimeRequestId, menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", baseRevision: runtime.menu.snapshot().revision, operation, target: detached(target), modifiers: detached(modifiers) };
-    runtime.transport.enqueue(request);
+    const request = { requestId: ++runtimeRequestId, menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", baseRevision: runtime.menu.summary().revision, operation, target: detached(target), modifiers: detached(modifiers) };
+    const receipt = runtime.transport.enqueueDetailed(request);
     runtime.transport.tick();
-    const entries = runtime.transport.getTrace().entries;
-    const response = detached(entries.at(-1)?.response ?? { accepted: false, reason: "transport" });
-    const authoritativeView = response.snapshot?.adapter;
-    if (authoritativeView && typeof authoritativeView.layout === "string" && Number.isSafeInteger(authoritativeView.page)) {
-      state = { ...state, layout: authoritativeView.layout, page: authoritativeView.page };
+    const envelopes = runtime.transport.takeProcessed();
+    for (const envelope of envelopes) {
+      const authoritativeView = envelope.response?.snapshot?.adapter;
+      if (authoritativeView && typeof authoritativeView.layout === "string" && typeof authoritativeView.rarity === "string" && Number.isSafeInteger(authoritativeView.page)) state = { ...state, layout: authoritativeView.layout, rarity: authoritativeView.rarity, page: authoritativeView.page };
     }
-    return response;
+    const primary = envelopes.find(envelope => envelope.sequence === receipt.primarySequence && envelope.request?.requestId === request.requestId);
+    return detached(primary ? { ...primary.response, sequence: primary.sequence } : { accepted: false, pending: true, reason: "pending", revision: runtime.menu.summary().revision, requestId: request.requestId, sequence: receipt.primarySequence });
   };
   createRuntime();
   const publishSnapshot = () => {
@@ -1306,7 +1356,7 @@ export function initEmulator(data, options = {}) {
     safeReplaceUrl(canonical(state));
     render();
   };
-  const setState = (partial = {}) => {
+  const applyStateWithResult = (partial = {}) => {
     if (Object.prototype.hasOwnProperty.call(partial, "project") && partial.project && partial.project !== project.id
       && (projectIndex.projects ?? []).some((entry) => entry.id === partial.project)) {
       const url = new URL(window.location.href);
@@ -1315,7 +1365,7 @@ export function initEmulator(data, options = {}) {
       url.searchParams.set("layout", "all");
       url.searchParams.set("page", "0");
       window.location.href = url.toString();
-      return;
+      return { navigated: true, response: null, state: undefined };
     }
     if (Object.prototype.hasOwnProperty.call(partial, "screen") && screenIdsFor(project).includes(partial.screen) && partial.screen !== state.screen) {
       const url = new URL(window.location.href);
@@ -1323,20 +1373,26 @@ export function initEmulator(data, options = {}) {
       url.searchParams.set("layout", "all");
       url.searchParams.set("page", "0");
       window.location.href = url.toString();
-      return;
+      return { navigated: true, response: null, state: undefined };
     }
     const previous = state;
     const fixtureChanged = Object.prototype.hasOwnProperty.call(partial, "fixture") && partial.fixture !== previous.fixture;
     state = mergeState(state, partial, data, project);
-    const viewChanged = state.layout !== previous.layout || state.page !== previous.page;
+    const viewChanged = state.layout !== previous.layout || state.rarity !== previous.rarity || state.page !== previous.page;
+    let response = null;
     if (fixtureChanged) createRuntime();
     else if (runtime.enabled && viewChanged) {
-      const response = runtimeRequest("setView", { layout: state.layout, page: state.page, rarity: "all" });
+      response = runtimeRequest("setView", { layout: state.layout, page: state.page, rarity: state.rarity });
       const view = response.snapshot?.adapter ?? response.snapshot;
-      if (response.accepted && view) state = { ...state, layout: view.layout, page: view.page };
+      if (response.accepted && view) state = { ...state, layout: view.layout, rarity: view.rarity, page: view.page };
+      else state = { ...state, ...runtime.adapter.view() };
     }
     publishSnapshot();
-    return { ...state };
+    return { navigated: false, response: detached(response), state: { ...state } };
+  };
+  const setState = (partial = {}) => {
+    const result = applyStateWithResult(partial);
+    return result.navigated ? undefined : result.state;
   };
 
   function render() {
@@ -1354,6 +1410,7 @@ export function initEmulator(data, options = {}) {
     const stashGeometry = geometry.stash ?? {};
     const inventoryGeometry = geometry.inventory ?? {};
     const pageGeometry = geometry.page ?? {};
+    const rarityGeometry = meta.interaction?.rarityWidget ?? {};
     const setGeometry = (name, value) => { if (Number.isFinite(value)) preview.style.setProperty(name, `${value}px`); };
     setGeometry("--list-x", listGeometry.x); setGeometry("--list-y", listGeometry.y); setGeometry("--list-width", listGeometry.width); setGeometry("--list-row-height", listGeometry.rowHeight); preview.style.setProperty("--list-rows", String(listGeometry.rows ?? 10));
     setGeometry("--stash-x", stashGeometry.x); setGeometry("--stash-y", stashGeometry.y); setGeometry("--stash-slot", stashGeometry.slot); preview.style.setProperty("--stash-columns", String(stashGeometry.columns ?? 12)); preview.style.setProperty("--stash-rows", String(stashGeometry.rows ?? 8));
@@ -1361,6 +1418,7 @@ export function initEmulator(data, options = {}) {
     setGeometry("--hotbar-y", geometry.hotbar?.y); preview.style.setProperty("--hotbar-columns", String(geometry.hotbar?.columns ?? 9)); preview.style.setProperty("--hotbar-rows", String(geometry.hotbar?.rows ?? 1));
     setGeometry("--inventory-label-x", geometry.inventoryLabel?.x); setGeometry("--inventory-label-y", geometry.inventoryLabel?.y);
     setGeometry("--page-previous-x", pageGeometry.previousX); setGeometry("--page-next-x", pageGeometry.nextX); setGeometry("--page-button-y", pageGeometry.buttonY); setGeometry("--page-button-width", pageGeometry.buttonWidth); setGeometry("--page-button-height", pageGeometry.buttonHeight); setGeometry("--page-label-x", pageGeometry.labelX); setGeometry("--page-label-y", pageGeometry.labelY);
+    setGeometry("--rarity-x", rarityGeometry.x); setGeometry("--rarity-y", rarityGeometry.y); setGeometry("--rarity-width", rarityGeometry.width); setGeometry("--rarity-height", rarityGeometry.height);
     const runtimeView = runtime.enabled ? runtime.adapter.projection() : null;
     const runtimeAdapterSnapshot = runtime.enabled ? runtime.adapter.snapshot() : null;
     const pageItems = runtimeView ? runtimeView.slots : buildItems(fixture, state.layout, state.page, screenPageSize);
@@ -1374,6 +1432,7 @@ export function initEmulator(data, options = {}) {
     app?.setAttribute("data-fixture", state.fixture);
     app?.setAttribute("data-state", state.state);
     app?.setAttribute("data-layout", state.layout);
+    app?.setAttribute("data-rarity", state.rarity);
     app?.setAttribute("data-scroll", String(state.scroll));
     app?.setAttribute("data-page", String(state.page));
     app?.setAttribute("data-page-count", String(pages));
@@ -1435,6 +1494,7 @@ export function initEmulator(data, options = {}) {
     document.documentElement.lang = state.locale;
     if (expanded) {
       preview.hidden = true;
+      if (rarityFilter) rarityFilter.hidden = true;
       const knownContainer = document.getElementById(`${state.screen.replaceAll("_", "-")}-preview`);
       const expandedContainer = knownContainer ?? document.getElementById("extended-preview");
       renderExtendedPreview(expandedContainer, state, fixture, data, project);
@@ -1447,6 +1507,14 @@ export function initEmulator(data, options = {}) {
       return;
     }
     preview.hidden = false;
+    if (rarityFilter) {
+      const rarityLabel = t(`screen.forgeuiinspector.rarity.${state.rarity}`, state.locale);
+      rarityFilter.hidden = !runtime.enabled;
+      rarityFilter.textContent = t("screen.forgeuiinspector.rarity.button", state.locale, [rarityLabel]);
+      rarityFilter.title = rarityFilter.textContent;
+      rarityFilter.setAttribute("aria-label", rarityFilter.textContent);
+      rarityFilter.setAttribute("aria-pressed", String(state.rarity !== "all"));
+    }
     document.getElementById("title").textContent = t(data.titleKey || meta.labelKey || "screen.forgeuiinspector.genericTitle", state.locale);
     const stateNode = document.getElementById("state");
     const selectedSummary = `${clipLabel(t(selectedLayout.labelKey, state.locale), 54)} (${itemCount})`;
@@ -1474,9 +1542,11 @@ export function initEmulator(data, options = {}) {
       const label = createElement("span", "layout-label", clipLabel(t(layout.labelKey, state.locale), 92));
       label.title = t(layout.labelKey, state.locale);
       row.append(label, createElement("em", "layout-count", String(runtimeView ? (runtimeView.layoutCounts?.[layout.id] ?? 0) : itemsForLayout(fixture, layout.id).length)));
-      const choose = () => setState({ layout: layout.id });
+      const choose = (event = {}) => runtime.enabled
+        ? activateRuntimeControlClick(event, listGeometry.x + listGeometry.width / 2, listGeometry.y + (index - state.scroll + 0.5) * (listGeometry.rowHeight ?? 18))
+        : setState({ layout: layout.id });
       row.addEventListener("click", choose);
-      row.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(); } });
+      row.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(event); } });
       list.append(row);
     });
     syncingList = true;
@@ -1500,7 +1570,7 @@ export function initEmulator(data, options = {}) {
       const item = pageItems[slotIndex];
       if (runtimeView && runtimeHoverTarget?.kind === "stash" && runtimeHoverTarget.displayIndex === slotIndex) slot.className += " runtime-hovered";
       if (item) {
-        if (runtimeView) { renderRuntimeSlot(slot, item, state.locale, `stash-slot-${slotIndex}`, runtimeView.physicalIndices[slotIndex]); grid.append(slot); continue; }
+        if (runtimeView) { renderRuntimeSlot(slot, item, state.locale, `stash-slot-${slotIndex}`, runtimeView.physicalIndices[slotIndex], runtime.seed.sidecars.render); grid.append(slot); continue; }
         const icon = iconGlyph(item.icon);
         slot.append(createElement("span", icon.className, icon.glyph), createElement("span", "count", String(item.count)));
         const itemLabel = item.labelKey ? t(item.labelKey, state.locale) : (item.label || item.id || "");
@@ -1532,8 +1602,8 @@ export function initEmulator(data, options = {}) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `inventory-slot-${index}`;
       slot.setAttribute("role", "gridcell");
-      if (runtimeHoverTarget?.kind === "player" && runtimeHoverTarget.inventoryIndex === 9 + index) slot.className += " runtime-hovered";
-      if (runtimeAdapterSnapshot) renderRuntimeSlot(slot, runtimeAdapterSnapshot.playerInventory[9 + index], state.locale, `inventory-slot-${index}`);
+      if (runtimeHoverTarget?.kind === "player" && runtimeHoverTarget.inventoryIndex === 9 + index) { slot.className += " runtime-hovered"; slot.setAttribute("aria-describedby", "runtime-tooltip"); }
+      if (runtimeAdapterSnapshot) renderRuntimeSlot(slot, runtimeAdapterSnapshot.playerInventory[9 + index], state.locale, `inventory-slot-${index}`, undefined, runtime.seed.sidecars.render);
       mainRow.append(slot);
     }
     const hotbarRow = createElement("div", "inv-row inventory-hotbar");
@@ -1541,8 +1611,8 @@ export function initEmulator(data, options = {}) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `inventory-slot-${index + 27}`;
       slot.setAttribute("role", "gridcell");
-      if (runtimeHoverTarget?.kind === "player" && runtimeHoverTarget.inventoryIndex === index) slot.className += " runtime-hovered";
-      if (runtimeAdapterSnapshot) renderRuntimeSlot(slot, runtimeAdapterSnapshot.playerInventory[index], state.locale, `inventory-slot-${index + 27}`);
+      if (runtimeHoverTarget?.kind === "player" && runtimeHoverTarget.inventoryIndex === index) { slot.className += " runtime-hovered"; slot.setAttribute("aria-describedby", "runtime-tooltip"); }
+      if (runtimeAdapterSnapshot) renderRuntimeSlot(slot, runtimeAdapterSnapshot.playerInventory[index], state.locale, `inventory-slot-${index + 27}`, undefined, runtime.seed.sidecars.render);
       hotbarRow.append(slot);
     }
     inventory.append(mainRow, hotbarRow);
@@ -1553,13 +1623,12 @@ export function initEmulator(data, options = {}) {
       runtimeTooltipNode.id = "runtime-tooltip";
       runtimeTooltipNode.setAttribute("role", "tooltip");
       const hoveredStack = runtimeHoverTarget?.kind === "stash" ? runtimeView?.slots?.[runtimeHoverTarget.displayIndex] : runtimeHoverTarget?.kind === "player" ? runtimeAdapterSnapshot?.playerInventory?.[runtimeHoverTarget.inventoryIndex] : null;
-      const hoveredMeta = runtimeItemMeta(hoveredStack);
+      const hoveredMeta = runtimeItemMeta(hoveredStack, runtime.seed.sidecars.render);
       runtimeTooltipNode.textContent = hoveredStack ? (hoveredMeta.labelKey ? t(hoveredMeta.labelKey, state.locale) : (hoveredMeta.label || hoveredStack.itemId)) : "";
       runtimeTooltipNode.hidden = !hoveredStack;
       runtimeTooltipNode.style.left = `${runtimePointer.x + 12}px`;
       runtimeTooltipNode.style.top = `${runtimePointer.y + 18}px`;
       if (runtimeHoverTarget?.kind === "stash") grid.children?.[runtimeHoverTarget.displayIndex]?.setAttribute("aria-describedby", "runtime-tooltip");
-      if (runtimeHoverTarget?.kind === "player") inventory.setAttribute("aria-describedby", "runtime-tooltip");
       preview.append(runtimeTooltipNode);
       runtimeCarriedNode?.remove?.();
       runtimeCarriedNode = createElement("div", "runtime-carried");
@@ -1568,7 +1637,7 @@ export function initEmulator(data, options = {}) {
       runtimeCarriedNode.setAttribute("aria-live", "polite");
       const carried = runtimeAdapterSnapshot?.carried;
       if (carried) {
-        const carriedMeta = runtimeItemMeta(carried);
+        const carriedMeta = runtimeItemMeta(carried, runtime.seed.sidecars.render);
         const carriedIcon = iconGlyph(carriedMeta.icon);
         runtimeCarriedNode.setAttribute("aria-label", `${carriedMeta.label || carried.itemId} ×${carried.count}`);
         runtimeCarriedNode.append(createElement("span", carriedIcon.className, carriedIcon.glyph), createElement("span", "count", String(carried.count)));
@@ -1591,17 +1660,19 @@ export function initEmulator(data, options = {}) {
     preview.dataset.fixture = state.fixture;
     preview.dataset.renderer = meta.renderer;
     preview.dataset.layout = state.layout;
+    preview.dataset.rarity = state.rarity;
     preview.dataset.page = String(state.page);
     preview.dataset.pageCount = String(pages);
     preview.dataset.itemCount = String(itemCount);
     preview.dataset.alignment = state.alignment;
     preview.dataset.runtimeEnabled = String(Boolean(runtime.enabled));
-    if (runtime.enabled) preview.dataset.runtimeRevision = String(runtime.menu.snapshot().revision);
+    if (runtime.enabled) preview.dataset.runtimeRevision = String(runtime.menu.summary().revision);
     document.getElementById("canonical").textContent = canonical(state);
   }
 
   function runtimeHitTester() {
-    const geometry = screenMetaFor(project, state.screen).geometry ?? {};
+    const meta = screenMetaFor(project, state.screen);
+    const geometry = meta.geometry ?? {};
     const stash = geometry.stash ?? { x: 240, y: 34, columns: 12, rows: 8, slot: 18 };
     const inventory = geometry.inventory ?? { x: 267, y: 228, columns: 9, rows: 3, slot: 18 };
     const slot = Number(stash.slot) || 18;
@@ -1610,6 +1681,22 @@ export function initEmulator(data, options = {}) {
     for (let index = 0; index < 27; index += 1) registrations.push({ kind: "slot", rect: { left: inventory.x + (index % 9) * slot, top: inventory.y + Math.floor(index / 9) * slot, width: slot, height: slot }, target: { kind: "player", inventoryIndex: 9 + index } });
     const hotbarY = Number(geometry.hotbar?.y) || 290;
     for (let index = 0; index < 9; index += 1) registrations.push({ kind: "slot", rect: { left: inventory.x + index * slot, top: hotbarY, width: slot, height: slot }, target: { kind: "player", inventoryIndex: index } });
+    const rarity = meta.interaction?.rarityWidget;
+    if (rarity) registrations.push({ kind: "widget", rect: { left: rarity.x, top: rarity.y, width: rarity.width, height: rarity.height }, target: { kind: "rarity" } });
+    const page = geometry.page ?? {};
+    if ([page.previousX, page.nextX, page.buttonY, page.buttonWidth, page.buttonHeight].every(Number.isFinite)) {
+      registrations.push({ kind: "widget", rect: { left: page.previousX, top: page.buttonY, width: page.buttonWidth, height: page.buttonHeight }, target: { kind: "page", direction: -1 } });
+      registrations.push({ kind: "widget", rect: { left: page.nextX, top: page.buttonY, width: page.buttonWidth, height: page.buttonHeight }, target: { kind: "page", direction: 1 } });
+    }
+    const list = geometry.list ?? {};
+    if ([list.x, list.y, list.width, list.rowHeight].every(Number.isFinite)) {
+      const visibleRows = Number.isSafeInteger(list.rows) ? list.rows : 10;
+      (fixtureForState()?.layouts ?? []).forEach((layout, index) => {
+        const visibleIndex = index - state.scroll;
+        if (visibleIndex >= 0 && visibleIndex < visibleRows) registrations.push({ kind: "widget", rect: { left: list.x, top: list.y + visibleIndex * list.rowHeight, width: list.width, height: list.rowHeight }, target: { kind: "layout", layout: layout.id, index } });
+      });
+      registrations.push({ kind: "container", rect: { left: list.x, top: list.y, width: list.width, height: list.rowHeight * visibleRows }, target: { kind: "layout-scroll" } });
+    }
     return createHitTester(registrations);
   }
 
@@ -1634,6 +1721,24 @@ export function initEmulator(data, options = {}) {
       }
       return detached(response);
     }
+    if (input.type === "wheel") {
+      let response = { accepted: false, reason: "unsupported", revision: runtime.menu.summary().revision, requestId: null };
+      if (input.deltaY !== 0 && target?.kind === "stash") {
+        const previousPage = state.page;
+        const applied = applyStateWithResult({ page: state.page + (input.deltaY > 0 ? 1 : -1) });
+        response = applied.response ?? { accepted: state.page !== previousPage, reason: state.page !== previousPage ? "ok" : "bounds", revision: runtime.menu.summary().revision, requestId: null };
+      } else if (input.deltaY !== 0 && (target?.kind === "layout" || target?.kind === "layout-scroll")) {
+        const previousScroll = state.scroll;
+        const rowHeight = screenMetaFor(project, state.screen).geometry?.list?.rowHeight ?? 18;
+        const rows = Math.max(1, Math.round(Math.abs(input.deltaY) / rowHeight));
+        setState({ scroll: state.scroll + (input.deltaY > 0 ? rows : -rows) });
+        response = { accepted: state.scroll !== previousScroll, reason: state.scroll !== previousScroll ? "ok" : "bounds", revision: runtime.menu.summary().revision, requestId: null };
+      }
+      const result = { ...response, input, target };
+      recordInput(input, target, result);
+      publishRuntimeMachineState();
+      return detached(result);
+    }
     if (input.type === "pointerdown") {
       runtimeInputTarget = target;
       const response = { accepted: true, reason: target ? "target" : "outside", input: detached(input), target: detached(target) };
@@ -1656,10 +1761,23 @@ export function initEmulator(data, options = {}) {
       return detached(response);
     }
     let response;
-    if (clicked.kind === "stash" && input.button === 1 && !input.shiftKey) response = runtimeRequest("organize");
+    if (clicked.kind === "rarity" && input.button === 0) {
+      const nextRarity = MAP_RARITIES[(MAP_RARITIES.indexOf(state.rarity) + 1) % MAP_RARITIES.length];
+      const previousRarity = state.rarity;
+      const applied = applyStateWithResult({ rarity: nextRarity, page: 0 });
+      response = applied.response ?? { accepted: state.rarity !== previousRarity, reason: state.rarity !== previousRarity ? "ok" : "filter", revision: runtime.menu.summary().revision, requestId: null };
+    } else if (clicked.kind === "layout" && input.button === 0) {
+      const previousLayout = state.layout;
+      const applied = applyStateWithResult({ layout: clicked.layout, page: 0 });
+      response = applied.response ?? { accepted: state.layout !== previousLayout, reason: state.layout !== previousLayout ? "ok" : "no_change", revision: runtime.menu.summary().revision, requestId: null };
+    } else if (clicked.kind === "page" && input.button === 0) {
+      const previousPage = state.page;
+      const applied = applyStateWithResult({ page: state.page + clicked.direction });
+      response = applied.response ?? { accepted: state.page !== previousPage, reason: state.page !== previousPage ? "ok" : "bounds", revision: runtime.menu.summary().revision, requestId: null };
+    } else if (clicked.kind === "stash" && input.button === 1 && !input.shiftKey) response = runtimeRequest("organize");
     else if (input.shiftKey && (clicked.kind === "stash" || clicked.kind === "player")) response = runtimeRequest("quickMove", { direction: clicked.kind === "stash" ? "storage" : "player", displayIndex: clicked.kind === "stash" ? clicked.displayIndex : clicked.inventoryIndex });
-    else if (clicked.kind === "stash" && (input.button === 0 || input.button === 2)) response = runtimeRequest(input.button === 2 ? "place" : "pickup", { displayIndex: clicked.displayIndex }, { button: input.button === 2 ? 1 : 0 });
-    else response = { accepted: false, reason: "unsupported", revision: runtime.menu.snapshot().revision, requestId: null };
+    else if ((clicked.kind === "stash" || clicked.kind === "player") && (input.button === 0 || input.button === 2)) response = runtimeRequest(input.button === 2 ? "place" : "pickup", clicked.kind === "stash" ? { displayIndex: clicked.displayIndex } : { kind: "player", inventoryIndex: clicked.inventoryIndex }, { button: input.button === 2 ? 1 : 0 });
+    else response = { accepted: false, reason: "unsupported", revision: runtime.menu.summary().revision, requestId: null };
     const result = { ...response, input, target: clicked };
     recordInput(input, clicked, result);
     render();
@@ -1667,11 +1785,22 @@ export function initEmulator(data, options = {}) {
   }
 
   const previewInputNode = document.getElementById("map-stash-preview");
+  function activateRuntimePoint(x, y, event = {}) {
+    const modifiers = { shiftKey: Boolean(event.shiftKey), ctrlKey: Boolean(event.ctrlKey), altKey: Boolean(event.altKey), metaKey: Boolean(event.metaKey) };
+    const button = Number.isSafeInteger(event.button) ? event.button : 0;
+    dispatchInput({ type: "pointerdown", x, y, button, buttons: button === 0 ? 1 : button === 1 ? 4 : 2, ...modifiers, tick: 0 });
+    return dispatchInput({ type: "pointerup", x, y, button, buttons: 0, ...modifiers, tick: 0 });
+  }
+  function activateRuntimeControlClick(event, x, y) {
+    if (Number(event?.detail) > 0) return null;
+    return activateRuntimePoint(x, y, event);
+  }
   const domInput = (type, event) => {
     const meta = screenMetaFor(project, state.screen);
     const rect = previewInputNode.getBoundingClientRect?.() ?? { left: 0, top: 0, width: meta.width, height: meta.height };
-    const point = type.startsWith("pointer") ? logicalPointFromViewport(event.clientX, event.clientY, rect, meta.width, meta.height) : runtimePointer;
-    return dispatchInput({ type, ...point, button: event.button ?? 0, buttons: event.buttons ?? 0, deltaY: event.deltaY ?? 0, shiftKey: Boolean(event.shiftKey), ctrlKey: Boolean(event.ctrlKey), altKey: Boolean(event.altKey), metaKey: Boolean(event.metaKey), key: event.key ?? "", tick: event.timeStamp ? Math.floor(event.timeStamp) : 0 });
+    const hasClientPoint = (type.startsWith("pointer") || type === "wheel") && Number.isFinite(event.clientX) && Number.isFinite(event.clientY);
+    const point = hasClientPoint ? logicalPointFromViewport(event.clientX, event.clientY, rect, meta.width, meta.height) : runtimePointer;
+    return dispatchInput({ type, ...point, button: event.button ?? 0, buttons: event.buttons ?? 0, deltaY: event.deltaY ?? 0, shiftKey: Boolean(event.shiftKey), ctrlKey: Boolean(event.ctrlKey), altKey: Boolean(event.altKey), metaKey: Boolean(event.metaKey), key: event.key ?? "", tick: 0 });
   };
   previewInputNode?.addEventListener("pointermove", (event) => domInput("pointermove", event));
   previewInputNode?.addEventListener("pointerdown", (event) => domInput("pointerdown", event));
@@ -1697,8 +1826,13 @@ export function initEmulator(data, options = {}) {
   localeControl?.addEventListener("change", (event) => setState({ locale: event.target.value }));
   layoutControl?.addEventListener("change", (event) => setState({ layout: event.target.value }));
   pageControl?.addEventListener("change", (event) => setState({ page: event.target.value }));
-  pagePrevious?.addEventListener("click", () => setState({ page: state.page - 1 }));
-  pageNext?.addEventListener("click", () => setState({ page: state.page + 1 }));
+  pagePrevious?.addEventListener("click", (event) => runtime.enabled ? activateRuntimeControlClick(event, (screenMetaFor(project, state.screen).geometry?.page?.previousX ?? 240) + 1, (screenMetaFor(project, state.screen).geometry?.page?.buttonY ?? 186) + 1) : setState({ page: state.page - 1 }));
+  pageNext?.addEventListener("click", (event) => runtime.enabled ? activateRuntimeControlClick(event, (screenMetaFor(project, state.screen).geometry?.page?.nextX ?? 298) + 1, (screenMetaFor(project, state.screen).geometry?.page?.buttonY ?? 186) + 1) : setState({ page: state.page + 1 }));
+  rarityFilter?.addEventListener("click", (event) => {
+    if (!runtime.enabled) return;
+    const rarity = screenMetaFor(project, state.screen).interaction?.rarityWidget ?? { x: 112, y: 6, width: 106, height: 18 };
+    activateRuntimeControlClick(event, rarity.x + rarity.width / 2, rarity.y + rarity.height / 2);
+  });
   scrollControl?.addEventListener("change", (event) => setState({ scroll: event.target.value }));
   stateControl?.addEventListener("change", (event) => setState({ state: event.target.value }));
   masterVariantControl?.addEventListener("change", (event) => setState({ variant: event.target.value }));
@@ -1713,11 +1847,18 @@ export function initEmulator(data, options = {}) {
   document.getElementById("layout-list")?.addEventListener("scroll", (event) => {
     if (syncingList) return;
     const listGeometry = screenMetaFor(project, state.screen).geometry?.list ?? {};
-    setState({ scroll: Math.round(event.target.scrollTop / (listGeometry.rowHeight ?? 18)) });
+    const requested = Math.round(event.target.scrollTop / (listGeometry.rowHeight ?? 18));
+    if (!runtime.enabled) setState({ scroll: requested });
+    else if (requested !== state.scroll) dispatchInput({ type: "wheel", x: (listGeometry.x ?? 12) + 1, y: (listGeometry.y ?? 34) + 1, deltaY: (requested - state.scroll) * (listGeometry.rowHeight ?? 18), tick: 0 });
   });
+  document.getElementById("layout-list")?.addEventListener("wheel", (event) => {
+    if (!runtime.enabled) return;
+    event.preventDefault?.();
+    domInput("wheel", event);
+  }, { passive: false });
   document.getElementById("stash-grid")?.addEventListener("wheel", (event) => {
     const max = runtime.enabled ? runtime.adapter.projection().pageCount - 1 : pageCount(itemsForLayout(fixtureForState(), state.layout), renderPageSize(data, project, state.screen)) - 1;
-    if (max > 0) { event.preventDefault(); setState({ page: state.page + (event.deltaY > 0 ? 1 : -1) }); }
+    if (max > 0) { event.preventDefault(); if (runtime.enabled) domInput("wheel", event); else setState({ page: state.page + (event.deltaY > 0 ? 1 : -1) }); }
   }, { passive: false });
   window.addEventListener("resize", render);
 

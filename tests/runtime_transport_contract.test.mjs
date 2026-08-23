@@ -49,6 +49,25 @@ test("menu keeps carried server-side, authorizes setView, and consumes correlate
   assert.equal(m.handle({ ...base, requestId: 4, baseRevision: 99, operation: "setView" }).reason, "stale"); assert.equal(m.handle({ ...base, requestId: 4, operation: "setView" }).reason, "duplicate");
 });
 
+test("detailed enqueue correlates the primary sequence independently of duplicates and reorder", () => {
+  const transport = createDeterministicTransport({ handler: request => ({ requestId: request.requestId }), duplicate: () => 1, reorder: ready => [...ready].reverse() });
+  const receipt = transport.enqueueDetailed({ requestId: 7 }); assert.deepEqual(receipt.sequences, [0, 1]); assert.equal(receipt.primarySequence, 0);
+  transport.tick(); const processed = transport.takeProcessed(); assert.deepEqual(processed.map(({ sequence }) => sequence), [1, 0]);
+  assert.equal(processed.find(({ sequence }) => sequence === receipt.primarySequence).response.requestId, 7); assert.deepEqual(transport.takeProcessed(), []);
+  processed[0].response.requestId = 99; assert.equal(transport.getTrace().entries[0].response.requestId, 7);
+});
+
+test("menu authorizes normal player cursor operations through the same revision contract", () => {
+  const playerInventory = Array.from({ length: 36 }, () => null); playerInventory[9] = { itemId: "cte2:player", count: 3, maxStackSize: 64, components: { map_stash: { layout: "normal", rarity: "rare" } } };
+  const adapter = createMapStashAdapterForMenu({ playerInventory }); const menu = createMenuState({ menuId: "map", sessionId: "player", adapter });
+  const pickup = menu.handle({ menuId: "map", sessionId: "player", baseRevision: 0, requestId: 1, operation: "pickup", target: { kind: "player", inventoryIndex: 9 }, modifiers: { button: 0 } });
+  assert.equal(pickup.accepted, true); assert.equal(pickup.revision, 1); assert.equal(pickup.snapshot.adapter.playerInventory[9], null); assert.equal(pickup.snapshot.adapter.carried.count, 3);
+  const place = menu.handle({ menuId: "map", sessionId: "player", baseRevision: 1, requestId: 2, operation: "place", target: { displayIndex: 1 }, modifiers: { button: 1 } });
+  assert.equal(place.accepted, true); assert.equal(place.revision, 2); assert.equal(place.snapshot.adapter.carried.count, 2); assert.equal(place.snapshot.adapter.storage[1].count, 1);
+  const before = menu.snapshot(); const rejected = menu.handle({ menuId: "map", sessionId: "player", baseRevision: 2, requestId: 3, operation: "pickup", target: { kind: "player", inventoryIndex: 36 }, modifiers: { button: 0 } });
+  assert.equal(rejected.reason, "bounds"); assert.equal(rejected.revision, 2); assert.deepEqual(menu.snapshot(), before);
+});
+
 test("menu rejects unknown configured filters, bounds/direction, and adapter exceptions without revision", () => {
   const adapter = createMapStashAdapterForMenu({ validLayouts: ["all", "normal"] }); const m = createMenuState({ menuId: "map", sessionId: "s", adapter });
   const base = { menuId: "map", sessionId: "s", baseRevision: 0 };
