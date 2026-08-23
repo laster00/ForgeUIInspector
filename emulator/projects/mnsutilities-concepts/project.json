@@ -1,0 +1,24 @@
+{
+  "schema": "forge-ui-inspector.project",
+  "version": 1,
+  "id": "mnsutilities-concepts",
+  "labelKey": "project.mnsutilities_concepts.name",
+  "defaultScreen": "currency_stash_v2",
+  "screens": [
+    {
+      "id": "currency_stash_v2",
+      "labelKey": "screen.mnsutilities.currency_stash_v2",
+      "renderer": "currency-stash-v2",
+      "logicalSize": {
+        "width": 474,
+        "height": 326
+      },
+      "grid": {
+        "columns": 12,
+        "rows": 6,
+        "slots": 72
+      },
+      "fixturePath": "fixtures/currency_stash_v2.json"
+    }
+  ]
+}

@@ -140,12 +140,14 @@ test("96, 97, and 192 items produce the expected page counts", () => {
 
 test("normalize applies safe defaults and clamps URL values", () => {
   const state = normalize({ fixture: "unknown", locale: "xx", layout: "nope", page: -3, scroll: -4, width: 1, height: 1, scale: 0, state: "bad" }, data);
-  assert.deepEqual(state, { fixture: "normal", screen: "map_stash", locale: "ja", layout: "all", page: 0, scroll: 0, width: 474, height: 326, scale: 0.5, state: "normal", alignment: "production-derived" });
+  assert.deepEqual(state, { fixture: "normal", screen: "map_stash", locale: "ja", layout: "all", rarity: "all", page: 0, scroll: 0, width: 474, height: 326, scale: 0.5, state: "normal", alignment: "production-derived" });
   assert.equal(normalize({ fixture: "many", layout: "all", page: 999 }, data).page, 1);
   assert.equal(normalize({ fixture: "many", layout: "all", scroll: 999 }, data).scroll, layoutScrollMax(fixture("many")));
   assert.equal(normalize({ screen: "currency_stash", fixture: "many", layout: "all", page: 999 }, currencyData).screen, "currency_stash");
   assert.equal(normalize({ screen: "currency_stash", fixture: "many", layout: "all", page: 999 }, currencyData).page, 1);
   assert.equal(normalize({ screen: "unsupported" }, data).screen, "map_stash");
+  assert.equal(normalize({ rarity: "RARE" }, data).rarity, "rare");
+  assert.equal(normalize({ rarity: "invalid" }, data).rarity, "all");
 });
 
 test("all supported states and locales normalize without leaking arbitrary values", () => {
@@ -156,7 +158,7 @@ test("all supported states and locales normalize without leaking arbitrary value
 
 test("canonical URL contains every reproducibility parameter in a stable order", () => {
   const url = canonical(normalize({ fixture: "many", locale: "en", layout: "all", page: 1, scroll: 2, width: 640, height: 360, scale: 2, state: "full" }, data));
-  assert.equal(url, "index.html?screen=map_stash&fixture=many&locale=en&layout=all&page=1&scroll=2&width=640&height=360&scale=2&state=full&alignment=production-derived");
+  assert.equal(url, "index.html?screen=map_stash&fixture=many&locale=en&layout=all&rarity=all&page=1&scroll=2&width=640&height=360&scale=2&state=full&alignment=production-derived");
   assert.ok(SCREEN_IDS.includes(normalize({ screen: "currency_stash" }, currencyData).screen));
 });
 
@@ -165,6 +167,14 @@ test("raw map fixture metadata follows the 96-slot page contract", () => {
     assert.equal(item.page, Math.floor(index / 96), candidate.id);
     assert.equal(item.slot, index % 96, candidate.id);
   });
+});
+
+test("map fixtures carry deterministic production rarity examples without changing schema v1", () => {
+  assert.equal(data.version, 1);
+  for (const id of ["normal", "many", "other"]) assert.ok(new Set(fixture(id).items.map((item) => item.rarity).filter(Boolean)).size >= 2, id);
+  assert.deepEqual(fixture("empty").items, []);
+  const invalid = structuredClone(data); invalid.fixtures[0].items[0].rarity = "future";
+  assert.match(validateFixtureDocument(invalid, { project: "cte2", screen: "map_stash", pageSize: 96 }).errors.join("; "), /invalid rarity/);
 });
 
 test("fixture loading rejects a page-size mismatch against screen metadata", () => {

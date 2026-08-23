@@ -1,0 +1,133 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createMenuState } from "../emulator/runtime/menu.js";
+import { createDeterministicTransport, replayTrace, stableTraceClone } from "../emulator/runtime/transport.js";
+import { createMapStashAdapter } from "../emulator/runtime/adapters/map-stash.js";
+
+function menu() {
+  let value = 1;
+  return createMenuState({
+    menuId: "map",
+    sessionId: "s",
+    adapter: {
+      click: () => ({ accepted: true, changed: true }),
+      quickMove: () => ({ accepted: true, changed: true }),
+      organize: () => ({ accepted: true, changed: false }),
+      snapshot: () => ({ value }),
+      restore: snapshot => { value = snapshot.value; return { value }; },
+    },
+  });
+}
+test("menu replays identical requests and conflicts changed payloads without mutation", () => {
+  const m = menu(); const request = { requestId: 1, menuId: "map", sessionId: "s", baseRevision: 0, baseViewGeneration: 0, operation: "organize", target: {}, modifiers: {} };
+  const first = m.handle(request); assert.deepEqual(m.handle(request), first); assert.equal(m.handle({ ...request, target: { changed: true } }).reason, "request_conflict"); assert.equal(m.handle({ ...request, requestId: 2, baseRevision: 1 }).reason, "stale");
+});
+test("deterministic transport trace is stable and supports delay/duplicate", () => {
+  const run = () => { const t = createDeterministicTransport({ handler: x => ({ accepted: true, x }), delay: () => 1, duplicate: x => x.dup ?? 0 }); t.enqueue({ id: "a", dup: 1 }); t.drain(); return t.getTrace(); };
+  assert.deepEqual(run(), run()); assert.deepEqual(stableTraceClone({ z: 1, a: [2] }), { a: [2], z: 1 });
+});
+
+test("transport validates bounded injection and reorder returns every ready entry exactly once", () => {
+  for (const option of [{ delay: () => -1 }, { delay: () => Infinity }, { duplicate: () => 1.5 }]) { const t = createDeterministicTransport({ handler: x => x, ...option }); assert.throws(() => { t.enqueue({ id: 1 }); }); }
+  const reordered = createDeterministicTransport({ handler: x => x, reorder: entries => entries.reverse() }); reordered.enqueue({ id: "a" }); reordered.enqueue({ id: "b" }); reordered.tick(); assert.deepEqual(reordered.getTrace().entries.map(entry => entry.request.id), ["b", "a"]);
+  const broken = createDeterministicTransport({ handler: x => x, reorder: () => [] }); broken.enqueue({ id: 1 }); assert.throws(() => broken.tick(), /exactly once/);
+});
+
+test("queue, trace and replay snapshots are detached and replay preserves tick/order", () => {
+  const run = () => { const t = createDeterministicTransport({ handler: request => ({ value: request.value }), delay: request => request.delay, duplicate: request => request.duplicates }); t.enqueue({ value: "a", delay: 0, duplicates: 0 }); t.enqueue({ value: "b", delay: 1, duplicates: 1 }); t.drain(); return t; };
+  const original = run(); const trace = original.getTrace(); const snapshot = original.getSnapshot(); trace.entries[0].request.value = "mutated"; snapshot.queue.push({}); assert.equal(original.getTrace().entries[0].request.value, "a");
+  const replayed = replayTrace(original.getTrace(), () => createDeterministicTransport({ handler: request => ({ value: request.value }), delay: request => request.delay, duplicate: request => request.duplicates })); assert.deepEqual(replayed.trace, original.getTrace()); assert.equal(replayed.snapshot.tick, original.getSnapshot().tick);
+});
+
+test("menu keeps carried server-side, authorizes setView, and consumes correlated rejected ids", () => {
+  const adapter = createMapStashAdapterForMenu({ carried: { itemId: "cte2:server", count: 1, maxStackSize: 64, components: { map_stash: { layout: "other", rarity: "rare" } } } }); const m = createMenuState({ menuId: "map", sessionId: "session", adapter });
+  const base = { menuId: "map", sessionId: "session", baseRevision: 0, baseViewGeneration: 0 };
+  const view = m.handle({ ...base, requestId: 1, operation: "setView", target: { layout: "normal", rarity: "rare", page: 0 } }); assert.equal(view.accepted, true); assert.equal(view.snapshot.adapter.layout, "normal");
+  const forged = m.handle({ ...base, requestId: 2, baseRevision: 0, baseViewGeneration: 1, operation: "place", target: { displayIndex: 0, carried: { itemId: "cte2:forged", count: 1, maxStackSize: 64 } }, modifiers: { button: 0 } }); assert.equal(forged.accepted, false); assert.equal(forged.reason, "filter"); assert.equal(forged.revision, 0);
+  assert.equal(m.handle({ ...base, requestId: 2, operation: "setView" }).reason, "request_conflict");
+  assert.equal(m.handle({ ...base, requestId: 3, operation: "unsupported" }).reason, "unsupported"); assert.equal(m.handle({ ...base, requestId: 3, operation: "setView" }).reason, "request_conflict");
+  assert.equal(m.handle({ ...base, requestId: 4, baseRevision: 99, operation: "setView" }).reason, "stale"); assert.equal(m.handle({ ...base, requestId: 4, operation: "setView" }).reason, "request_conflict");
+});
+
+test("detailed enqueue correlates the primary sequence independently of duplicates and reorder", () => {
+  const transport = createDeterministicTransport({ handler: request => ({ requestId: request.requestId }), duplicate: () => 1, reorder: ready => [...ready].reverse() });
+  const receipt = transport.enqueueDetailed({ requestId: 7 }); assert.deepEqual(receipt.sequences, [0, 1]); assert.equal(receipt.primarySequence, 0);
+  transport.tick(); const processed = transport.takeProcessed(); assert.deepEqual(processed.map(({ sequence }) => sequence), [1, 0]);
+  assert.equal(processed.find(({ sequence }) => sequence === receipt.primarySequence).response.requestId, 7); assert.deepEqual(transport.takeProcessed(), []);
+  processed[0].response.requestId = 99; assert.equal(transport.getTrace().entries[0].response.requestId, 7);
+});
+
+test("menu authorizes normal player cursor operations through the same revision contract", () => {
+  const playerInventory = Array.from({ length: 36 }, () => null); playerInventory[9] = { itemId: "cte2:player", count: 3, maxStackSize: 64, components: { map_stash: { layout: "normal", rarity: "rare" } } };
+  const adapter = createMapStashAdapterForMenu({ playerInventory }); const menu = createMenuState({ menuId: "map", sessionId: "player", adapter });
+  const pickup = menu.handle({ menuId: "map", sessionId: "player", baseRevision: 0, requestId: 1, operation: "pickup", target: { kind: "player", inventoryIndex: 9 }, modifiers: { button: 0 } });
+  assert.equal(pickup.accepted, true); assert.equal(pickup.revision, 1); assert.equal(pickup.snapshot.adapter.playerInventory[9], null); assert.equal(pickup.snapshot.adapter.carried.count, 3);
+  const place = menu.handle({ menuId: "map", sessionId: "player", baseRevision: 1, baseViewGeneration: 0, requestId: 2, operation: "place", target: { displayIndex: 1 }, modifiers: { button: 1 } });
+  assert.equal(place.accepted, true); assert.equal(place.revision, 2); assert.equal(place.snapshot.adapter.carried.count, 2); assert.equal(place.snapshot.adapter.storage[1].count, 1);
+  const before = menu.snapshot(); const rejected = menu.handle({ menuId: "map", sessionId: "player", baseRevision: 2, requestId: 3, operation: "pickup", target: { kind: "player", inventoryIndex: 36 }, modifiers: { button: 0 } });
+  assert.equal(rejected.reason, "bounds"); assert.equal(rejected.revision, 2); assert.deepEqual(menu.snapshot(), before);
+});
+
+test("menu requires the current view generation only for projection-dependent operations", () => {
+  const playerInventory = Array.from({ length: 36 }, () => null);
+  playerInventory[9] = { itemId: "cte2:player", count: 3, maxStackSize: 64, components: { map_stash: { layout: "normal", rarity: "rare" } } };
+  const m = createMenuState({ menuId: "map", sessionId: "view", adapter: createMapStashAdapterForMenu({ playerInventory }) });
+  const storageRequest = { menuId: "map", sessionId: "view", baseRevision: 0, operation: "pickup", target: { displayIndex: 0 }, modifiers: { button: 0 } };
+  assert.equal(m.handle({ ...storageRequest, requestId: 1 }).reason, "view_generation");
+  const changedView = m.handle({ menuId: "map", sessionId: "view", baseRevision: 0, requestId: 2, operation: "setView", target: { layout: "normal", rarity: "rare", page: 0 } });
+  assert.equal(changedView.accepted, true); assert.equal(changedView.viewGeneration, 1); assert.equal(m.summary().revision, 0);
+  const before = m.snapshot();
+  const stale = m.handle({ ...storageRequest, requestId: 3, baseViewGeneration: 0 });
+  assert.equal(stale.reason, "stale_view"); assert.deepEqual(m.snapshot(), before);
+  const playerOnly = m.handle({ menuId: "map", sessionId: "view", baseRevision: 0, requestId: 4, operation: "pickup", target: { kind: "player", inventoryIndex: 9 }, modifiers: { button: 0 } });
+  assert.equal(playerOnly.accepted, true); assert.equal(playerOnly.revision, 1); assert.equal(playerOnly.viewGeneration, 1);
+});
+
+test("rejected and no-op setView requests preserve the current view generation", () => {
+  const m = createMenuState({ menuId: "map", sessionId: "stable-view", adapter: createMapStashAdapterForMenu() });
+  const base = { menuId: "map", sessionId: "stable-view", baseRevision: 0, baseViewGeneration: 0 };
+  const rejected = m.handle({ ...base, requestId: 1, operation: "setView", target: { layout: "future" } });
+  assert.equal(rejected.reason, "filter"); assert.equal(rejected.viewGeneration, 0); assert.equal(m.summary().viewGeneration, 0);
+  const noOp = m.handle({ ...base, requestId: 2, operation: "setView", target: { layout: "all", rarity: "all", page: 0 } });
+  assert.equal(noOp.accepted, true); assert.equal(noOp.viewGeneration, 0); assert.equal(m.summary().viewGeneration, 0);
+  const pickup = m.handle({ ...base, requestId: 3, operation: "pickup", target: { displayIndex: 0 }, modifiers: { button: 0 } });
+  assert.equal(pickup.accepted, true); assert.notEqual(pickup.reason, "stale_view"); assert.equal(pickup.snapshot.adapter.carried.itemId, "cte2:map");
+});
+
+test("menu rejects unknown configured filters, bounds/direction, and adapter exceptions without revision", () => {
+  const adapter = createMapStashAdapterForMenu({ validLayouts: ["all", "normal"] }); const m = createMenuState({ menuId: "map", sessionId: "s", adapter });
+  const base = { menuId: "map", sessionId: "s", baseRevision: 0, baseViewGeneration: 0 };
+  assert.equal(m.handle({ ...base, requestId: 1, operation: "setView", target: { layout: "future" } }).reason, "filter"); assert.equal(m.handle({ ...base, requestId: 2, operation: "quickMove", target: { direction: "north", displayIndex: 0 } }).reason, "direction"); assert.equal(m.handle({ ...base, requestId: 3, operation: "pickup", target: { displayIndex: 96 }, modifiers: { button: 0 } }).reason, "bounds");
+  const throwing = createMenuState({ menuId: "x", sessionId: "s", adapter: { snapshot: () => ({ safe: true }), restore: () => ({ safe: true }), click: () => { throw new Error("boom"); } } }); const response = throwing.handle({ menuId: "x", sessionId: "s", baseRevision: 0, baseViewGeneration: 0, requestId: 1, operation: "pickup", target: {}, modifiers: {} }); assert.equal(response.reason, "invalid"); assert.equal(response.revision, 0); assert.deepEqual(response.snapshot.adapter, { safe: true });
+});
+
+test("menu request ids are monotonic and restore mutation-then-throw adapters", () => {
+  let value = 0; const calls = []; const adapter = { snapshot: () => ({ value }), restore: snapshot => { calls.push(["restore", snapshot]); value = snapshot.value; return { value }; }, click: () => { calls.push("mutate"); value += 1; throw new Error("after mutation"); } }; const m = createMenuState({ menuId: "m", sessionId: "s", adapter }); const base = { menuId: "m", sessionId: "s", baseRevision: 0, baseViewGeneration: 0, operation: "pickup", target: {}, modifiers: {} }; const before = m.snapshot(); calls.length = 0;
+  const badStack = m.handle({ ...base, requestId: 3, target: { stack: { itemId: "invalid", count: 1, maxStackSize: 64 } } }); assert.equal(badStack.reason, "stack"); assert.equal(m.handle({ ...base, requestId: 2 }).reason, "old_request"); const failed = m.handle({ ...base, requestId: 4 }); assert.equal(failed.reason, "invalid"); assert.equal(calls[0], "mutate"); assert.equal(calls[1][0], "restore"); assert.deepEqual(m.snapshot(), before); assert.deepEqual(m.handle({ ...base, requestId: 4 }), failed);
+  assert.equal(m.handle({ ...base, requestId: 5, menuId: "other" }).reason, "menu"); assert.equal(m.handle({ ...base, requestId: 5 }).reason, "invalid");
+});
+
+test("menu requires transactional adapters and treats unverifiable rollback as fatal", () => {
+  assert.throws(() => createMenuState({ menuId: "m", sessionId: "s", adapter: { snapshot: () => ({}) } }), /snapshot and restore/);
+  let value = 0;
+  assert.throws(() => createMenuState({ menuId: "m", sessionId: "s", adapter: { snapshot: () => ({ value }), restore: () => undefined } }), /round-trip/);
+  const menuState = createMenuState({ menuId: "m", sessionId: "s", adapter: { snapshot: () => ({ value }), restore: snapshot => ({ value: snapshot.value }), click: () => { value += 1; throw new Error("boom"); } } });
+  assert.throws(() => menuState.handle({ menuId: "m", sessionId: "s", baseRevision: 0, baseViewGeneration: 0, requestId: 1, operation: "pickup", target: {}, modifiers: {} }), /fatal adapter rollback failure/);
+});
+
+test("trace replay preserves trailing idle ticks and pending delayed requests", () => {
+  const original = createDeterministicTransport({ handler: request => ({ id: request.id }), delay: request => request.delay });
+  original.enqueue({ id: "ready", delay: 0 }); original.enqueue({ id: "pending", delay: 5 }); original.tick(); original.tick();
+  const replayed = replayTrace(original.getTrace(), () => createDeterministicTransport({ handler: request => ({ id: request.id }) }));
+  assert.deepEqual(replayed.trace, original.getTrace()); assert.deepEqual(replayed.snapshot.queue, original.getSnapshot().queue); assert.equal(replayed.snapshot.tick, 2);
+});
+
+test("transport exposes handler final snapshot and replay reproduces response/final snapshots", () => {
+  const run = () => { let value = 0; const transport = createDeterministicTransport({ handler: request => ({ accepted: true, snapshot: { value: value += request.delta } }), snapshot: () => ({ value }) }); transport.enqueue({ delta: 2 }); transport.enqueue({ delta: 3 }); transport.drain(); return transport; };
+  const original = run(); const replayed = replayTrace(original.getTrace(), () => { let value = 0; return createDeterministicTransport({ handler: request => ({ accepted: true, snapshot: { value: value += request.delta } }), snapshot: () => ({ value }) }); });
+  assert.deepEqual(replayed.trace.entries.map(entry => entry.response), original.getTrace().entries.map(entry => entry.response)); assert.deepEqual(replayed.snapshot.handlerSnapshot, original.getSnapshot().handlerSnapshot);
+});
+
+function createMapStashAdapterForMenu(options = {}) {
+  return createMapStashAdapter({ validLayouts: ["all", "normal", "other"], validRarities: ["all", "common", "uncommon", "rare", "epic", "legendary", "mythic", "unique", "other"], slots: [{ itemId: "cte2:map", count: 1, maxStackSize: 64, components: { map_stash: { layout: "normal", rarity: "rare" } } }], selector: s => ({ accepted: true, ...s.components.map_stash }), ...options });
+}

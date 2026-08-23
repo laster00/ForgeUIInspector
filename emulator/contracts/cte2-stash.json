@@ -2,8 +2,8 @@
   "schema": "forge-ui-inspector.cte2-stash-contract",
   "version": 1,
   "sources": {
-    "layout": "src/main/java/jp/cte2/client/ui/Cte2StashLayout.java",
-    "theme": "src/main/java/jp/cte2/client/ui/Cte2UiTheme.java"
+    "layout": "src/main/java/io/github/laster00/mnsutilities/client/ui/MnsStashLayout.java",
+    "theme": "src/main/java/io/github/laster00/mnsutilities/client/ui/MnsUiTheme.java"
   },
   "logicalSize": {
     "width": 474,

@@ -20,8 +20,8 @@ Use these values for both the Forge screens and the browser emulator. Java uses 
 ## Layout rules
 
 - Use an 18x18 logical slot and 8px as the base gap where the screen is not constrained by the vanilla menu slot coordinates.
-- Keep Map Stash and Currency Stash at 360x248 logical pixels. Their stash grid is 9x6 at `(178,24)`, player inventory at `(178,150)`, and hotbar at `(178,208)`.
-- Keep the browser preview at 320x230 logical pixels. Scale the complete preview instead of selectively shrinking text or slots.
+- The current MineAndSlashAddons stash layout is 474x326 logical pixels. Its 12x8 stash grid starts at `(240,34)`, player inventory starts at `(267,228)`, hotbar y is `290`, and list panels are 200px wide with 10 rows. Read `MnsStashLayout.java` as the canonical geometry source when a screen-specific value differs.
+- Keep the browser preview geometry contract/manifest driven (currently 474x326). Scale the complete preview instead of selectively shrinking text or slots.
 - Put the title at the upper-left, keep the selected category/layout summary in the same horizontal band, and place the player inventory below the stash grid.
 - Use one scrollable list on the left. A selected row gets a selected-color edge/background; counts remain muted.
 - Show page controls only when more than one page exists. Page changes and category/layout changes remain server-authoritative.
@@ -38,4 +38,4 @@ Use these values for both the Forge screens and the browser emulator. Java uses 
 
 - Forge always uses the active Minecraft `Font` instance and `plainSubstrByWidth` for clipping.
 - The emulator uses the local deterministic stack beginning with `Minecraft`, followed by installed fallback fonts. Never fetch a font from the network.
-- Check `?screen=map_stash&fixture=normal&locale=ja&scale=2` and `?screen=currency_stash&fixture=many&locale=ja&page=1&scale=3` before building.
+- Check `?screen=map_stash&fixture=normal&locale=ja&scale=2` and `?screen=currency_stash&fixture=many&locale=ja&page=1&scale=3` before building; reconcile emulator dimensions with the current 474x326 production layout.

@@ -18,7 +18,7 @@ class HarnessElement {
 }
 
 function makeHarness(search = "") {
-  const ids = ["forge-ui-emulator", "fixture-control", "project-control", "screen-control", "master-variant-control", "master-variant-control-wrap", "locale-control", "layout-control", "page-control", "scroll-control", "state-control", "width-control", "height-control", "scale-control", "map-stash-preview", "master-stash-preview", "extended-preview", "layout-list", "stash-grid", "stash-page", "stash-page-previous", "stash-page-next", "player-inventory", "inspector-state", "canonical", "alignment-badge", "title", "state", "selected-layout", "reset", "reload-assets", "copy"];
+  const ids = ["forge-ui-emulator", "fixture-control", "project-control", "screen-control", "master-variant-control", "master-variant-control-wrap", "locale-control", "layout-control", "page-control", "scroll-control", "state-control", "width-control", "height-control", "scale-control", "map-stash-preview", "master-stash-preview", "extended-preview", "layout-list", "stash-grid", "stash-page", "stash-page-previous", "stash-page-next", "rarity-filter", "player-inventory", "inspector-state", "canonical", "alignment-badge", "title", "state", "selected-layout", "reset", "reload-assets", "copy"];
   const nodes = new Map(ids.map((id) => [id, new HarnessElement(id === "inspector-state" ? "output" : "div")]));
   const previewWrap = new HarnessElement("div");
   globalThis.Option = class Option { constructor(text, value) { this.text = text; this.value = value; } };
@@ -36,7 +36,7 @@ function assertPublished(nodes, api) {
   assert.equal(nodes.get("canonical").textContent, snapshot.canonicalUrl);
   assert.equal(globalThis.window.location.href, snapshot.canonicalUrl);
   const root = nodes.get("forge-ui-emulator");
-  for (const [key, value] of Object.entries({ project: snapshot.state.project ?? "cte2", screen: snapshot.state.screen, fixture: snapshot.state.fixture, state: snapshot.state.state, alignment: snapshot.state.alignment, layout: snapshot.state.layout, scroll: snapshot.state.scroll, page: snapshot.state.page, pageCount: snapshot.fixture.pageCount, itemCount: snapshot.fixture.itemCount })) assert.equal(root.dataset[key], String(value), `data-${key}`);
+  for (const [key, value] of Object.entries({ project: snapshot.state.project ?? "cte2", screen: snapshot.state.screen, fixture: snapshot.state.fixture, state: snapshot.state.state, alignment: snapshot.state.alignment, layout: snapshot.state.layout, rarity: snapshot.state.rarity, scroll: snapshot.state.scroll, page: snapshot.state.page, pageCount: snapshot.fixture.pageCount, itemCount: snapshot.fixture.itemCount })) assert.equal(root.dataset[key], String(value), `data-${key}`);
   assert.equal(nodes.get("alignment-badge").dataset.status, snapshot.alignment.status);
 }
 
