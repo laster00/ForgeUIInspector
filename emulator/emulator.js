@@ -16,7 +16,7 @@ import {
   normalizeFixtureItems,
   validateProjectManifest,
 } from "./fixture-system.js";
-import { createCanonicalItemStack } from "./runtime/item-stack.js";
+import { createCanonicalItemStack, getItemStackKey } from "./runtime/item-stack.js";
 import { createMapStashAdapter } from "./runtime/adapters/map-stash.js";
 import { createMenuState } from "./runtime/menu.js";
 import { createDeterministicTransport } from "./runtime/transport.js";
@@ -60,9 +60,10 @@ function fixtureItemId(item, classification, render) {
   const token = [classification.layout, classification.rarity, render.icon, render.labelKey, render.label].map(fixtureToken).filter(Boolean).join("_");
   return `forgeuiinspector:${token || "map"}`;
 }
-function registerSidecar(target, itemId, value, name) {
-  if (target[itemId] !== undefined && JSON.stringify(target[itemId]) !== JSON.stringify(value)) throw new TypeError(`conflicting ${name} sidecar for ${itemId}`);
-  target[itemId] = detached(value);
+function registerSidecar(target, stack, value, name) {
+  const key = getItemStackKey(stack);
+  if (target[key] !== undefined && JSON.stringify(target[key]) !== JSON.stringify(value)) throw new TypeError(`conflicting ${name} sidecar for ${key}`);
+  target[key] = detached(value);
 }
 
 function mapRuntimeSeed(fixture) {
@@ -85,15 +86,16 @@ function mapRuntimeSeed(fixture) {
     if (item.labelKey !== undefined) renderMeta.labelKey = item.labelKey;
     const classification = { accepted: true, layout, rarity };
     const itemId = fixtureItemId(item, classification, renderMeta);
-    registerSidecar(sidecars.render, itemId, renderMeta, "render");
-    registerSidecar(sidecars.classification, itemId, classification, "classification");
-    physical[physicalIndex] = createCanonicalItemStack({
+    const stack = createCanonicalItemStack({
       itemId,
       count,
       maxStackSize: Number.isSafeInteger(item.maxStackSize) ? item.maxStackSize : 64,
       tag: item.tag ?? {},
       components: item.components ?? {},
     });
+    registerSidecar(sidecars.render, stack, renderMeta, "render");
+    registerSidecar(sidecars.classification, stack, classification, "classification");
+    physical[physicalIndex] = stack;
   }
   return { storage: physical, playerInventory: Array(36).fill(null), validLayouts, validRarities: [...MAP_RARITIES], sidecars: deepFreeze(sidecars) };
 }
@@ -740,7 +742,7 @@ function screenItemIcon(item, index = 0) {
 }
 
 function runtimeItemMeta(stack, renderSidecars = {}) {
-  const meta = stack ? renderSidecars[stack.itemId] ?? {} : {};
+  const meta = stack ? renderSidecars[getItemStackKey(stack)] ?? {} : {};
   return { icon: meta.icon ?? "unknown-icon", label: meta.label, labelKey: meta.labelKey };
 }
 
@@ -1300,7 +1302,7 @@ export function initEmulator(data, options = {}) {
     inputLog = [];
     if (!runtimeEnabled()) { runtime = EMPTY_RUNTIME; return; }
     const seed = mapRuntimeSeed(fixtureForState());
-    const adapter = createMapStashAdapter({ ...seed, storage: { slots: seed.storage }, layout: state.layout, page: state.page, rarity: state.rarity, validLayouts: seed.validLayouts, validRarities: seed.validRarities, selector: stack => detached(seed.sidecars.classification[stack.itemId] ?? { accepted: false }) });
+    const adapter = createMapStashAdapter({ ...seed, storage: { slots: seed.storage }, layout: state.layout, page: state.page, rarity: state.rarity, validLayouts: seed.validLayouts, validRarities: seed.validRarities, selector: stack => detached(seed.sidecars.classification[getItemStackKey(stack)] ?? { accepted: false }) });
     const menu = createMenuState({ menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", adapter });
     const policy = options.transportPolicy ?? {};
     const transport = createDeterministicTransport({ handler: (request) => menu.handle(request), delay: policy.delay, duplicate: policy.duplicate, reorder: policy.reorder });
@@ -1338,14 +1340,12 @@ export function initEmulator(data, options = {}) {
   };
   const runtimeRequest = (operation, target = {}, modifiers = {}) => {
     if (!runtime.enabled) return { accepted: false, reason: "read-only", revision: 0, requestId: null, snapshot: null };
-    const request = { requestId: ++runtimeRequestId, menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", baseRevision: runtime.menu.summary().revision, operation, target: detached(target), modifiers: detached(modifiers) };
+    const request = { requestId: ++runtimeRequestId, menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", baseRevision: runtime.menu.summary().revision, baseViewGeneration: runtime.menu.summary().viewGeneration, operation, target: detached(target), modifiers: detached(modifiers) };
     const receipt = runtime.transport.enqueueDetailed(request);
     runtime.transport.tick();
     const envelopes = runtime.transport.takeProcessed();
-    for (const envelope of envelopes) {
-      const authoritativeView = envelope.response?.snapshot?.adapter;
-      if (authoritativeView && typeof authoritativeView.layout === "string" && typeof authoritativeView.rarity === "string" && Number.isSafeInteger(authoritativeView.page)) state = { ...state, layout: authoritativeView.layout, rarity: authoritativeView.rarity, page: authoritativeView.page };
-    }
+    const authoritativeView = runtime.adapter.view();
+    state = { ...state, layout: authoritativeView.layout, rarity: authoritativeView.rarity, page: authoritativeView.page };
     const primary = envelopes.find(envelope => envelope.sequence === receipt.primarySequence && envelope.request?.requestId === request.requestId);
     return detached(primary ? { ...primary.response, sequence: primary.sequence } : { accepted: false, pending: true, reason: "pending", revision: runtime.menu.summary().revision, requestId: request.requestId, sequence: receipt.primarySequence });
   };

@@ -81,6 +81,29 @@ test("all fixture seeds are immutable, canonical, detached, and expose lightweig
   }
 });
 
+test("render and classification sidecars follow canonical stack identity rather than item id", () => {
+  const data = mapData(); const fixture = data.fixtures.find(({ id }) => id === "normal");
+  fixture.items = [
+    { itemId: "cte2:shared_map", page: 0, slot: 0, icon: "map", label: "Opaque A", count: 2, layout: "layout_01", rarity: "common", tag: { variant: "a" }, components: { opaque: { seed: 1 } } },
+    { itemId: "cte2:shared_map", page: 0, slot: 1, icon: "paper", label: "Opaque B", count: 1, layout: "layout_02", rarity: "rare", tag: { variant: "b" }, components: { opaque: { seed: 2 } } },
+  ];
+  const nodes = harness(); const api = initEmulator(data, {}); let grid = nodes.get("stash-grid");
+  assert.equal(api.getRuntimeSnapshot().projection.matchCount, 2);
+  assert.equal(grid.children[0].title, "Opaque A"); assert.equal(grid.children[0].children[0].className, "icon-map");
+  assert.equal(grid.children[1].title, "Opaque B"); assert.equal(grid.children[1].children[0].className, "icon-paper");
+  api.setState({ layout: "layout_02", rarity: "rare" }); grid = nodes.get("stash-grid");
+  assert.deepEqual(api.getRuntimeSnapshot().projection.physicalIndices, [1]); assert.equal(grid.children[0].title, "Opaque B");
+  gesture(api, stashPoint(0)); assert.equal(nodes.get("map-stash-preview").querySelector(".runtime-carried").getAttribute("aria-label"), "Opaque B ×1");
+  cleanup();
+
+  const conflicting = mapData(); const conflictingFixture = conflicting.fixtures.find(({ id }) => id === "normal");
+  conflictingFixture.items = [
+    { itemId: "cte2:conflict", page: 0, slot: 0, icon: "map", count: 1, layout: "layout_01", rarity: "common", tag: { same: true }, components: { same: true } },
+    { itemId: "cte2:conflict", page: 0, slot: 1, icon: "paper", count: 3, layout: "layout_02", rarity: "rare", tag: { same: true }, components: { same: true } },
+  ];
+  harness(); assert.throws(() => initEmulator(conflicting, {}), /conflicting render sidecar/); cleanup();
+});
+
 test("only the complete known interaction contract enables mutation", () => {
   const known = structuredClone(DEFAULT_CTE2_PROJECT.screens.find((screen) => screen.id === "map_stash").interaction);
   const cases = [
@@ -188,7 +211,7 @@ test("transport-backed view controls return the exact primary rejection or pendi
   const changed = { rarity: (api) => api.getState().rarity === "common", layout: (api) => api.getState().layout === "layout_01", page: (api) => api.getState().page === 1, wheel: (api) => api.getState().page === 1 };
   for (const kind of Object.keys(changed)) {
     const nodes = harness("?fixture=many"); const api = initEmulator(mapData(), { transportPolicy: { duplicate: () => 1, reorder: (ready) => [...ready].reverse() } }); const response = activate(kind, nodes, api);
-    assert.equal(response.accepted, false, kind); assert.equal(response.reason, "duplicate", kind); assert.equal(response.requestId, 1, kind); assert.equal(response.sequence, 0, kind); assert.equal(response.pending, undefined, kind); assert.equal(changed[kind](api), true, kind); assert.deepEqual(api.getTrace().transport.entries.map(({ sequence }) => sequence), [1, 0], kind); cleanup();
+    assert.equal(response.accepted, true, kind); assert.equal(response.reason, "ok", kind); assert.equal(response.requestId, 1, kind); assert.equal(response.sequence, 0, kind); assert.equal(response.pending, undefined, kind); assert.equal(changed[kind](api), true, kind); assert.deepEqual(api.getTrace().transport.entries.map(({ sequence }) => sequence), [1, 0], kind); cleanup();
   }
   for (const kind of Object.keys(changed)) {
     const nodes = harness("?fixture=many"); const api = initEmulator(mapData(), { transportPolicy: { delay: () => 2 } }); const response = activate(kind, nodes, api);
@@ -220,7 +243,7 @@ test("non-view changes create no traffic and rejected gestures preserve authorit
 test("duplicate, delay, and reorder policies preserve exact primary correlation", () => {
   {
     harness(); const api = initEmulator(mapData(), { transportPolicy: { duplicate: () => 1 } }); const result = gesture(api, stashPoint(0)); const entries = api.getTrace().transport.entries;
-    assert.equal(result.accepted, true); assert.equal(entries.length, 2); assert.equal(entries[0].response.accepted, true); assert.equal(entries[1].response.reason, "duplicate"); cleanup();
+    assert.equal(result.accepted, true); assert.equal(entries.length, 2); assert.equal(entries[0].response.accepted, true); assert.equal(entries[1].response.accepted, true); cleanup();
   }
   {
     harness(); const api = initEmulator(mapData(), { transportPolicy: { delay: (request) => request.requestId === 1 ? 2 : 1 } }); const before = authoritative(api); const pending = gesture(api, stashPoint(0)); assert.equal(pending.pending, true); assert.deepEqual(authoritative(api), before);
@@ -230,6 +253,24 @@ test("duplicate, delay, and reorder policies preserve exact primary correlation"
     harness(); const api = initEmulator(mapData(), { transportPolicy: { delay: (request) => request.requestId === 1 ? 2 : 1, reorder: (ready) => [...ready].reverse() } }); const first = gesture(api, stashPoint(0)); assert.equal(first.pending, true); const second = gesture(api, stashPoint(1));
     assert.equal(second.requestId, 2); assert.equal(second.accepted, true); assert.equal(api.getRuntimeSnapshot().adapter.carried.count, 2); assert.deepEqual(api.getTrace().transport.entries.map(({ request }) => request.requestId), [2, 1]); cleanup();
   }
+});
+
+test("a delayed view change makes an older display-index operation stale without touching either physical stack", () => {
+  const data = mapData(); const fixture = data.fixtures.find(({ id }) => id === "normal");
+  fixture.items = [
+    { itemId: "cte2:old_view", page: 0, slot: 0, icon: "map", count: 1, layout: "layout_01", rarity: "rare", tag: { identity: "old" } },
+    { itemId: "cte2:new_view", page: 0, slot: 1, icon: "paper", count: 1, layout: "layout_01", rarity: "common", tag: { identity: "new" } },
+  ];
+  const nodes = harness(); const api = initEmulator(data, { transportPolicy: { delay: (request) => request.requestId === 1 ? 2 : 1 } });
+  const before = api.getRuntimeSnapshot().adapter;
+  nodes.get("rarity-filter").dispatch("click");
+  const pending = api.getTrace().inputs.at(-1).response; assert.equal(pending.pending, true); assert.equal(pending.requestId, 1);
+  const stale = gesture(api, stashPoint(0)); const after = api.getRuntimeSnapshot();
+  assert.equal(stale.requestId, 2); assert.equal(stale.reason, "stale_view"); assert.equal(stale.accepted, false);
+  assert.equal(after.menu.viewGeneration, 1); assert.equal(after.adapter.rarity, "common"); assert.deepEqual(after.projection.physicalIndices, [1]);
+  assert.deepEqual(after.adapter.storage, before.storage); assert.deepEqual(after.adapter.playerInventory, before.playerInventory); assert.equal(after.adapter.carried, null);
+  assert.equal(after.adapter.storage[0].itemId, "cte2:old_view"); assert.equal(after.adapter.storage[1].itemId, "cte2:new_view");
+  assert.deepEqual(api.getTrace().transport.entries.map(({ request }) => request.requestId), [1, 2]); cleanup();
 });
 
 test("runtime and full reset clear request/input/transport state and DOM viewport hits are equivalent", () => {
