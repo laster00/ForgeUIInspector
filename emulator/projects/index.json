@@ -7,6 +7,11 @@
       "id": "cte2",
       "labelKey": "project.cte2.name",
       "manifest": "cte2/project.json"
+    },
+    {
+      "id": "mnsutilities-concepts",
+      "labelKey": "project.mnsutilities_concepts.name",
+      "manifest": "mnsutilities-concepts/project.json"
     }
   ]
 }

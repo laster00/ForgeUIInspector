@@ -12,8 +12,8 @@ from typing import Any
 
 
 SCHEMA = "forge-ui-inspector.cte2-stash-contract"
-LAYOUT_PATH = Path("src/main/java/jp/cte2/client/ui/Cte2StashLayout.java")
-THEME_PATH = Path("src/main/java/jp/cte2/client/ui/Cte2UiTheme.java")
+LAYOUT_PATH = Path("src/main/java/io/github/laster00/mnsutilities/client/ui/MnsStashLayout.java")
+THEME_PATH = Path("src/main/java/io/github/laster00/mnsutilities/client/ui/MnsUiTheme.java")
 
 
 def read_source(root: Path, relative: Path) -> str:
@@ -101,7 +101,7 @@ def build_contract(source_root: Path) -> dict[str, Any]:
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
-    default_source = repo_root.parent / "cte2-ja-patch" / "addon" / "cte2-talent-description-search"
+    default_source = repo_root.parent / "MineAndSlashAddons"
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-root", type=Path, default=default_source)
     parser.add_argument("--output", type=Path, default=repo_root / "emulator" / "contracts" / "cte2-stash.json")

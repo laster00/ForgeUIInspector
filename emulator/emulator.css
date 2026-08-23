@@ -256,6 +256,69 @@ body[data-capture-mode="true"] .preview-wrap { margin: 0; max-width: none; }
 .generic-fixture-summary p { margin: 5px 0 0; white-space: nowrap; overflow: hidden; }
 .generic-grid { position: absolute; left: 8px; top: 62px; }
 .generic-note { position: absolute; left: 8px; right: 8px; bottom: 8px; margin: 0; padding: 6px 8px; overflow: hidden; background: var(--ui-panel-alt); color: var(--ui-muted); white-space: nowrap; }
+.mc-currency_stash_v2 .extended-body { min-width: 474px; }
+.currency-v2-tabs { position: absolute; left: 8px; top: 5px; display: flex; gap: 3px; height: 22px; }
+.currency-v2-tab { width: 88px; height: 22px; padding: 6px 8px 4px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel-alt); color: var(--ui-muted); white-space: nowrap; }
+.currency-v2-tab.selected { border-color: var(--ui-selected); background: var(--ui-border); color: var(--ui-selected); }
+.currency-v2-prototype { position: absolute; left: 194px; right: 8px; top: 5px; height: 22px; padding: 6px 8px 4px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel); color: var(--ui-info); text-align: right; white-space: nowrap; }
+.currency-v2-category-rail, .currency-v2-gem-types, .currency-v2-gem-ranks, .currency-v2-gem-preview, .currency-v2-grid-panel { position: absolute; top: 35px; height: 164px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel); }
+.currency-v2-category-rail { left: 8px; width: 112px; padding: 4px; }
+.currency-v2-category-row { display: flex; align-items: center; gap: 3px; height: 17px; padding: 0 4px; overflow: hidden; border-left: 2px solid transparent; color: var(--ui-muted); white-space: nowrap; }
+.currency-v2-category-row.selected { border-left-color: var(--ui-selected); background: var(--ui-hover); color: var(--ui-text); }
+.currency-v2-category-label { min-width: 0; overflow: hidden; white-space: nowrap; }
+.currency-v2-category-count { margin-left: auto; color: var(--ui-muted); font-style: normal; }
+.currency-v2-category-row.selected .currency-v2-category-count { color: var(--ui-selected); }
+.currency-v2-grid-panel { left: 128px; width: 338px; }
+.currency-v2-panel-heading { position: absolute; left: 8px; right: 8px; top: 6px; display: flex; justify-content: space-between; height: 14px; overflow: hidden; color: var(--ui-muted); white-space: nowrap; }
+.currency-v2-panel-heading strong { min-width: 0; overflow: hidden; color: var(--ui-selected); font-weight: normal; }
+.currency-v2-grid { position: absolute; left: 8px; top: 28px; width: 216px; height: 108px; }
+.currency-v2-slot .count { right: 0; bottom: 0; max-width: 17px; overflow: hidden; font-size: 7px; line-height: 8px; text-shadow: 1px 1px #111; }
+.currency-v2-help { position: absolute; left: 232px; right: 7px; top: 28px; height: 108px; padding: 7px 6px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel-alt); color: var(--ui-muted); }
+.currency-v2-help strong, .currency-v2-help span, .currency-v2-help b { display: block; margin: 0 0 7px; overflow: hidden; font-weight: normal; line-height: 11px; white-space: nowrap; }
+.currency-v2-help strong { color: var(--ui-text); }
+.currency-v2-help b { margin-top: 10px; color: var(--ui-selected); }
+.currency-v2-empty { position: absolute; left: 26px; top: 66px; width: 180px; height: 30px; padding: 9px 5px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel-alt); color: var(--ui-muted); text-align: center; white-space: nowrap; }
+.currency-v2-page { position: absolute; right: 8px; bottom: 5px; color: var(--ui-muted); }
+.currency-v2-inventory { position: absolute; left: 156px; top: 208px; width: 162px; height: 94px; }
+.currency-v2-inventory h3 { position: absolute; left: 0; top: 0; height: 12px; margin: 0; color: var(--ui-muted); font-size: 10px; font-weight: normal; }
+.currency-v2-inventory-main { position: absolute; left: 0; top: 14px; width: 162px; height: 54px; }
+.currency-v2-inventory-hotbar { position: absolute; left: 0; top: 76px; width: 162px; height: 18px; }
+.currency-v2-gem-types { left: 8px; width: 112px; padding: 5px 4px; }
+.currency-v2-gem-types h3, .currency-v2-gem-ranks h3, .currency-v2-gem-preview h3 { height: 14px; margin: 0; overflow: hidden; color: var(--ui-selected); font-size: 10px; font-weight: normal; white-space: nowrap; }
+.currency-v2-gem-type { display: flex; align-items: center; gap: 4px; height: 15px; padding: 0 3px; overflow: hidden; border-left: 2px solid transparent; color: var(--ui-muted); white-space: nowrap; }
+.currency-v2-gem-type.selected { border-left-color: var(--ui-selected); background: var(--ui-hover); color: var(--ui-text); }
+.currency-v2-gem-type > span:first-child { flex: 0 0 12px; width: 12px; overflow: hidden; text-align: center; }
+.currency-v2-gem-type > span:nth-child(2) { min-width: 0; overflow: hidden; }
+.currency-v2-gem-type em { margin-left: auto; color: var(--ui-muted); font-style: normal; }
+.currency-v2-gem-ranks { left: 128px; width: 158px; padding: 6px; }
+.currency-v2-rank-grid { display: grid; grid-template-columns: repeat(2, 70px); grid-template-rows: repeat(4, 29px); gap: 3px; margin-top: 3px; }
+.currency-v2-rank-card { display: flex; align-items: center; gap: 4px; min-width: 0; height: 29px; padding: 5px 4px; overflow: hidden; border: 1px solid var(--ui-border); background: var(--ui-panel-alt); color: var(--ui-text); white-space: nowrap; }
+.currency-v2-rank-card > span:first-child { flex: 0 0 18px; width: 18px; height: 18px; line-height: 16px; text-align: center; }
+.currency-v2-rank-card > span:last-child { min-width: 0; overflow: hidden; }
+.currency-v2-rank-card.locked { opacity: .58; border-style: dashed; }
+.currency-v2-rank-note { position: absolute; left: 6px; right: 6px; bottom: 4px; overflow: hidden; color: var(--ui-error); font-size: 8px; white-space: nowrap; }
+.currency-v2-gem-preview { left: 294px; width: 172px; padding: 7px; }
+.currency-v2-gem-preview p { height: 13px; margin: 0; overflow: hidden; color: var(--ui-muted); line-height: 13px; white-space: nowrap; }
+.currency-v2-gem-preview .currency-v2-gem-selected { color: var(--ui-text); }
+.currency-v2-gem-preview .currency-v2-gem-change { padding-left: 3px; background: var(--ui-panel-alt); }
+.currency-v2-gem-preview .currency-v2-gem-invariant { margin-top: 3px; }
+.currency-v2-gem-preview .success { color: var(--ui-success); }
+.currency-v2-gem-preview .error { color: var(--ui-error); }
+.currency-v2-gem-manual { position: absolute; left: 7px; right: 7px; bottom: 27px; overflow: hidden; color: var(--ui-muted); font-size: 8px; white-space: nowrap; }
+.currency-v2-confirm { position: absolute; left: 7px; right: 7px; bottom: 5px; height: 19px; padding: 5px 6px 3px; overflow: hidden; border: 1px solid var(--ui-selected); background: var(--ui-control); color: var(--ui-selected); text-align: center; white-space: nowrap; }
+.currency-v2-confirm.disabled { border-color: var(--ui-border); color: var(--ui-muted); opacity: .6; }
+.icon-rune { color: #efc46d; }
+.icon-rarity-stone { color: #eef3ff; }
+.icon-seed { color: #91d66f; }
+.icon-gem-pink { color: #f39acb; }
+.icon-gem-cyan { color: #6cdde6; }
+.icon-gem-dark-red { color: #ad4a4a; }
+.icon-gem-white { color: #e8f2f5; }
+.icon-gem-yellow { color: #f0cf59; }
+.icon-gem-purple { color: #b17ce5; }
+.icon-gem-red { color: #ed6767; }
+.icon-gem-green { color: #6fd58b; }
+.icon-gem-blue { color: #6b9ee9; }
 .mc-master_stash, .mc-profession_workshop { font-size: 10px; }
 .mc-advanced_salvage { font-size: 10px; }
 
@@ -365,3 +428,29 @@ body[data-capture-mode="true"] .preview-wrap { margin: 0; max-width: none; }
   .controls output { flex-basis: 100%; }
   .preview-wrap { margin-left: 0; margin-right: 0; }
 }
+.runtime-tooltip,
+.runtime-carried {
+  position: absolute;
+  z-index: 5;
+  padding: 4px 6px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  font: 12px/1.2 var(--minecraft-font);
+  pointer-events: none;
+}
+
+.runtime-tooltip { left: 240px; top: 184px; }
+.runtime-carried { left: 267px; top: 214px; }
+.runtime-carried {
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border-color: var(--ui-slot-outer);
+  background: var(--ui-slot-inner);
+  font-size: 12px;
+  line-height: 14px;
+  text-align: center;
+}
+.runtime-carried .count { position: absolute; right: 0; bottom: -1px; color: var(--ui-text); font-size: 9px; line-height: 10px; text-shadow: 1px 1px #111; }
+.runtime-hovered { outline: 1px solid var(--ui-selected); outline-offset: -1px; background: var(--ui-hover); }

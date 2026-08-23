@@ -16,6 +16,11 @@ import {
   normalizeFixtureItems,
   validateProjectManifest,
 } from "./fixture-system.js";
+import { createCanonicalItemStack } from "./runtime/item-stack.js";
+import { createMapStashAdapter } from "./runtime/adapters/map-stash.js";
+import { createMenuState } from "./runtime/menu.js";
+import { createDeterministicTransport } from "./runtime/transport.js";
+import { createHitTester, logicalPointFromViewport, normalizeInput } from "./runtime/input.js";
 
 export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, alignmentFor, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, normalizeFixtureItems, validateProjectManifest };
 
@@ -41,6 +46,39 @@ export const UI_THEME = Object.freeze({
   success: "#78D39A",
   error: "#E27A7A",
 });
+
+const MAP_RARITIES = Object.freeze(["all", "common", "uncommon", "rare", "epic", "legendary", "mythic", "unique", "other"]);
+const EMPTY_RUNTIME = Object.freeze({ enabled: false, reason: "read-only", menu: null, adapter: null, transport: null });
+
+function detached(value) { return value === undefined ? undefined : structuredClone(value); }
+
+function mapRuntimeSeed(fixture) {
+  const physical = Array(768).fill(null);
+  const source = detached(fixture ?? { layouts: [], items: [] });
+  const layouts = (source.layouts ?? []).map((layout) => layout.id).filter((id) => typeof id === "string");
+  const validLayouts = [...new Set(["all", ...layouts])];
+  for (const [index, item] of (source.items ?? []).entries()) {
+    const page = Number.isSafeInteger(item.page) ? item.page : Math.floor(index / 96);
+    const slot = Number.isSafeInteger(item.slot) ? item.slot : index % 96;
+    const physicalIndex = page * 96 + slot;
+    if (physicalIndex < 0 || physicalIndex >= 768 || physical[physicalIndex] !== null) throw new RangeError("fixture contains duplicate or out-of-range physical slot");
+    const count = Number(item.count);
+    if (!Number.isSafeInteger(count) || count <= 0 || count > 64) throw new RangeError("fixture item count is not a valid ItemStack count");
+    const layout = validLayouts.includes(item.layout) ? item.layout : "other";
+    const rarity = MAP_RARITIES.includes(String(item.rarity ?? "other").toLowerCase()) ? String(item.rarity ?? "other").toLowerCase() : "other";
+    const renderMeta = { icon: item.icon ?? "unknown-icon", physicalIndex, fixtureId: source.id ?? "fixture" };
+    if (item.label !== undefined) renderMeta.label = item.label;
+    if (item.labelKey !== undefined) renderMeta.labelKey = item.labelKey;
+    physical[physicalIndex] = createCanonicalItemStack({
+      itemId: `cte2:map/${source.id ?? "fixture"}/${physicalIndex}`,
+      count,
+      maxStackSize: 64,
+      tag: {},
+      components: { map_stash: { layout, rarity }, forge_ui_inspector: renderMeta },
+    });
+  }
+  return { storage: physical, playerInventory: Array(36).fill(null), validLayouts, validRarities: [...MAP_RARITIES] };
+}
 
 const LAYOUT_IDS = Array.from({ length: 28 }, (_, index) => `layout_${String(index + 1).padStart(2, "0")}`);
 
@@ -71,6 +109,78 @@ export const I18N = {
     "screen.forgeuiinspector.gear_orbs": "装備改変オーブ", "screen.forgeuiinspector.map_orbs": "マップ／オーメン", "screen.forgeuiinspector.gem_orbs": "ジェム",
     "screen.forgeuiinspector.seeds": "シード", "screen.forgeuiinspector.special_currency": "特殊通貨", "screen.forgeuiinspector.prophecy": "予言・好意", "screen.forgeuiinspector.coins": "硬貨",
     "screen.forgeuiinspector.currencyItem.chaos": "カオスオーブ", "screen.forgeuiinspector.currencyItem.map": "マップオーブ", "screen.forgeuiinspector.currencyItem.coin": "古代の硬貨",
+    "project.mnsutilities_concepts.name": "M&S Utilities 画面案",
+    "screen.mnsutilities.currency_stash_v2": "通貨スタッシュ 画面案",
+    "screen.mnsutilities.fixture.normal": "通常状態",
+    "screen.mnsutilities.fixture.empty": "空の保管庫",
+    "screen.mnsutilities.fixture.many": "通貨種類が多い状態",
+    "screen.mnsutilities.fixture.other": "未知・非標準アイテム",
+    "screen.mnsutilities.mode.currency": "通貨一覧",
+    "screen.mnsutilities.mode.gems": "宝石まとめ",
+    "screen.mnsutilities.prototype": "画面構成テスト・保管データ未接続",
+    "screen.mnsutilities.category.gear": "装備クラフト",
+    "screen.mnsutilities.category.maps": "マップ／オーメン",
+    "screen.mnsutilities.category.gems": "ソケット宝石",
+    "screen.mnsutilities.category.runes": "ルーン",
+    "screen.mnsutilities.category.rarity_stones": "レアリティ石",
+    "screen.mnsutilities.category.seasonal": "シーズン品",
+    "screen.mnsutilities.category.special": "特殊通貨",
+    "screen.mnsutilities.grid.fixed": "同種通貨を集約",
+    "screen.mnsutilities.grid.unique": "{0}種類",
+    "screen.mnsutilities.grid.total": "合計 {0}個",
+    "screen.mnsutilities.grid.withdraw_one": "右：1個",
+    "screen.mnsutilities.grid.withdraw_stack": "Shift：1スタック",
+    "screen.mnsutilities.grid.deposit": "下から収納",
+    "screen.mnsutilities.grid.empty": "この分類に通貨はありません",
+    "screen.mnsutilities.item.chaos": "カオスオーブ",
+    "screen.mnsutilities.item.exalted": "高貴なオーブ",
+    "screen.mnsutilities.item.annulment": "無効化のオーブ",
+    "screen.mnsutilities.item.divine": "神聖なオーブ",
+    "screen.mnsutilities.item.vaal": "ヴァールオーブ",
+    "screen.mnsutilities.item.map_infusing": "マップ注入オーブ",
+    "screen.mnsutilities.item.map_augmenting": "マップ増強オーブ",
+    "screen.mnsutilities.item.omen": "オーメン",
+    "screen.mnsutilities.item.ruby": "ルビー",
+    "screen.mnsutilities.item.emerald": "エメラルド",
+    "screen.mnsutilities.item.sapphire": "サファイア",
+    "screen.mnsutilities.item.rune_fire": "炎のルーン",
+    "screen.mnsutilities.item.rune_guard": "守護のルーン",
+    "screen.mnsutilities.item.rarity_stone": "レアリティストーン",
+    "screen.mnsutilities.item.harvest_seed": "収穫の種",
+    "screen.mnsutilities.item.coin": "古代の硬貨",
+    "screen.mnsutilities.item.prophecy": "予言の欠片",
+    "screen.mnsutilities.item.unknown": "未分類の通貨",
+    "screen.mnsutilities.item.named_ruby": "名前付きルビー（変換対象外）",
+    "screen.mnsutilities.gems.types": "宝石の種類",
+    "screen.mnsutilities.gems.ranks": "所持数と等級",
+    "screen.mnsutilities.gems.preview": "実行前の変更",
+    "screen.mnsutilities.gems.selected": "選択：{0}",
+    "screen.mnsutilities.gems.target": "目標：{0}まで",
+    "screen.mnsutilities.gems.row": "{0}  {1} → {2}",
+    "screen.mnsutilities.gems.value": "素材価値 {0} → {1}",
+    "screen.mnsutilities.gems.recipe_valid": "変換レシピ確認済み",
+    "screen.mnsutilities.gems.no_gems": "まとめられる宝石がありません",
+    "screen.mnsutilities.gems.nonstandard_rejected": "名前・NBT付き宝石は対象外です",
+    "screen.mnsutilities.gems.pinnacle_locked": "最高位は作成対象外",
+    "screen.mnsutilities.gems.manual_only": "収納時には自動変換しません",
+    "screen.mnsutilities.gems.confirm": "まとめ内容を確認",
+    "screen.mnsutilities.gem.tourmaline": "トルマリン",
+    "screen.mnsutilities.gem.azurite": "アズライト",
+    "screen.mnsutilities.gem.garnet": "ガーネット",
+    "screen.mnsutilities.gem.opal": "オパール",
+    "screen.mnsutilities.gem.topaz": "トパーズ",
+    "screen.mnsutilities.gem.amethyst": "アメジスト",
+    "screen.mnsutilities.gem.ruby": "ルビー",
+    "screen.mnsutilities.gem.emerald": "エメラルド",
+    "screen.mnsutilities.gem.sapphire": "サファイア",
+    "screen.mnsutilities.rank.cracked": "ひび割れ",
+    "screen.mnsutilities.rank.chipped": "欠けた",
+    "screen.mnsutilities.rank.flawed": "不完全",
+    "screen.mnsutilities.rank.regular": "通常",
+    "screen.mnsutilities.rank.grand": "上質",
+    "screen.mnsutilities.rank.glorious": "栄光",
+    "screen.mnsutilities.rank.divine": "神聖",
+    "screen.mnsutilities.rank.pinnacle": "最高位",
     "screen.forgeuiinspector.layout.long": "非常に長い日本語のレイアウト名を確認するための表示",
     "screen.forgeuiinspector.layout.01": "レイアウト 01",
     "screen.forgeuiinspector.layout.02": "レイアウト 02",
@@ -147,6 +257,78 @@ export const I18N = {
     "screen.forgeuiinspector.gear_orbs": "Gear Orbs", "screen.forgeuiinspector.map_orbs": "Maps / Omens", "screen.forgeuiinspector.gem_orbs": "Gems",
     "screen.forgeuiinspector.seeds": "Seeds", "screen.forgeuiinspector.special_currency": "Special Currency", "screen.forgeuiinspector.prophecy": "Prophecy / Favour", "screen.forgeuiinspector.coins": "Coins",
     "screen.forgeuiinspector.currencyItem.chaos": "Chaos Orb", "screen.forgeuiinspector.currencyItem.map": "Map Orb", "screen.forgeuiinspector.currencyItem.coin": "Ancient Coin",
+    "project.mnsutilities_concepts.name": "M&S Utilities Concepts",
+    "screen.mnsutilities.currency_stash_v2": "Currency Stash Concept",
+    "screen.mnsutilities.fixture.normal": "Normal state",
+    "screen.mnsutilities.fixture.empty": "Empty stash",
+    "screen.mnsutilities.fixture.many": "Many currency types",
+    "screen.mnsutilities.fixture.other": "Unknown / non-standard items",
+    "screen.mnsutilities.mode.currency": "Currency grid",
+    "screen.mnsutilities.mode.gems": "Gem consolidation",
+    "screen.mnsutilities.prototype": "Layout test · no storage data connected",
+    "screen.mnsutilities.category.gear": "Gear crafting",
+    "screen.mnsutilities.category.maps": "Maps / Omens",
+    "screen.mnsutilities.category.gems": "Socket gems",
+    "screen.mnsutilities.category.runes": "Runes",
+    "screen.mnsutilities.category.rarity_stones": "Rarity stones",
+    "screen.mnsutilities.category.seasonal": "Seasonal",
+    "screen.mnsutilities.category.special": "Special currency",
+    "screen.mnsutilities.grid.fixed": "Aggregate by type",
+    "screen.mnsutilities.grid.unique": "{0} types",
+    "screen.mnsutilities.grid.total": "{0} total",
+    "screen.mnsutilities.grid.withdraw_one": "Right: one",
+    "screen.mnsutilities.grid.withdraw_stack": "Shift: one stack",
+    "screen.mnsutilities.grid.deposit": "Deposit below",
+    "screen.mnsutilities.grid.empty": "No currency in this category",
+    "screen.mnsutilities.item.chaos": "Chaos Orb",
+    "screen.mnsutilities.item.exalted": "Exalted Orb",
+    "screen.mnsutilities.item.annulment": "Orb of Annulment",
+    "screen.mnsutilities.item.divine": "Divine Orb",
+    "screen.mnsutilities.item.vaal": "Vaal Orb",
+    "screen.mnsutilities.item.map_infusing": "Map Infusing Orb",
+    "screen.mnsutilities.item.map_augmenting": "Map Augmenting Orb",
+    "screen.mnsutilities.item.omen": "Omen",
+    "screen.mnsutilities.item.ruby": "Ruby",
+    "screen.mnsutilities.item.emerald": "Emerald",
+    "screen.mnsutilities.item.sapphire": "Sapphire",
+    "screen.mnsutilities.item.rune_fire": "Fire Rune",
+    "screen.mnsutilities.item.rune_guard": "Guard Rune",
+    "screen.mnsutilities.item.rarity_stone": "Rarity Stone",
+    "screen.mnsutilities.item.harvest_seed": "Harvest Seed",
+    "screen.mnsutilities.item.coin": "Ancient Coin",
+    "screen.mnsutilities.item.prophecy": "Prophecy Fragment",
+    "screen.mnsutilities.item.unknown": "Unclassified Currency",
+    "screen.mnsutilities.item.named_ruby": "Named Ruby (excluded)",
+    "screen.mnsutilities.gems.types": "Gem types",
+    "screen.mnsutilities.gems.ranks": "Counts and ranks",
+    "screen.mnsutilities.gems.preview": "Changes before execution",
+    "screen.mnsutilities.gems.selected": "Selected: {0}",
+    "screen.mnsutilities.gems.target": "Target: up to {0}",
+    "screen.mnsutilities.gems.row": "{0}  {1} → {2}",
+    "screen.mnsutilities.gems.value": "Material value {0} → {1}",
+    "screen.mnsutilities.gems.recipe_valid": "Conversion recipes verified",
+    "screen.mnsutilities.gems.no_gems": "No gems can be consolidated",
+    "screen.mnsutilities.gems.nonstandard_rejected": "Named or NBT-bearing gems are excluded",
+    "screen.mnsutilities.gems.pinnacle_locked": "Pinnacle is never crafted",
+    "screen.mnsutilities.gems.manual_only": "Deposits never convert automatically",
+    "screen.mnsutilities.gems.confirm": "Review consolidation",
+    "screen.mnsutilities.gem.tourmaline": "Tourmaline",
+    "screen.mnsutilities.gem.azurite": "Azurite",
+    "screen.mnsutilities.gem.garnet": "Garnet",
+    "screen.mnsutilities.gem.opal": "Opal",
+    "screen.mnsutilities.gem.topaz": "Topaz",
+    "screen.mnsutilities.gem.amethyst": "Amethyst",
+    "screen.mnsutilities.gem.ruby": "Ruby",
+    "screen.mnsutilities.gem.emerald": "Emerald",
+    "screen.mnsutilities.gem.sapphire": "Sapphire",
+    "screen.mnsutilities.rank.cracked": "Cracked",
+    "screen.mnsutilities.rank.chipped": "Chipped",
+    "screen.mnsutilities.rank.flawed": "Flawed",
+    "screen.mnsutilities.rank.regular": "Regular",
+    "screen.mnsutilities.rank.grand": "Grand",
+    "screen.mnsutilities.rank.glorious": "Glorious",
+    "screen.mnsutilities.rank.divine": "Divine",
+    "screen.mnsutilities.rank.pinnacle": "Pinnacle",
     "screen.forgeuiinspector.layout.long": "A deliberately very long layout label for clipping",
     "screen.forgeuiinspector.layout.01": "Layout 01",
     "screen.forgeuiinspector.layout.02": "Layout 02",
@@ -428,6 +610,10 @@ export function iconGlyph(icon) {
   if (icon === "paper") return { className: "icon-paper", glyph: "▤" };
   if (icon === "orb") return { className: "icon-orb", glyph: "✦" };
   if (icon === "coin") return { className: "icon-coin", glyph: "●" };
+  if (icon === "rune") return { className: "icon-rune", glyph: "R" };
+  if (icon === "rarity_stone") return { className: "icon-rarity-stone", glyph: "◇" };
+  if (icon === "seed") return { className: "icon-seed", glyph: "✤" };
+  if (icon?.startsWith("gem_")) return { className: `icon-${icon.replaceAll("_", "-")}`, glyph: "◆" };
   return { className: "icon-unknown", glyph: "?" };
 }
 
@@ -510,6 +696,24 @@ function screenItemIcon(item, index = 0) {
   const node = createElement("span", icon.className, icon.glyph);
   if (item?.count !== undefined) node.append(createElement("span", "count", String(item.count)));
   return node;
+}
+
+function runtimeItemMeta(stack) {
+  const meta = stack?.components?.forge_ui_inspector ?? {};
+  return { icon: meta.icon ?? "unknown-icon", label: meta.label, labelKey: meta.labelKey, physicalIndex: meta.physicalIndex };
+}
+
+function renderRuntimeSlot(slot, stack, locale, testid, authoritativePhysicalIndex) {
+  slot.dataset.runtime = "true";
+  if (!stack) return;
+  const meta = runtimeItemMeta(stack);
+  const icon = iconGlyph(meta.icon);
+  slot.append(createElement("span", icon.className, icon.glyph), createElement("span", "count", String(stack.count)));
+  const label = meta.labelKey ? t(meta.labelKey, locale) : (meta.label || stack.itemId);
+  if (label) { slot.title = label; slot.setAttribute("aria-label", label); }
+  const physicalIndex = authoritativePhysicalIndex ?? meta.physicalIndex;
+  if (physicalIndex !== undefined) slot.dataset.physicalIndex = String(physicalIndex);
+  slot.dataset.testid = testid;
 }
 
 const MASTER_CATEGORIES = Object.freeze([
@@ -699,6 +903,187 @@ function renderMasterVariant(body, state, fixture) {
   body.append(root);
 }
 
+const CURRENCY_V2_GEM_TYPES = Object.freeze([
+  { id: "tourmaline", icon: "gem_pink" },
+  { id: "azurite", icon: "gem_cyan" },
+  { id: "garnet", icon: "gem_dark_red" },
+  { id: "opal", icon: "gem_white" },
+  { id: "topaz", icon: "gem_yellow" },
+  { id: "amethyst", icon: "gem_purple" },
+  { id: "ruby", icon: "gem_red" },
+  { id: "emerald", icon: "gem_green" },
+  { id: "sapphire", icon: "gem_blue" },
+]);
+
+const CURRENCY_V2_GEM_RANKS = Object.freeze([
+  "cracked", "chipped", "flawed", "regular", "grand", "glorious", "divine", "pinnacle",
+]);
+
+function currencyV2ItemLabel(item, locale) {
+  return item?.labelKey ? t(item.labelKey, locale) : String(item?.label ?? item?.id ?? "");
+}
+
+function currencyV2Tabs(locale, gemsSelected) {
+  const tabs = createElement("div", "currency-v2-tabs");
+  tabs.setAttribute("role", "tablist");
+  [["currency", !gemsSelected], ["gems", gemsSelected]].forEach(([id, selected]) => {
+    const tab = createElement("span", `currency-v2-tab${selected ? " selected" : ""}`, t(`screen.mnsutilities.mode.${id}`, locale));
+    tab.dataset.testid = `currency-v2-tab-${id}`;
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", String(selected));
+    tabs.append(tab);
+  });
+  return tabs;
+}
+
+function currencyV2Inventory(locale) {
+  const inventory = createElement("section", "currency-v2-inventory");
+  inventory.dataset.testid = "currency-v2-inventory";
+  inventory.append(createElement("h3", "", t("screen.forgeuiinspector.inventory", locale)));
+  const main = createElement("div", "large-grid currency-v2-inventory-main");
+  main.style.setProperty("--grid-columns", "9");
+  main.style.setProperty("--grid-rows", "3");
+  main.setAttribute("role", "grid");
+  const hotbar = createElement("div", "large-grid currency-v2-inventory-hotbar");
+  hotbar.style.setProperty("--grid-columns", "9");
+  hotbar.style.setProperty("--grid-rows", "1");
+  hotbar.setAttribute("role", "grid");
+  for (let index = 0; index < 36; index += 1) {
+    const slot = createElement("div", "slot");
+    slot.dataset.testid = `currency-v2-inventory-slot-${index}`;
+    slot.setAttribute("role", "gridcell");
+    (index < 27 ? main : hotbar).append(slot);
+  }
+  inventory.append(main, hotbar);
+  return inventory;
+}
+
+function renderCurrencyV2Grid(body, state, fixture, pageItems, pageLabel) {
+  const rail = createElement("nav", "currency-v2-category-rail");
+  rail.dataset.testid = "currency-v2-category-rail";
+  rail.setAttribute("aria-label", t("screen.mnsutilities.mode.currency", state.locale));
+  for (const layout of fixture?.layouts ?? []) {
+    const selected = layout.id === state.layout;
+    const row = createElement("div", `currency-v2-category-row${selected ? " selected" : ""}`);
+    row.dataset.testid = `currency-v2-category-${layout.id}`;
+    row.setAttribute("aria-current", selected ? "true" : "false");
+    row.append(createElement("span", "currency-v2-category-label", t(layout.labelKey, state.locale)), createElement("em", "currency-v2-category-count", String(layout.count ?? 0)));
+    rail.append(row);
+  }
+
+  const panel = createElement("section", "currency-v2-grid-panel");
+  panel.dataset.testid = "currency-v2-grid-panel";
+  const selectedLayout = fixture?.layouts?.find((layout) => layout.id === state.layout) ?? fixture?.layouts?.[0];
+  const heading = createElement("div", "currency-v2-panel-heading");
+  heading.append(createElement("strong", "", t(selectedLayout?.labelKey ?? "screen.forgeuiinspector.all", state.locale)), createElement("span", "", t("screen.mnsutilities.grid.unique", state.locale, [pageItems.length])));
+  panel.append(heading);
+
+  const grid = createElement("div", "large-grid currency-v2-grid");
+  grid.dataset.testid = "currency-v2-grid";
+  grid.setAttribute("role", "grid");
+  grid.style.setProperty("--grid-columns", "12");
+  grid.style.setProperty("--grid-rows", "6");
+  for (let index = 0; index < 72; index += 1) {
+    const slot = createElement("div", "slot currency-v2-slot");
+    slot.dataset.testid = `currency-v2-slot-${index}`;
+    slot.setAttribute("role", "gridcell");
+    const item = pageItems[index];
+    if (item) {
+      const label = currencyV2ItemLabel(item, state.locale);
+      slot.title = `${label} × ${item.count ?? 0}`;
+      slot.setAttribute("aria-label", slot.title);
+      slot.append(screenItemIcon(item, index));
+    }
+    grid.append(slot);
+  }
+  panel.append(grid);
+
+  const help = createElement("div", "currency-v2-help");
+  help.append(
+    createElement("strong", "", t("screen.mnsutilities.grid.fixed", state.locale)),
+    createElement("span", "", t("screen.mnsutilities.grid.withdraw_one", state.locale)),
+    createElement("span", "", t("screen.mnsutilities.grid.withdraw_stack", state.locale)),
+    createElement("span", "", t("screen.mnsutilities.grid.deposit", state.locale)),
+  );
+  const total = pageItems.reduce((sum, item) => sum + Math.max(0, Number(item?.count) || 0), 0);
+  help.append(createElement("b", "", t("screen.mnsutilities.grid.total", state.locale, [total])));
+  panel.append(help);
+  if (pageItems.length === 0) panel.append(createElement("div", "currency-v2-empty", t("screen.mnsutilities.grid.empty", state.locale)));
+  if (pageLabel) panel.append(createElement("small", "currency-v2-page", pageLabel));
+  body.append(rail, panel);
+}
+
+function currencyV2GemCounts(fixture, typeIndex, selectedTotal) {
+  if (fixture?.id === "empty") return 0;
+  if (fixture?.id === "many") return [92, 71, 54, 38, 43, 65, selectedTotal, 59, 77][typeIndex] ?? 0;
+  if (fixture?.id === "other") return typeIndex === 6 ? 3 : 0;
+  return [18, 12, 7, 9, 15, 11, selectedTotal, 13, 9][typeIndex] ?? 0;
+}
+
+function currencyV2GemValue(counts) {
+  return (counts ?? []).reduce((total, count, rank) => total + Math.max(0, Number(count) || 0) * (3 ** rank), 0);
+}
+
+function renderCurrencyV2Gems(body, state, fixture) {
+  const plan = fixture?.gemPlan ?? { selectedType: "ruby", targetRank: 3, craftableMaxRank: 6, before: Array(8).fill(0), after: Array(8).fill(0), valid: false, reasonKey: "screen.mnsutilities.gems.no_gems" };
+  const selectedTypeIndex = Math.max(0, CURRENCY_V2_GEM_TYPES.findIndex((type) => type.id === plan.selectedType));
+  const selectedType = CURRENCY_V2_GEM_TYPES[selectedTypeIndex];
+  const selectedTotal = (plan.before ?? []).reduce((sum, count) => sum + Math.max(0, Number(count) || 0), 0);
+
+  const types = createElement("section", "currency-v2-gem-types");
+  types.dataset.testid = "currency-v2-gem-types";
+  types.append(createElement("h3", "", t("screen.mnsutilities.gems.types", state.locale)));
+  CURRENCY_V2_GEM_TYPES.forEach((type, index) => {
+    const selected = index === selectedTypeIndex;
+    const row = createElement("div", `currency-v2-gem-type${selected ? " selected" : ""}`);
+    row.dataset.testid = `currency-v2-gem-${type.id}`;
+    row.setAttribute("aria-selected", String(selected));
+    row.append(screenItemIcon({ icon: type.icon }, index), createElement("span", "", t(`screen.mnsutilities.gem.${type.id}`, state.locale)), createElement("em", "", String(currencyV2GemCounts(fixture, index, selectedTotal))));
+    types.append(row);
+  });
+
+  const ranks = createElement("section", "currency-v2-gem-ranks");
+  ranks.dataset.testid = "currency-v2-gem-ranks";
+  ranks.append(createElement("h3", "", t("screen.mnsutilities.gems.ranks", state.locale)));
+  const rankGrid = createElement("div", "currency-v2-rank-grid");
+  CURRENCY_V2_GEM_RANKS.forEach((rank, index) => {
+    const locked = index > Number(plan.craftableMaxRank);
+    const card = createElement("div", `currency-v2-rank-card${locked ? " locked" : ""}`);
+    card.dataset.testid = `currency-v2-rank-${rank}`;
+    card.append(screenItemIcon({ icon: selectedType.icon, count: plan.before?.[index] ?? 0 }, index), createElement("span", "", t(`screen.mnsutilities.rank.${rank}`, state.locale)));
+    rankGrid.append(card);
+  });
+  ranks.append(rankGrid, createElement("small", "currency-v2-rank-note", t("screen.mnsutilities.gems.pinnacle_locked", state.locale)));
+
+  const preview = createElement("section", "currency-v2-gem-preview");
+  preview.dataset.testid = "currency-v2-gem-preview";
+  preview.append(
+    createElement("h3", "", t("screen.mnsutilities.gems.preview", state.locale)),
+    createElement("p", "currency-v2-gem-selected", t("screen.mnsutilities.gems.selected", state.locale, [t(`screen.mnsutilities.gem.${selectedType.id}`, state.locale)])),
+    createElement("p", "", t("screen.mnsutilities.gems.target", state.locale, [t(`screen.mnsutilities.rank.${CURRENCY_V2_GEM_RANKS[plan.targetRank] ?? "regular"}`, state.locale)])),
+  );
+  const changedRanks = CURRENCY_V2_GEM_RANKS.map((rank, index) => ({ rank, index })).filter(({ index }) => (plan.before?.[index] ?? 0) !== (plan.after?.[index] ?? 0));
+  const previewRanks = (changedRanks.length > 0 ? changedRanks : CURRENCY_V2_GEM_RANKS.map((rank, index) => ({ rank, index }))).slice(0, 4);
+  previewRanks.forEach(({ rank, index }) => preview.append(createElement("p", "currency-v2-gem-change", t("screen.mnsutilities.gems.row", state.locale, [t(`screen.mnsutilities.rank.${rank}`, state.locale), plan.before?.[index] ?? 0, plan.after?.[index] ?? 0]))));
+  const beforeValue = currencyV2GemValue(plan.before);
+  const afterValue = currencyV2GemValue(plan.after);
+  preview.append(
+    createElement("p", beforeValue === afterValue ? "currency-v2-gem-invariant success" : "currency-v2-gem-invariant error", t("screen.mnsutilities.gems.value", state.locale, [beforeValue, afterValue])),
+    createElement("p", plan.valid ? "currency-v2-gem-result success" : "currency-v2-gem-result error", t(plan.reasonKey, state.locale)),
+    createElement("small", "currency-v2-gem-manual", t("screen.mnsutilities.gems.manual_only", state.locale)),
+    createElement("span", `currency-v2-confirm${plan.valid ? "" : " disabled"}`, t("screen.mnsutilities.gems.confirm", state.locale)),
+  );
+  body.append(types, ranks, preview);
+}
+
+function renderCurrencyV2(body, state, fixture, pageItems, pageLabel) {
+  const gemsSelected = state.layout === "gems";
+  body.append(currencyV2Tabs(state.locale, gemsSelected), createElement("div", "currency-v2-prototype", t("screen.mnsutilities.prototype", state.locale)));
+  if (gemsSelected) renderCurrencyV2Gems(body, state, fixture);
+  else renderCurrencyV2Grid(body, state, fixture, pageItems, pageLabel);
+  body.append(currencyV2Inventory(state.locale));
+}
+
 function renderExtendedPreview(container, state, fixture, data, project = DEFAULT_CTE2_PROJECT) {
   if (!container) return "";
   const meta = screenMetaFor(project, state.screen);
@@ -718,7 +1103,9 @@ function renderExtendedPreview(container, state, fixture, data, project = DEFAUL
   const pageItems = items.slice(state.page * screenPageSize, (state.page + 1) * screenPageSize);
   const pages = pageCount(items, screenPageSize);
   const pageLabel = pages > 1 ? t("screen.forgeuiinspector.page", state.locale, [state.page + 1, pages]) : "";
-  if (meta.renderer === "master-stash") {
+  if (meta.renderer === "currency-stash-v2") {
+    renderCurrencyV2(body, state, fixture, pageItems, pageLabel);
+  } else if (meta.renderer === "master-stash") {
     if (state.variant && state.variant !== "current") {
       renderMasterVariant(body, state, fixture);
     } else {
@@ -843,12 +1230,79 @@ export function initEmulator(data, options = {}) {
   let state = normalize({ ...readUrl(), project: options.projectId ?? readUrl().project }, data, project);
   document.body.dataset.captureMode = readUrl().capture === "1" ? "true" : "false";
   let syncingList = false;
+  let runtime = EMPTY_RUNTIME;
+  let runtimeInputTarget = null;
+  let runtimeHoverTarget = null;
+  let runtimeTooltipNode = null;
+  let runtimeCarriedNode = null;
+  let runtimeRequestId = 0;
+  let runtimePointer = { x: 0, y: 0 };
+  let inputLog = [];
 
   FIXTURE_IDS.forEach((id) => fixtureControl?.add(new Option(id, id)));
 
   const fixtureForState = () => data.fixtures?.find((fixture) => fixture.id === state.fixture) ?? data.fixtures?.[0];
+  const knownMapInteraction = (interaction) => Boolean(interaction && interaction.kind === "container" && interaction.adapter === "cte2-map-stash"
+    && interaction.storage?.capacity === 768 && interaction.projection?.kind === "filtered-physical"
+    && interaction.projection?.pageSize === 96 && interaction.playerInventory?.slots === 36);
+  const runtimeEnabled = () => knownMapInteraction(screenMetaFor(project, state.screen).interaction);
+  const createRuntime = () => {
+    runtimeRequestId = 0;
+    runtimeInputTarget = null;
+    runtimeHoverTarget = null;
+    runtimeTooltipNode?.remove?.(); runtimeTooltipNode = null;
+    runtimeCarriedNode?.remove?.(); runtimeCarriedNode = null;
+    runtimePointer = { x: 0, y: 0 };
+    inputLog = [];
+    if (!runtimeEnabled()) { runtime = EMPTY_RUNTIME; return; }
+    const seed = mapRuntimeSeed(fixtureForState());
+    const adapter = createMapStashAdapter({ ...seed, storage: { slots: seed.storage }, layout: state.layout, page: state.page, rarity: "all", validLayouts: seed.validLayouts, validRarities: seed.validRarities });
+    const menu = createMenuState({ menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", adapter });
+    const transport = createDeterministicTransport({ handler: (request) => menu.handle(request), snapshot: () => menu.snapshot() });
+    runtime = { enabled: true, reason: "ok", seed, adapter, menu, transport };
+  };
+  const runtimeSnapshot = () => runtime.enabled ? detached({ enabled: true, reason: runtime.reason, requestId: runtimeRequestId, menu: runtime.menu.snapshot(), adapter: runtime.adapter.snapshot(), projection: runtime.adapter.projection(), transport: runtime.transport.getSnapshot(), input: { pointerDownTarget: runtimeInputTarget, hoverTarget: runtimeHoverTarget, pointer: { ...runtimePointer } } }) : detached({ ...EMPTY_RUNTIME, requestId: 0, input: { pointerDownTarget: null, hoverTarget: null, pointer: { ...runtimePointer } } });
+  const publicSnapshot = () => {
+    const result = snapshotFor(state, data, project);
+    if (runtime.enabled) {
+      const projection = runtime.adapter.projection();
+      result.fixture.itemCount = projection.matchCount;
+      result.fixture.pageCount = projection.pageCount;
+      result.fixture.pageSize = MAP_PAGE_SIZE;
+    }
+    result.runtime = runtimeSnapshot();
+    return result;
+  };
+  const publishRuntimeMachineState = () => {
+    const app = document.getElementById("forge-ui-emulator");
+    app?.setAttribute("data-runtime-enabled", String(Boolean(runtime.enabled)));
+    app?.setAttribute("data-runtime-revision", String(runtime.enabled ? runtime.menu.snapshot().revision : 0));
+    app?.setAttribute("data-runtime-hover-target", runtimeHoverTarget?.kind ?? "");
+    app?.setAttribute("data-runtime-hover-index", runtimeHoverTarget?.displayIndex !== undefined ? String(runtimeHoverTarget.displayIndex) : runtimeHoverTarget?.inventoryIndex !== undefined ? String(runtimeHoverTarget.inventoryIndex) : "");
+    const snapshotNode = document.getElementById("inspector-state");
+    if (snapshotNode) {
+      const snapshotText = JSON.stringify(publicSnapshot());
+      snapshotNode.textContent = snapshotText;
+      snapshotNode.value = snapshotText;
+    }
+  };
+  const runtimeRequest = (operation, target = {}, modifiers = {}) => {
+    if (!runtime.enabled) return { accepted: false, reason: "read-only", revision: 0, requestId: null, snapshot: null };
+    const request = { requestId: ++runtimeRequestId, menuId: "cte2-map-stash-menu", sessionId: "cte2-map-stash-session", baseRevision: runtime.menu.snapshot().revision, operation, target: detached(target), modifiers: detached(modifiers) };
+    runtime.transport.enqueue(request);
+    runtime.transport.tick();
+    const entries = runtime.transport.getTrace().entries;
+    const response = detached(entries.at(-1)?.response ?? { accepted: false, reason: "transport" });
+    const authoritativeView = response.snapshot?.adapter;
+    if (authoritativeView && typeof authoritativeView.layout === "string" && Number.isSafeInteger(authoritativeView.page)) {
+      state = { ...state, layout: authoritativeView.layout, page: authoritativeView.page };
+    }
+    return response;
+  };
+  createRuntime();
   const publishSnapshot = () => {
     state = normalize(state, data, project);
+    if (runtimeEnabled() && !runtime.enabled) createRuntime();
     safeReplaceUrl(canonical(state));
     render();
   };
@@ -871,7 +1325,16 @@ export function initEmulator(data, options = {}) {
       window.location.href = url.toString();
       return;
     }
+    const previous = state;
+    const fixtureChanged = Object.prototype.hasOwnProperty.call(partial, "fixture") && partial.fixture !== previous.fixture;
     state = mergeState(state, partial, data, project);
+    const viewChanged = state.layout !== previous.layout || state.page !== previous.page;
+    if (fixtureChanged) createRuntime();
+    else if (runtime.enabled && viewChanged) {
+      const response = runtimeRequest("setView", { layout: state.layout, page: state.page, rarity: "all" });
+      const view = response.snapshot?.adapter ?? response.snapshot;
+      if (response.accepted && view) state = { ...state, layout: view.layout, page: view.page };
+    }
     publishSnapshot();
     return { ...state };
   };
@@ -898,13 +1361,13 @@ export function initEmulator(data, options = {}) {
     setGeometry("--hotbar-y", geometry.hotbar?.y); preview.style.setProperty("--hotbar-columns", String(geometry.hotbar?.columns ?? 9)); preview.style.setProperty("--hotbar-rows", String(geometry.hotbar?.rows ?? 1));
     setGeometry("--inventory-label-x", geometry.inventoryLabel?.x); setGeometry("--inventory-label-y", geometry.inventoryLabel?.y);
     setGeometry("--page-previous-x", pageGeometry.previousX); setGeometry("--page-next-x", pageGeometry.nextX); setGeometry("--page-button-y", pageGeometry.buttonY); setGeometry("--page-button-width", pageGeometry.buttonWidth); setGeometry("--page-button-height", pageGeometry.buttonHeight); setGeometry("--page-label-x", pageGeometry.labelX); setGeometry("--page-label-y", pageGeometry.labelY);
-    const pageItems = buildItems(fixture, state.layout, state.page, screenPageSize);
+    const runtimeView = runtime.enabled ? runtime.adapter.projection() : null;
+    const runtimeAdapterSnapshot = runtime.enabled ? runtime.adapter.snapshot() : null;
+    const pageItems = runtimeView ? runtimeView.slots : buildItems(fixture, state.layout, state.page, screenPageSize);
     const selectedLayout = layoutById(fixture, state.layout) ?? { id: "all", labelKey: "screen.forgeuiinspector.all", count: 0 };
-    const itemCount = selectedItems.length;
-    const pages = pageCount(itemCount, screenPageSize);
-    const snapshot = snapshotFor(state, data, project);
+    const itemCount = runtimeView ? runtimeView.matchCount : selectedItems.length;
+    const pages = runtimeView ? runtimeView.pageCount : pageCount(itemCount, screenPageSize);
     const app = document.getElementById("forge-ui-emulator");
-    const snapshotNode = document.getElementById("inspector-state");
     app?.setAttribute("data-ready", "true");
     app?.setAttribute("data-project", project.id);
     app?.setAttribute("data-screen", state.screen);
@@ -918,16 +1381,13 @@ export function initEmulator(data, options = {}) {
     app?.setAttribute("data-alignment", state.alignment);
     const alignmentBadge = document.getElementById("alignment-badge");
     if (alignmentBadge) {
-      alignmentBadge.textContent = `${state.alignment} · ${snapshot.alignment.source}`;
+      const currentAlignment = alignmentFor(project, state.screen, state.variant);
+      alignmentBadge.textContent = `${state.alignment} · ${currentAlignment.source}`;
       alignmentBadge.className = `alignment-badge alignment-${state.alignment}`;
       alignmentBadge.dataset.status = state.alignment;
-      alignmentBadge.dataset.source = snapshot.alignment.source;
+      alignmentBadge.dataset.source = currentAlignment.source;
     }
-    if (snapshotNode) {
-      const snapshotText = JSON.stringify(snapshot);
-      snapshotNode.textContent = snapshotText;
-      snapshotNode.value = snapshotText;
-    }
+    publishRuntimeMachineState();
     preview.classList.toggle("page-active", pages > 1);
 
     if (fixtureControl) {
@@ -1013,7 +1473,7 @@ export function initEmulator(data, options = {}) {
       row.tabIndex = 0;
       const label = createElement("span", "layout-label", clipLabel(t(layout.labelKey, state.locale), 92));
       label.title = t(layout.labelKey, state.locale);
-      row.append(label, createElement("em", "layout-count", String(itemsForLayout(fixture, layout.id).length)));
+      row.append(label, createElement("em", "layout-count", String(runtimeView ? (runtimeView.layoutCounts?.[layout.id] ?? 0) : itemsForLayout(fixture, layout.id).length)));
       const choose = () => setState({ layout: layout.id });
       row.addEventListener("click", choose);
       row.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); choose(); } });
@@ -1038,7 +1498,9 @@ export function initEmulator(data, options = {}) {
       slot.setAttribute("aria-colindex", String((slotIndex % columns) + 1));
       slot.setAttribute("aria-rowindex", String(Math.floor(slotIndex / columns) + 1));
       const item = pageItems[slotIndex];
+      if (runtimeView && runtimeHoverTarget?.kind === "stash" && runtimeHoverTarget.displayIndex === slotIndex) slot.className += " runtime-hovered";
       if (item) {
+        if (runtimeView) { renderRuntimeSlot(slot, item, state.locale, `stash-slot-${slotIndex}`, runtimeView.physicalIndices[slotIndex]); grid.append(slot); continue; }
         const icon = iconGlyph(item.icon);
         slot.append(createElement("span", icon.className, icon.glyph), createElement("span", "count", String(item.count)));
         const itemLabel = item.labelKey ? t(item.labelKey, state.locale) : (item.label || item.id || "");
@@ -1070,6 +1532,8 @@ export function initEmulator(data, options = {}) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `inventory-slot-${index}`;
       slot.setAttribute("role", "gridcell");
+      if (runtimeHoverTarget?.kind === "player" && runtimeHoverTarget.inventoryIndex === 9 + index) slot.className += " runtime-hovered";
+      if (runtimeAdapterSnapshot) renderRuntimeSlot(slot, runtimeAdapterSnapshot.playerInventory[9 + index], state.locale, `inventory-slot-${index}`);
       mainRow.append(slot);
     }
     const hotbarRow = createElement("div", "inv-row inventory-hotbar");
@@ -1077,9 +1541,43 @@ export function initEmulator(data, options = {}) {
       const slot = createElement("div", "slot");
       slot.dataset.testid = `inventory-slot-${index + 27}`;
       slot.setAttribute("role", "gridcell");
+      if (runtimeHoverTarget?.kind === "player" && runtimeHoverTarget.inventoryIndex === index) slot.className += " runtime-hovered";
+      if (runtimeAdapterSnapshot) renderRuntimeSlot(slot, runtimeAdapterSnapshot.playerInventory[index], state.locale, `inventory-slot-${index + 27}`);
       hotbarRow.append(slot);
     }
     inventory.append(mainRow, hotbarRow);
+    if (runtime.enabled) {
+      runtimeTooltipNode?.remove?.();
+      runtimeTooltipNode = createElement("div", "runtime-tooltip");
+      runtimeTooltipNode.dataset.testid = "runtime-tooltip";
+      runtimeTooltipNode.id = "runtime-tooltip";
+      runtimeTooltipNode.setAttribute("role", "tooltip");
+      const hoveredStack = runtimeHoverTarget?.kind === "stash" ? runtimeView?.slots?.[runtimeHoverTarget.displayIndex] : runtimeHoverTarget?.kind === "player" ? runtimeAdapterSnapshot?.playerInventory?.[runtimeHoverTarget.inventoryIndex] : null;
+      const hoveredMeta = runtimeItemMeta(hoveredStack);
+      runtimeTooltipNode.textContent = hoveredStack ? (hoveredMeta.labelKey ? t(hoveredMeta.labelKey, state.locale) : (hoveredMeta.label || hoveredStack.itemId)) : "";
+      runtimeTooltipNode.hidden = !hoveredStack;
+      runtimeTooltipNode.style.left = `${runtimePointer.x + 12}px`;
+      runtimeTooltipNode.style.top = `${runtimePointer.y + 18}px`;
+      if (runtimeHoverTarget?.kind === "stash") grid.children?.[runtimeHoverTarget.displayIndex]?.setAttribute("aria-describedby", "runtime-tooltip");
+      if (runtimeHoverTarget?.kind === "player") inventory.setAttribute("aria-describedby", "runtime-tooltip");
+      preview.append(runtimeTooltipNode);
+      runtimeCarriedNode?.remove?.();
+      runtimeCarriedNode = createElement("div", "runtime-carried");
+      runtimeCarriedNode.dataset.testid = "runtime-carried";
+      runtimeCarriedNode.setAttribute("role", "status");
+      runtimeCarriedNode.setAttribute("aria-live", "polite");
+      const carried = runtimeAdapterSnapshot?.carried;
+      if (carried) {
+        const carriedMeta = runtimeItemMeta(carried);
+        const carriedIcon = iconGlyph(carriedMeta.icon);
+        runtimeCarriedNode.setAttribute("aria-label", `${carriedMeta.label || carried.itemId} ×${carried.count}`);
+        runtimeCarriedNode.append(createElement("span", carriedIcon.className, carriedIcon.glyph), createElement("span", "count", String(carried.count)));
+      }
+      runtimeCarriedNode.hidden = !carried;
+      runtimeCarriedNode.style.left = `${runtimePointer.x - 9}px`;
+      runtimeCarriedNode.style.top = `${runtimePointer.y - 9}px`;
+      preview.append(runtimeCarriedNode);
+    }
 
     const displayScaleValue = displayScale(state, Math.max(1, window.innerWidth - 32), Math.max(1, window.innerHeight - 32), project);
     const wrap = document.querySelector(".preview-wrap");
@@ -1097,8 +1595,90 @@ export function initEmulator(data, options = {}) {
     preview.dataset.pageCount = String(pages);
     preview.dataset.itemCount = String(itemCount);
     preview.dataset.alignment = state.alignment;
+    preview.dataset.runtimeEnabled = String(Boolean(runtime.enabled));
+    if (runtime.enabled) preview.dataset.runtimeRevision = String(runtime.menu.snapshot().revision);
     document.getElementById("canonical").textContent = canonical(state);
   }
+
+  function runtimeHitTester() {
+    const geometry = screenMetaFor(project, state.screen).geometry ?? {};
+    const stash = geometry.stash ?? { x: 240, y: 34, columns: 12, rows: 8, slot: 18 };
+    const inventory = geometry.inventory ?? { x: 267, y: 228, columns: 9, rows: 3, slot: 18 };
+    const slot = Number(stash.slot) || 18;
+    const registrations = [];
+    for (let index = 0; index < 96; index += 1) registrations.push({ kind: "slot", rect: { left: stash.x + (index % stash.columns) * slot, top: stash.y + Math.floor(index / stash.columns) * slot, width: slot, height: slot }, target: { kind: "stash", displayIndex: index } });
+    for (let index = 0; index < 27; index += 1) registrations.push({ kind: "slot", rect: { left: inventory.x + (index % 9) * slot, top: inventory.y + Math.floor(index / 9) * slot, width: slot, height: slot }, target: { kind: "player", inventoryIndex: 9 + index } });
+    const hotbarY = Number(geometry.hotbar?.y) || 290;
+    for (let index = 0; index < 9; index += 1) registrations.push({ kind: "slot", rect: { left: inventory.x + index * slot, top: hotbarY, width: slot, height: slot }, target: { kind: "player", inventoryIndex: index } });
+    return createHitTester(registrations);
+  }
+
+  function runtimeTargetAt(input) { return runtime.enabled ? runtimeHitTester().hitTest({ x: input.x, y: input.y }) : null; }
+  function sameRuntimeTarget(left, right) { return JSON.stringify(left ?? null) === JSON.stringify(right ?? null); }
+  function recordInput(input, target, response) { inputLog.push({ input: detached(input), target: detached(target), response: detached(response) }); }
+  function dispatchInput(event) {
+    const input = normalizeInput(event);
+    if (!runtime.enabled) return { accepted: false, reason: "read-only", input: detached(input), target: null };
+    runtimePointer = { x: input.x, y: input.y };
+    const target = runtimeTargetAt(input);
+    if (input.type === "pointermove") {
+      const hoverChanged = !sameRuntimeTarget(runtimeHoverTarget, target);
+      runtimeHoverTarget = target;
+      const response = { accepted: true, reason: target ? "hover" : "outside", input: detached(input), target: detached(target) };
+      recordInput(input, target, response);
+      if (hoverChanged) render();
+      else {
+        if (runtimeTooltipNode) { runtimeTooltipNode.style.left = `${runtimePointer.x + 12}px`; runtimeTooltipNode.style.top = `${runtimePointer.y + 18}px`; }
+        if (runtimeCarriedNode) { runtimeCarriedNode.style.left = `${runtimePointer.x - 9}px`; runtimeCarriedNode.style.top = `${runtimePointer.y - 9}px`; }
+        publishRuntimeMachineState();
+      }
+      return detached(response);
+    }
+    if (input.type === "pointerdown") {
+      runtimeInputTarget = target;
+      const response = { accepted: true, reason: target ? "target" : "outside", input: detached(input), target: detached(target) };
+      recordInput(input, target, response);
+      publishRuntimeMachineState();
+      return detached(response);
+    }
+    if (input.type !== "pointerup") {
+      const response = { accepted: false, reason: "input", input: detached(input), target: detached(target) };
+      recordInput(input, target, response);
+      publishRuntimeMachineState();
+      return detached(response);
+    }
+    const clicked = sameRuntimeTarget(runtimeInputTarget, target) ? target : null;
+    runtimeInputTarget = null;
+    if (!clicked) {
+      const response = { accepted: false, reason: "target", input: detached(input), target: detached(target) };
+      recordInput(input, target, response);
+      publishRuntimeMachineState();
+      return detached(response);
+    }
+    let response;
+    if (clicked.kind === "stash" && input.button === 1 && !input.shiftKey) response = runtimeRequest("organize");
+    else if (input.shiftKey && (clicked.kind === "stash" || clicked.kind === "player")) response = runtimeRequest("quickMove", { direction: clicked.kind === "stash" ? "storage" : "player", displayIndex: clicked.kind === "stash" ? clicked.displayIndex : clicked.inventoryIndex });
+    else if (clicked.kind === "stash" && (input.button === 0 || input.button === 2)) response = runtimeRequest(input.button === 2 ? "place" : "pickup", { displayIndex: clicked.displayIndex }, { button: input.button === 2 ? 1 : 0 });
+    else response = { accepted: false, reason: "unsupported", revision: runtime.menu.snapshot().revision, requestId: null };
+    const result = { ...response, input, target: clicked };
+    recordInput(input, clicked, result);
+    render();
+    return detached(result);
+  }
+
+  const previewInputNode = document.getElementById("map-stash-preview");
+  const domInput = (type, event) => {
+    const meta = screenMetaFor(project, state.screen);
+    const rect = previewInputNode.getBoundingClientRect?.() ?? { left: 0, top: 0, width: meta.width, height: meta.height };
+    const point = type.startsWith("pointer") ? logicalPointFromViewport(event.clientX, event.clientY, rect, meta.width, meta.height) : runtimePointer;
+    return dispatchInput({ type, ...point, button: event.button ?? 0, buttons: event.buttons ?? 0, deltaY: event.deltaY ?? 0, shiftKey: Boolean(event.shiftKey), ctrlKey: Boolean(event.ctrlKey), altKey: Boolean(event.altKey), metaKey: Boolean(event.metaKey), key: event.key ?? "", tick: event.timeStamp ? Math.floor(event.timeStamp) : 0 });
+  };
+  previewInputNode?.addEventListener("pointermove", (event) => domInput("pointermove", event));
+  previewInputNode?.addEventListener("pointerdown", (event) => domInput("pointerdown", event));
+  previewInputNode?.addEventListener("pointerup", (event) => domInput("pointerup", event));
+  previewInputNode?.addEventListener("keydown", (event) => domInput("keydown", event));
+  previewInputNode?.addEventListener("keyup", (event) => domInput("keyup", event));
+  previewInputNode?.addEventListener("contextmenu", (event) => event.preventDefault?.());
 
   fixtureControl?.addEventListener("change", (event) => setState({ fixture: event.target.value, layout: "all", page: 0 }));
   screenControl?.addEventListener("change", (event) => {
@@ -1123,7 +1703,7 @@ export function initEmulator(data, options = {}) {
   stateControl?.addEventListener("change", (event) => setState({ state: event.target.value }));
   masterVariantControl?.addEventListener("change", (event) => setState({ variant: event.target.value }));
   ["width", "height", "scale"].forEach((key) => document.getElementById(`${key}-control`)?.addEventListener("change", (event) => setState({ [key]: event.target.value })));
-  document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); publishSnapshot(); });
+  document.getElementById("reset")?.addEventListener("click", () => { state = normalize({}, data, project); createRuntime(); publishSnapshot(); });
   document.getElementById("reload-assets")?.addEventListener("click", () => {
     const url = new URL(window.location.href);
     url.searchParams.set("_reload", Date.now().toString(36));
@@ -1136,18 +1716,22 @@ export function initEmulator(data, options = {}) {
     setState({ scroll: Math.round(event.target.scrollTop / (listGeometry.rowHeight ?? 18)) });
   });
   document.getElementById("stash-grid")?.addEventListener("wheel", (event) => {
-    const max = pageCount(itemsForLayout(fixtureForState(), state.layout), renderPageSize(data, project, state.screen)) - 1;
+    const max = runtime.enabled ? runtime.adapter.projection().pageCount - 1 : pageCount(itemsForLayout(fixtureForState(), state.layout), renderPageSize(data, project, state.screen)) - 1;
     if (max > 0) { event.preventDefault(); setState({ page: state.page + (event.deltaY > 0 ? 1 : -1) }); }
   }, { passive: false });
   window.addEventListener("resize", render);
 
-  const getSnapshot = () => snapshotFor(state, data, project);
+  const getSnapshot = () => detached(publicSnapshot());
   window.forgeUIInspector = {
     getState: () => ({ ...state }),
     setState,
-    reset: () => { state = normalize({}, data, project); publishSnapshot(); return { ...state }; },
+    reset: () => { state = normalize({}, data, project); createRuntime(); publishSnapshot(); return detached(state); },
     getCanonicalUrl: () => canonical(state),
     getSnapshot,
+    dispatchInput,
+    getRuntimeSnapshot: runtimeSnapshot,
+    getTrace: () => detached({ version: 1, inputs: inputLog, transport: runtime.enabled ? runtime.transport.getTrace() : { version: 1, entries: [], finalTick: 0, queue: [] } }),
+    resetRuntime: () => { createRuntime(); render(); return runtimeSnapshot(); },
   };
   safeReplaceUrl(canonical(state));
   render();

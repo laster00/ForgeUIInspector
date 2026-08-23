@@ -1,0 +1,1056 @@
+{
+  "schema": "forge-ui-inspector.fixture",
+  "version": 1,
+  "project": "mnsutilities-concepts",
+  "screen": "currency_stash_v2",
+  "renderer": "currency-stash-v2",
+  "pageSize": 72,
+  "fixtures": [
+    {
+      "id": "normal",
+      "titleKey": "screen.mnsutilities.fixture.normal",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 18
+        },
+        {
+          "id": "gear",
+          "labelKey": "screen.mnsutilities.category.gear",
+          "count": 5
+        },
+        {
+          "id": "maps",
+          "labelKey": "screen.mnsutilities.category.maps",
+          "count": 3
+        },
+        {
+          "id": "gems",
+          "labelKey": "screen.mnsutilities.category.gems",
+          "count": 3
+        },
+        {
+          "id": "runes",
+          "labelKey": "screen.mnsutilities.category.runes",
+          "count": 2
+        },
+        {
+          "id": "rarity_stones",
+          "labelKey": "screen.mnsutilities.category.rarity_stones",
+          "count": 1
+        },
+        {
+          "id": "seasonal",
+          "labelKey": "screen.mnsutilities.category.seasonal",
+          "count": 1
+        },
+        {
+          "id": "special",
+          "labelKey": "screen.mnsutilities.category.special",
+          "count": 2
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 1
+        }
+      ],
+      "itemCount": 18,
+      "gemPlan": {
+        "selectedType": "ruby",
+        "targetRank": 3,
+        "craftableMaxRank": 6,
+        "before": [14, 5, 2, 0, 0, 0, 0, 0],
+        "after": [2, 0, 2, 1, 0, 0, 0, 0],
+        "valid": true,
+        "reasonKey": "screen.mnsutilities.gems.recipe_valid"
+      },
+      "items": [
+        {
+          "slot": 0,
+          "page": 0,
+          "icon": "orb",
+          "count": 137,
+          "layout": "all",
+          "category": "gear",
+          "labelKey": "screen.mnsutilities.item.chaos"
+        },
+        {
+          "slot": 1,
+          "page": 0,
+          "icon": "orb",
+          "count": 42,
+          "layout": "all",
+          "category": "gear",
+          "labelKey": "screen.mnsutilities.item.exalted"
+        },
+        {
+          "slot": 2,
+          "page": 0,
+          "icon": "orb",
+          "count": 19,
+          "layout": "all",
+          "category": "gear",
+          "labelKey": "screen.mnsutilities.item.annulment"
+        },
+        {
+          "slot": 3,
+          "page": 0,
+          "icon": "orb",
+          "count": 8,
+          "layout": "all",
+          "category": "gear",
+          "labelKey": "screen.mnsutilities.item.divine"
+        },
+        {
+          "slot": 4,
+          "page": 0,
+          "icon": "orb",
+          "count": 64,
+          "layout": "all",
+          "category": "gear",
+          "labelKey": "screen.mnsutilities.item.vaal"
+        },
+        {
+          "slot": 5,
+          "page": 0,
+          "icon": "map",
+          "count": 31,
+          "layout": "all",
+          "category": "maps",
+          "labelKey": "screen.mnsutilities.item.map_infusing"
+        },
+        {
+          "slot": 6,
+          "page": 0,
+          "icon": "map",
+          "count": 17,
+          "layout": "all",
+          "category": "maps",
+          "labelKey": "screen.mnsutilities.item.map_augmenting"
+        },
+        {
+          "slot": 7,
+          "page": 0,
+          "icon": "paper",
+          "count": 6,
+          "layout": "all",
+          "category": "maps",
+          "labelKey": "screen.mnsutilities.item.omen"
+        },
+        {
+          "slot": 8,
+          "page": 0,
+          "icon": "gem_red",
+          "count": 21,
+          "layout": "all",
+          "category": "gems",
+          "labelKey": "screen.mnsutilities.item.ruby"
+        },
+        {
+          "slot": 9,
+          "page": 0,
+          "icon": "gem_green",
+          "count": 13,
+          "layout": "all",
+          "category": "gems",
+          "labelKey": "screen.mnsutilities.item.emerald"
+        },
+        {
+          "slot": 10,
+          "page": 0,
+          "icon": "gem_blue",
+          "count": 9,
+          "layout": "all",
+          "category": "gems",
+          "labelKey": "screen.mnsutilities.item.sapphire"
+        },
+        {
+          "slot": 11,
+          "page": 0,
+          "icon": "rune",
+          "count": 12,
+          "layout": "all",
+          "category": "runes",
+          "labelKey": "screen.mnsutilities.item.rune_fire"
+        },
+        {
+          "slot": 12,
+          "page": 0,
+          "icon": "rune",
+          "count": 7,
+          "layout": "all",
+          "category": "runes",
+          "labelKey": "screen.mnsutilities.item.rune_guard"
+        },
+        {
+          "slot": 13,
+          "page": 0,
+          "icon": "rarity_stone",
+          "count": 28,
+          "layout": "all",
+          "category": "rarity_stones",
+          "labelKey": "screen.mnsutilities.item.rarity_stone"
+        },
+        {
+          "slot": 14,
+          "page": 0,
+          "icon": "seed",
+          "count": 96,
+          "layout": "all",
+          "category": "seasonal",
+          "labelKey": "screen.mnsutilities.item.harvest_seed"
+        },
+        {
+          "slot": 15,
+          "page": 0,
+          "icon": "coin",
+          "count": 384,
+          "layout": "all",
+          "category": "special",
+          "labelKey": "screen.mnsutilities.item.coin"
+        },
+        {
+          "slot": 16,
+          "page": 0,
+          "icon": "paper",
+          "count": 11,
+          "layout": "all",
+          "category": "special",
+          "labelKey": "screen.mnsutilities.item.prophecy"
+        },
+        {
+          "slot": 17,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 3,
+          "layout": "all",
+          "category": "other",
+          "labelKey": "screen.mnsutilities.item.unknown"
+        }
+      ]
+    },
+    {
+      "id": "empty",
+      "titleKey": "screen.mnsutilities.fixture.empty",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 0
+        },
+        {
+          "id": "gear",
+          "labelKey": "screen.mnsutilities.category.gear",
+          "count": 0
+        },
+        {
+          "id": "maps",
+          "labelKey": "screen.mnsutilities.category.maps",
+          "count": 0
+        },
+        {
+          "id": "gems",
+          "labelKey": "screen.mnsutilities.category.gems",
+          "count": 0
+        },
+        {
+          "id": "runes",
+          "labelKey": "screen.mnsutilities.category.runes",
+          "count": 0
+        },
+        {
+          "id": "rarity_stones",
+          "labelKey": "screen.mnsutilities.category.rarity_stones",
+          "count": 0
+        },
+        {
+          "id": "seasonal",
+          "labelKey": "screen.mnsutilities.category.seasonal",
+          "count": 0
+        },
+        {
+          "id": "special",
+          "labelKey": "screen.mnsutilities.category.special",
+          "count": 0
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 0
+        }
+      ],
+      "itemCount": 0,
+      "gemPlan": {
+        "selectedType": "ruby",
+        "targetRank": 3,
+        "craftableMaxRank": 6,
+        "before": [0, 0, 0, 0, 0, 0, 0, 0],
+        "after": [0, 0, 0, 0, 0, 0, 0, 0],
+        "valid": false,
+        "reasonKey": "screen.mnsutilities.gems.no_gems"
+      },
+      "items": []
+    },
+    {
+      "id": "many",
+      "titleKey": "screen.mnsutilities.fixture.many",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 73
+        },
+        {
+          "id": "gear",
+          "labelKey": "screen.mnsutilities.category.gear",
+          "count": 20
+        },
+        {
+          "id": "maps",
+          "labelKey": "screen.mnsutilities.category.maps",
+          "count": 14
+        },
+        {
+          "id": "gems",
+          "labelKey": "screen.mnsutilities.category.gems",
+          "count": 9
+        },
+        {
+          "id": "runes",
+          "labelKey": "screen.mnsutilities.category.runes",
+          "count": 8
+        },
+        {
+          "id": "rarity_stones",
+          "labelKey": "screen.mnsutilities.category.rarity_stones",
+          "count": 6
+        },
+        {
+          "id": "seasonal",
+          "labelKey": "screen.mnsutilities.category.seasonal",
+          "count": 6
+        },
+        {
+          "id": "special",
+          "labelKey": "screen.mnsutilities.category.special",
+          "count": 8
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 2
+        }
+      ],
+      "itemCount": 73,
+      "gemPlan": {
+        "selectedType": "ruby",
+        "targetRank": 6,
+        "craftableMaxRank": 6,
+        "before": [128, 64, 31, 13, 5, 2, 0, 1],
+        "after": [2, 1, 0, 2, 1, 1, 2, 1],
+        "valid": true,
+        "reasonKey": "screen.mnsutilities.gems.recipe_valid"
+      },
+      "items": [
+        {
+          "slot": 0,
+          "page": 0,
+          "icon": "paper",
+          "count": 1,
+          "layout": "all",
+          "label": "Fixture item 1"
+        },
+        {
+          "slot": 1,
+          "page": 0,
+          "icon": "orb",
+          "count": 2,
+          "layout": "all",
+          "label": "Fixture item 2"
+        },
+        {
+          "slot": 2,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 3,
+          "layout": "all",
+          "label": "Fixture item 3"
+        },
+        {
+          "slot": 3,
+          "page": 0,
+          "icon": "paper",
+          "count": 4,
+          "layout": "all",
+          "label": "Fixture item 4"
+        },
+        {
+          "slot": 4,
+          "page": 0,
+          "icon": "orb",
+          "count": 5,
+          "layout": "all",
+          "label": "Fixture item 5"
+        },
+        {
+          "slot": 5,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 6,
+          "layout": "all",
+          "label": "Fixture item 6"
+        },
+        {
+          "slot": 6,
+          "page": 0,
+          "icon": "paper",
+          "count": 7,
+          "layout": "all",
+          "label": "Fixture item 7"
+        },
+        {
+          "slot": 7,
+          "page": 0,
+          "icon": "orb",
+          "count": 8,
+          "layout": "all",
+          "label": "Fixture item 8"
+        },
+        {
+          "slot": 8,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 9,
+          "layout": "all",
+          "label": "Fixture item 9"
+        },
+        {
+          "slot": 9,
+          "page": 0,
+          "icon": "paper",
+          "count": 10,
+          "layout": "all",
+          "label": "Fixture item 10"
+        },
+        {
+          "slot": 10,
+          "page": 0,
+          "icon": "orb",
+          "count": 11,
+          "layout": "all",
+          "label": "Fixture item 11"
+        },
+        {
+          "slot": 11,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 12,
+          "layout": "all",
+          "label": "Fixture item 12"
+        },
+        {
+          "slot": 12,
+          "page": 0,
+          "icon": "paper",
+          "count": 13,
+          "layout": "all",
+          "label": "Fixture item 13"
+        },
+        {
+          "slot": 13,
+          "page": 0,
+          "icon": "orb",
+          "count": 14,
+          "layout": "all",
+          "label": "Fixture item 14"
+        },
+        {
+          "slot": 14,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 15,
+          "layout": "all",
+          "label": "Fixture item 15"
+        },
+        {
+          "slot": 15,
+          "page": 0,
+          "icon": "paper",
+          "count": 16,
+          "layout": "all",
+          "label": "Fixture item 16"
+        },
+        {
+          "slot": 16,
+          "page": 0,
+          "icon": "orb",
+          "count": 17,
+          "layout": "all",
+          "label": "Fixture item 17"
+        },
+        {
+          "slot": 17,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 18,
+          "layout": "all",
+          "label": "Fixture item 18"
+        },
+        {
+          "slot": 18,
+          "page": 0,
+          "icon": "paper",
+          "count": 19,
+          "layout": "all",
+          "label": "Fixture item 19"
+        },
+        {
+          "slot": 19,
+          "page": 0,
+          "icon": "orb",
+          "count": 20,
+          "layout": "all",
+          "label": "Fixture item 20"
+        },
+        {
+          "slot": 20,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 21,
+          "layout": "all",
+          "label": "Fixture item 21"
+        },
+        {
+          "slot": 21,
+          "page": 0,
+          "icon": "paper",
+          "count": 22,
+          "layout": "all",
+          "label": "Fixture item 22"
+        },
+        {
+          "slot": 22,
+          "page": 0,
+          "icon": "orb",
+          "count": 23,
+          "layout": "all",
+          "label": "Fixture item 23"
+        },
+        {
+          "slot": 23,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 24,
+          "layout": "all",
+          "label": "Fixture item 24"
+        },
+        {
+          "slot": 24,
+          "page": 0,
+          "icon": "paper",
+          "count": 25,
+          "layout": "all",
+          "label": "Fixture item 25"
+        },
+        {
+          "slot": 25,
+          "page": 0,
+          "icon": "orb",
+          "count": 26,
+          "layout": "all",
+          "label": "Fixture item 26"
+        },
+        {
+          "slot": 26,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 27,
+          "layout": "all",
+          "label": "Fixture item 27"
+        },
+        {
+          "slot": 27,
+          "page": 0,
+          "icon": "paper",
+          "count": 28,
+          "layout": "all",
+          "label": "Fixture item 28"
+        },
+        {
+          "slot": 28,
+          "page": 0,
+          "icon": "orb",
+          "count": 29,
+          "layout": "all",
+          "label": "Fixture item 29"
+        },
+        {
+          "slot": 29,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 30,
+          "layout": "all",
+          "label": "Fixture item 30"
+        },
+        {
+          "slot": 30,
+          "page": 0,
+          "icon": "paper",
+          "count": 31,
+          "layout": "all",
+          "label": "Fixture item 31"
+        },
+        {
+          "slot": 31,
+          "page": 0,
+          "icon": "orb",
+          "count": 32,
+          "layout": "all",
+          "label": "Fixture item 32"
+        },
+        {
+          "slot": 32,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 1,
+          "layout": "all",
+          "label": "Fixture item 33"
+        },
+        {
+          "slot": 33,
+          "page": 0,
+          "icon": "paper",
+          "count": 2,
+          "layout": "all",
+          "label": "Fixture item 34"
+        },
+        {
+          "slot": 34,
+          "page": 0,
+          "icon": "orb",
+          "count": 3,
+          "layout": "all",
+          "label": "Fixture item 35"
+        },
+        {
+          "slot": 35,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 4,
+          "layout": "all",
+          "label": "Fixture item 36"
+        },
+        {
+          "slot": 36,
+          "page": 0,
+          "icon": "paper",
+          "count": 5,
+          "layout": "all",
+          "label": "Fixture item 37"
+        },
+        {
+          "slot": 37,
+          "page": 0,
+          "icon": "orb",
+          "count": 6,
+          "layout": "all",
+          "label": "Fixture item 38"
+        },
+        {
+          "slot": 38,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 7,
+          "layout": "all",
+          "label": "Fixture item 39"
+        },
+        {
+          "slot": 39,
+          "page": 0,
+          "icon": "paper",
+          "count": 8,
+          "layout": "all",
+          "label": "Fixture item 40"
+        },
+        {
+          "slot": 40,
+          "page": 0,
+          "icon": "orb",
+          "count": 9,
+          "layout": "all",
+          "label": "Fixture item 41"
+        },
+        {
+          "slot": 41,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 10,
+          "layout": "all",
+          "label": "Fixture item 42"
+        },
+        {
+          "slot": 42,
+          "page": 0,
+          "icon": "paper",
+          "count": 11,
+          "layout": "all",
+          "label": "Fixture item 43"
+        },
+        {
+          "slot": 43,
+          "page": 0,
+          "icon": "orb",
+          "count": 12,
+          "layout": "all",
+          "label": "Fixture item 44"
+        },
+        {
+          "slot": 44,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 13,
+          "layout": "all",
+          "label": "Fixture item 45"
+        },
+        {
+          "slot": 45,
+          "page": 0,
+          "icon": "paper",
+          "count": 14,
+          "layout": "all",
+          "label": "Fixture item 46"
+        },
+        {
+          "slot": 46,
+          "page": 0,
+          "icon": "orb",
+          "count": 15,
+          "layout": "all",
+          "label": "Fixture item 47"
+        },
+        {
+          "slot": 47,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 16,
+          "layout": "all",
+          "label": "Fixture item 48"
+        },
+        {
+          "slot": 48,
+          "page": 0,
+          "icon": "paper",
+          "count": 17,
+          "layout": "all",
+          "label": "Fixture item 49"
+        },
+        {
+          "slot": 49,
+          "page": 0,
+          "icon": "orb",
+          "count": 18,
+          "layout": "all",
+          "label": "Fixture item 50"
+        },
+        {
+          "slot": 50,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 19,
+          "layout": "all",
+          "label": "Fixture item 51"
+        },
+        {
+          "slot": 51,
+          "page": 0,
+          "icon": "paper",
+          "count": 20,
+          "layout": "all",
+          "label": "Fixture item 52"
+        },
+        {
+          "slot": 52,
+          "page": 0,
+          "icon": "orb",
+          "count": 21,
+          "layout": "all",
+          "label": "Fixture item 53"
+        },
+        {
+          "slot": 53,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 22,
+          "layout": "all",
+          "label": "Fixture item 54"
+        },
+        {
+          "slot": 54,
+          "page": 0,
+          "icon": "paper",
+          "count": 23,
+          "layout": "all",
+          "label": "Fixture item 55"
+        },
+        {
+          "slot": 55,
+          "page": 0,
+          "icon": "orb",
+          "count": 24,
+          "layout": "all",
+          "label": "Fixture item 56"
+        },
+        {
+          "slot": 56,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 25,
+          "layout": "all",
+          "label": "Fixture item 57"
+        },
+        {
+          "slot": 57,
+          "page": 0,
+          "icon": "paper",
+          "count": 26,
+          "layout": "all",
+          "label": "Fixture item 58"
+        },
+        {
+          "slot": 58,
+          "page": 0,
+          "icon": "orb",
+          "count": 27,
+          "layout": "all",
+          "label": "Fixture item 59"
+        },
+        {
+          "slot": 59,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 28,
+          "layout": "all",
+          "label": "Fixture item 60"
+        },
+        {
+          "slot": 60,
+          "page": 0,
+          "icon": "paper",
+          "count": 29,
+          "layout": "all",
+          "label": "Fixture item 61"
+        },
+        {
+          "slot": 61,
+          "page": 0,
+          "icon": "orb",
+          "count": 30,
+          "layout": "all",
+          "label": "Fixture item 62"
+        },
+        {
+          "slot": 62,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 31,
+          "layout": "all",
+          "label": "Fixture item 63"
+        },
+        {
+          "slot": 63,
+          "page": 0,
+          "icon": "paper",
+          "count": 32,
+          "layout": "all",
+          "label": "Fixture item 64"
+        },
+        {
+          "slot": 64,
+          "page": 0,
+          "icon": "orb",
+          "count": 1,
+          "layout": "all",
+          "label": "Fixture item 65"
+        },
+        {
+          "slot": 65,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 2,
+          "layout": "all",
+          "label": "Fixture item 66"
+        },
+        {
+          "slot": 66,
+          "page": 0,
+          "icon": "paper",
+          "count": 3,
+          "layout": "all",
+          "label": "Fixture item 67"
+        },
+        {
+          "slot": 67,
+          "page": 0,
+          "icon": "orb",
+          "count": 4,
+          "layout": "all",
+          "label": "Fixture item 68"
+        },
+        {
+          "slot": 68,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 5,
+          "layout": "all",
+          "label": "Fixture item 69"
+        },
+        {
+          "slot": 69,
+          "page": 0,
+          "icon": "paper",
+          "count": 6,
+          "layout": "all",
+          "label": "Fixture item 70"
+        },
+        {
+          "slot": 70,
+          "page": 0,
+          "icon": "orb",
+          "count": 7,
+          "layout": "all",
+          "label": "Fixture item 71"
+        },
+        {
+          "slot": 71,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 8,
+          "layout": "all",
+          "label": "Fixture item 72"
+        },
+        {
+          "slot": 0,
+          "page": 1,
+          "icon": "paper",
+          "count": 9,
+          "layout": "all",
+          "label": "Fixture item 73"
+        }
+      ]
+    },
+    {
+      "id": "other",
+      "titleKey": "screen.mnsutilities.fixture.other",
+      "layouts": [
+        {
+          "id": "all",
+          "labelKey": "screen.forgeuiinspector.all",
+          "count": 6
+        },
+        {
+          "id": "gear",
+          "labelKey": "screen.mnsutilities.category.gear",
+          "count": 0
+        },
+        {
+          "id": "maps",
+          "labelKey": "screen.mnsutilities.category.maps",
+          "count": 0
+        },
+        {
+          "id": "gems",
+          "labelKey": "screen.mnsutilities.category.gems",
+          "count": 1
+        },
+        {
+          "id": "runes",
+          "labelKey": "screen.mnsutilities.category.runes",
+          "count": 0
+        },
+        {
+          "id": "rarity_stones",
+          "labelKey": "screen.mnsutilities.category.rarity_stones",
+          "count": 0
+        },
+        {
+          "id": "seasonal",
+          "labelKey": "screen.mnsutilities.category.seasonal",
+          "count": 0
+        },
+        {
+          "id": "special",
+          "labelKey": "screen.mnsutilities.category.special",
+          "count": 0
+        },
+        {
+          "id": "other",
+          "labelKey": "screen.forgeuiinspector.other",
+          "count": 5
+        }
+      ],
+      "itemCount": 6,
+      "gemPlan": {
+        "selectedType": "ruby",
+        "targetRank": 3,
+        "craftableMaxRank": 6,
+        "before": [3, 0, 0, 0, 0, 0, 0, 0],
+        "after": [3, 0, 0, 0, 0, 0, 0, 0],
+        "valid": false,
+        "reasonKey": "screen.mnsutilities.gems.nonstandard_rejected"
+      },
+      "items": [
+        {
+          "slot": 0,
+          "page": 0,
+          "icon": "gem_red",
+          "count": 3,
+          "layout": "other",
+          "category": "gems",
+          "labelKey": "screen.mnsutilities.item.named_ruby"
+        },
+        {
+          "slot": 1,
+          "page": 0,
+          "icon": "orb",
+          "count": 2,
+          "layout": "other",
+          "label": "Fixture item 2"
+        },
+        {
+          "slot": 2,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 3,
+          "layout": "other",
+          "label": "Fixture item 3"
+        },
+        {
+          "slot": 3,
+          "page": 0,
+          "icon": "paper",
+          "count": 4,
+          "layout": "other",
+          "label": "Fixture item 4"
+        },
+        {
+          "slot": 4,
+          "page": 0,
+          "icon": "orb",
+          "count": 5,
+          "layout": "other",
+          "label": "Fixture item 5"
+        },
+        {
+          "slot": 5,
+          "page": 0,
+          "icon": "unknown-icon",
+          "count": 6,
+          "layout": "other",
+          "label": "Fixture item 6"
+        }
+      ]
+    }
+  ]
+}
