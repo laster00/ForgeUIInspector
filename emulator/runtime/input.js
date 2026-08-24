@@ -51,10 +51,6 @@ export function cssPointToLogicalPoint(point, rect, logicalWidth = 474, logicalH
   return { x: (x - rect.left) * logicalWidth / rect.width, y: (y - rect.top) * logicalHeight / rect.height };
 }
 
-export function logicalPointFromViewport(clientX, clientY, rect, logicalWidth = 474, logicalHeight = 326) {
-  return cssPointToLogicalPoint({ x: clientX, y: clientY }, rect, logicalWidth, logicalHeight);
-}
-
 function contains(rect, x, y) { return x >= rect.left && x < rect.left + rect.width && y >= rect.top && y < rect.top + rect.height; }
 
 export function createHitTester(registrations = []) {
@@ -72,8 +68,6 @@ export function createHitTester(registrations = []) {
   }
   return Object.freeze({ hitTest, registrations: () => entries.map(({ order, targetKey: _key, ...entry }) => cloneTarget(entry)) });
 }
-
-export function hitTest(registrations, point) { return createHitTester(registrations).hitTest(point); }
 
 export function hoverTransition(previousTarget, nextTarget) {
   const same = previousTarget !== null && previousTarget !== undefined && nextTarget !== null && nextTarget !== undefined && (() => { try { return targetKey(previousTarget) === targetKey(nextTarget); } catch { return false; } })();

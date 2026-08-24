@@ -99,19 +99,6 @@ function conservationTotalsFromSlots(slots) {
   return totals;
 }
 
-function conservationTotalsIgnoringSlotOrder(slots) {
-  const totals = new Map();
-  slots.forEach((slot, index) => {
-    if (slot === null || slot === undefined) {
-      return;
-    }
-    const canonical = createCanonicalItemStack(slot);
-    const key = getItemStackKey(canonical);
-    totals.set(key, (totals.get(key) ?? 0) + canonical.count);
-  });
-  return totals;
-}
-
 function validateFinalState(storage, expectedCounts) {
   assertStorageShape(storage);
   if (expectedCounts === undefined || expectedCounts === null) {
@@ -230,8 +217,8 @@ export function storageConservationMatches(beforeStorage, afterStorage) {
   if (beforeStorage.capacity !== afterStorage.capacity) {
     throw new TypeError("capacities must match");
   }
-  const before = conservationTotalsIgnoringSlotOrder(beforeStorage.slots);
-  const after = conservationTotalsIgnoringSlotOrder(afterStorage.slots);
+  const before = conservationTotalsFromSlots(beforeStorage.slots);
+  const after = conservationTotalsFromSlots(afterStorage.slots);
   if (before.size !== after.size) {
     return false;
   }
