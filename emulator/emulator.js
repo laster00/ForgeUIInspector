@@ -20,7 +20,7 @@ import { createCanonicalItemStack, getItemStackKey } from "./runtime/item-stack.
 import { createMapStashAdapter } from "./runtime/adapters/map-stash.js";
 import { createMenuState } from "./runtime/menu.js";
 import { createDeterministicTransport } from "./runtime/transport.js";
-import { createHitTester, logicalPointFromViewport, normalizeInput } from "./runtime/input.js";
+import { createHitTester, cssPointToLogicalPoint, normalizeInput } from "./runtime/input.js";
 
 export { DEFAULT_CTE2_PROJECT, DEFAULT_PROJECT_ID, DEFAULT_PROJECT_INDEX, FIXTURE_SCHEMA, PROJECT_INDEX_SCHEMA, PROJECT_SCHEMA, createFixtureRegistry, createProjectIndex, alignmentFor, screenIdsFor, screenMetaFor, rendererFor, validateFixtureDocument, normalizeFixtureItems, validateProjectManifest };
 
@@ -1799,7 +1799,7 @@ export function initEmulator(data, options = {}) {
     const meta = screenMetaFor(project, state.screen);
     const rect = previewInputNode.getBoundingClientRect?.() ?? { left: 0, top: 0, width: meta.width, height: meta.height };
     const hasClientPoint = (type.startsWith("pointer") || type === "wheel") && Number.isFinite(event.clientX) && Number.isFinite(event.clientY);
-    const point = hasClientPoint ? logicalPointFromViewport(event.clientX, event.clientY, rect, meta.width, meta.height) : runtimePointer;
+    const point = hasClientPoint ? cssPointToLogicalPoint({ x: event.clientX, y: event.clientY }, rect, meta.width, meta.height) : runtimePointer;
     return dispatchInput({ type, ...point, button: event.button ?? 0, buttons: event.buttons ?? 0, deltaY: event.deltaY ?? 0, shiftKey: Boolean(event.shiftKey), ctrlKey: Boolean(event.ctrlKey), altKey: Boolean(event.altKey), metaKey: Boolean(event.metaKey), key: event.key ?? "", tick: 0 });
   };
   previewInputNode?.addEventListener("pointermove", (event) => domInput("pointermove", event));

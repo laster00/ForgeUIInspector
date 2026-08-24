@@ -263,8 +263,3 @@ export function splitItemStack(stack, requestedCount) {
     createCanonicalItemStack({ ...source, count: remainderCount }),
   ];
 }
-
-export function assertValidItemStack(stack) {
-  createCanonicalItemStack(stack);
-  return true;
-}
